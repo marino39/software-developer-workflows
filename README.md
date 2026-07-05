@@ -1,6 +1,6 @@
 # software-developer-workflows
 
-Source of truth for the multi-agent Claude Code workflow: 7 subagents, the `/workflow` orchestrator, and the full-lifecycle `/new-task` command with its learnings memory.
+Source of truth for the multi-agent Claude Code workflow: 7 subagents and the full-lifecycle `/new-task` command with its learnings memory.
 
 The live copies run from `~/.claude/`; this repo versions them so improvements — hand edits here, or self-improvement edits made live by `/new-task` Phase 7 — are reviewed and tracked in git.
 
@@ -9,7 +9,7 @@ The live copies run from `~/.claude/`; this repo versions them so improvements �
 ```
 agents/              7 subagent definitions (architect, coder, debugger,
                      researcher, reviewer, searcher, test-runner)
-commands/            /workflow (orchestrator) and /new-task (full lifecycle)
+commands/            /new-task (full lifecycle)
 new-task/LEARNINGS.md  distilled lessons memory (live file is runtime state)
 install.sh           repo -> ~/.claude  (LEARNINGS seeded only if missing)
 capture.sh           ~/.claude -> repo  (pull live self-improvements, then
@@ -25,4 +25,4 @@ capture.sh           ~/.claude -> repo  (pull live self-improvements, then
 
 ## Design notes
 
-Model assignment, escalation ladder, fable budget, and nested-delegation rationale are documented in the command files themselves (`commands/workflow.md`, `commands/new-task.md`). Originally designed in Cowork (2026-07); handoff decisions: one generic coder (language conventions live in CLAUDE.md), debugger is escalation-only, agents return capped structured summaries, orchestrator never ingests raw transcripts.
+Model assignment, escalation ladder, fable budget, and nested-delegation rationale are documented in the command file itself (`commands/new-task.md`). Originally designed in Cowork (2026-07); handoff decisions: one generic coder (language conventions live in CLAUDE.md), debugger is escalation-only, agents return capped structured summaries, orchestrator never ingests raw transcripts.
