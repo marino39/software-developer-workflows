@@ -66,6 +66,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
    - Append distilled lessons to `~/.claude/new-task/LEARNINGS.md` (dated, one lesson per bullet).
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`) or agent definitions in `~/.claude/agents/`.
 3. **GATE 4**: show the proposed self-update as a diff → apply ONLY what the human approves. No approval → write nothing outside the project retro.
+4. After any approved self-update (including LEARNINGS appends), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
 
 ## Escalation ladder
 
