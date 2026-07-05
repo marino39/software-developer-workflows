@@ -57,7 +57,18 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 3. Same issue rejected twice → escalate per ladder (coder → `debugger`; debugger → fable debugger). Different issue each iteration → the plan is wrong: back to Phase 3 with failure digest.
 4. High-stakes diff (auth, payments, migrations, data deletion) → run the review on an escalated reviewer (opus/fable) from the first pass.
 5. **GATE 3**: summary (files changed, test status, deviations from plan, escalations used) → human approves or rejects.
-6. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree.
+6. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree. If the outcome is a PR, run Phase 6.5 before Phase 7.
+
+## Phase 6.5 — CI verification (PR path only, max 5 iterations)
+
+Runs only when Phase 6 step 6 ended with a PR. Local merge, keep, or discard → skip to Phase 7.
+
+1. Trunk health first: `gh run list --branch <default> --limit 3`. Trunk already red → the PR inherits that red; record it in the digest, don't chase it as a regression in your diff.
+2. Wait for checks: `gh pr checks <pr> --watch --interval 30` (fallback: poll `gh pr checks <pr> --json name,state,bucket,link` every 60s). "No checks reported" right after creation → retry twice over ~1 min; still none → repo has no CI, skip to Phase 7.
+3. Failures → send the failing run IDs to `test-runner` for a digest via `gh run view <run-id> --log-failed` — raw CI logs never enter your context. Infra-smelling failures (runner setup, network, quota) → one free `gh run rerun <run-id> --failed`; everything else costs an iteration.
+4. Digest → `coder`: reproduce with CI's EXACT command first (see LEARNINGS), then fix. Fresh `reviewer` on the fix diff BEFORE pushing; FAIL → back to coder within the same iteration. Push the reviewed fix (re-triggers CI), count the iteration, return to step 2. Local green is a hypothesis — CI adjudicates.
+5. Same check failing after 2 coder fixes → escalate per ladder (coder → `debugger`; debugger → fable debugger — draws on the same one-fable budget as Phase 6). Different failure each iteration → the implementation is wrong: back to Phase 6 with a failure digest.
+6. All checks green → proceed to Phase 7, no gate. Cap or ladder exhausted → HALT: leave the PR open, present the failure digest (checks still red, what was tried, escalations used).
 
 ## Phase 7 — Retrospective + self-improvement
 
@@ -83,6 +94,7 @@ Override models per invocation via the Agent tool `model` parameter. One rung at
 Rules:
 - Same error twice → escalate model one rung. Different error each time → the upstream artifact (design or plan) is wrong; go back one phase with a failure digest instead of escalating.
 - Budget: `architect` runs on fable by frontmatter (its planning and review duties are its normal work) plus AT MOST ONE fable escalation per task run (fable debugger OR fable reviewer, not both). Ladder exhausted → STOP, full failure digest to the human.
+- Phase 6.5 (CI) escalations ride the same ladder and the same fable budget — a fable debugger there is the run's one fable escalation. Budget already spent in Phase 6 → the CI ladder ends at opus.
 
 ## Token hygiene
 
