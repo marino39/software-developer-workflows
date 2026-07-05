@@ -1,0 +1,28 @@
+# software-developer-workflows
+
+Source of truth for the multi-agent Claude Code workflow: 7 subagents, the `/workflow` orchestrator, and the full-lifecycle `/new-task` command with its learnings memory.
+
+The live copies run from `~/.claude/`; this repo versions them so improvements — hand edits here, or self-improvement edits made live by `/new-task` Phase 7 — are reviewed and tracked in git.
+
+## Layout
+
+```
+agents/              7 subagent definitions (architect, coder, debugger,
+                     researcher, reviewer, searcher, test-runner)
+commands/            /workflow (orchestrator) and /new-task (full lifecycle)
+new-task/LEARNINGS.md  distilled lessons memory (live file is runtime state)
+install.sh           repo -> ~/.claude  (LEARNINGS seeded only if missing)
+capture.sh           ~/.claude -> repo  (pull live self-improvements, then
+                     review `git diff` and commit)
+```
+
+## Flow
+
+- **Improve in repo:** edit files here → `./install.sh` → use.
+- **Improve via runs:** `/new-task` GATE 4 edits live files → `./capture.sh` → `git diff` → commit what you keep.
+
+`install.sh` never overwrites the live `LEARNINGS.md` — it is append-only runtime state owned by `/new-task` runs; `capture.sh` is how it gets versioned.
+
+## Design notes
+
+Model assignment, escalation ladder, fable budget, and nested-delegation rationale are documented in the command files themselves (`commands/workflow.md`, `commands/new-task.md`). Originally designed in Cowork (2026-07); handoff decisions: one generic coder (language conventions live in CLAUDE.md), debugger is escalation-only, agents return capped structured summaries, orchestrator never ingests raw transcripts.
