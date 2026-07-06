@@ -53,16 +53,25 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 
 ## Phase 6 — Implementation review (max 5 iterations)
 
-1. Spawn a fresh `reviewer` with the plan + instruction to review the worktree diff. Verdict PASS/FAIL with numbered issues.
-2. FAIL → route numbered issues to `coder` → re-review. Count iterations.
-3. Same issue rejected twice → escalate per ladder (coder → `debugger`; debugger → fable debugger). Different issue each iteration → the plan is wrong: back to Phase 3 with failure digest.
-4. High-stakes diff (auth, payments, migrations, data deletion) → run the review on an escalated reviewer (opus/fable) from the first pass.
-5. **GATE 3**: summary (files changed, test status, deviations from plan, escalations used) → human approves or rejects.
-6. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree. If the outcome is a PR, run Phase 6.5 before Phase 7.
+Compute once: `BASE_SHA=$(git merge-base HEAD <default-branch>)`, `HEAD_SHA=$(git rev-parse HEAD)`.
+
+1. **Review fan-out (iteration 1 only)** — launch ALL channels in parallel in a single message:
+   - **Channel A — superpowers review:** invoke the `superpowers:requesting-code-review` skill; dispatch its reviewer subagent per its `code-reviewer.md` template with DESCRIPTION (what was built), PLAN_OR_REQUIREMENTS (plan file path), BASE_SHA, HEAD_SHA.
+   - **Channel B — codex (conditional):** if `command -v codex` succeeds, run a non-interactive review of the worktree diff — `codex exec --sandbox read-only "Review the diff between <BASE_SHA> and HEAD in this repo for bugs, edge cases, and design issues. Return numbered findings with file:line."` — with a hard timeout (~10 min), output captured to a scratch file. Output >~100 lines → have `test-runner` digest the file instead of ingesting it raw. CLI absent, errored, or timed out → record `codex: skipped (<reason>)` in the digest and move on; never counts as a failure.
+   - **Channel C — lens reviewers:** three parallel `reviewer` subagents on the worktree diff, one lens each:
+     - C1 shallow bug scan — the changes only, no extra context; large bugs, ignore nitpicks.
+     - C2 git history — blame/history of the modified code; bugs in light of that historical context.
+     - C3 compliance — CLAUDE.md files covering the modified dirs + code comments in modified files; flag violations only if explicitly stated there.
+2. **Consolidation:** spawn a FRESH `reviewer` (clean context) fed only the channel reports + the plan. It dedupes overlapping findings, scores each 0–100 confidence (0 = false positive, 25 = unverified, 50 = verified but minor, 75 = verified & impactful, 100 = certain; same issue from 2+ channels bumps confidence), drops <50, tags 50–79 = Should-fix and ≥80 = Must-fix, and returns verdict PASS/FAIL with a numbered consolidated issue list.
+3. FAIL → route numbered Must-fix issues to `coder`. Iterations 2+ re-review light: a single fresh `reviewer` verifies the fixes against the iteration-1 consolidated issue list and scans newly changed lines for new large bugs only — no repeat fan-out, no new consolidation pass. Count iterations.
+4. Same issue rejected twice → escalate per ladder (coder → `debugger`; debugger → fable debugger). Different issue each iteration → the plan is wrong: back to Phase 3 with failure digest.
+5. High-stakes diff (auth, payments, migrations, data deletion) → run the consolidator and Channel C reviewers escalated (opus/fable) from the first pass.
+6. **GATE 3**: summary (files changed, test status, channels run/skipped with per-channel finding counts, consolidated Must-fix/Should-fix counts, deviations from plan, escalations used) → human approves or rejects.
+7. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree. If the outcome is a PR, run Phase 6.5 before Phase 7.
 
 ## Phase 6.5 — CI verification (PR path only, max 5 iterations)
 
-Runs only when Phase 6 step 6 ended with a PR. Local merge, keep, or discard → skip to Phase 7.
+Runs only when Phase 6 step 7 ended with a PR. Local merge, keep, or discard → skip to Phase 7.
 
 1. Trunk health first: `gh run list --branch <default> --limit 3`. Trunk already red → the PR inherits that red; record it in the digest, don't chase it as a regression in your diff.
 2. Wait for checks: `gh pr checks <pr> --watch --interval 30` (fallback: poll `gh pr checks <pr> --json name,state,bucket,link` every 60s). "No checks reported" right after creation → retry twice over ~1 min; still none → repo has no CI, skip to Phase 7.
@@ -90,6 +99,7 @@ Override models per invocation via the Agent tool `model` parameter. One rung at
 | researcher | sonnet | opus | contradictory sources, low-confidence twice |
 | coder | sonnet | — | don't escalate model; route to debugger instead |
 | reviewer | sonnet | opus → fable | same issue unresolved 2 iterations, or high-stakes diff |
+| lens reviewers / consolidator (Phase 6) | sonnet | opus → fable | same ladder and triggers as reviewer; shared fable budget |
 | debugger | opus | fable | debugger reports unverified root cause |
 
 Rules:
