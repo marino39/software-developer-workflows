@@ -14,6 +14,11 @@ for f in "$REPO_DIR"/commands/*.md; do
     cp "$CLAUDE_DIR/commands/$(basename "$f")" "$f"
 done
 cp "$CLAUDE_DIR/new-task/LEARNINGS.md" "$REPO_DIR/new-task/LEARNINGS.md"
+mkdir -p "$REPO_DIR/new-task/learnings"
+for f in "$CLAUDE_DIR"/new-task/learnings/*.md; do
+    [ -e "$f" ] || continue
+    cp "$f" "$REPO_DIR/new-task/learnings/$(basename "$f")"
+done
 
 cd "$REPO_DIR"
 git status --short
