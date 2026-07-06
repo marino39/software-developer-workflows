@@ -21,8 +21,9 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 ## Phase 1 — Brainstorm (human input allowed)
 
 1. Invoke the `superpowers:brainstorming` skill and follow it.
-2. In parallel with clarifying questions, dispatch: `researcher` (prior art, library options) and `architect` (recommended approach with trade-offs). Feed their digests into the design discussion.
-3. Output: a design doc written to the project's spec location (default `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`).
+2. In parallel with clarifying questions, dispatch `researcher` (prior art, library options) and **three `architect` subagents, each seeded with a distinct lens** (e.g. simplest/MVP, most robust/scalable, alternative paradigm or library) so they explore non-overlapping directions. Each returns ONE approach with its trade-offs (strengths, costs, risks) — not a full file-level plan.
+3. **Synthesize**: spawn a FRESH `architect` (clean context, fed only the three approach digests and the task statement) to compare and rank them and pick a recommendation, stating why it wins over the other two. Present all three + the recommendation in the design discussion → the human confirms or overrides.
+4. Output: a design doc written to the project's spec location (default `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`), recording the chosen approach in full plus the two rejected alternatives with the reasons they lost — so Phase 2's GATE 1 "rejected alternatives" summary draws from it.
 
 ## Phase 2 — Approach review (max 5 iterations)
 
