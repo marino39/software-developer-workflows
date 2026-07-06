@@ -14,7 +14,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 
 ## Phase 0 — Setup
 
-1. Read `~/.claude/new-task/LEARNINGS.md` and apply relevant lessons to this run. If a lesson conflicts with these instructions, the lesson wins (it is newer).
+1. Read `~/.claude/new-task/LEARNINGS.md` (general) and `~/.claude/new-task/learnings/<repo-key>.md` (repo key = origin remote repo name minus `.git`; no remote → main working-tree dir basename; file missing → skip). Apply relevant lessons to this run. If a lesson conflicts with these instructions, the lesson wins (it is newer).
 2. Invoke the `superpowers:using-git-worktrees` skill — all implementation happens in an isolated worktree.
 3. If the task needs context you lack, fan out in parallel: `searcher` (codebase layout, existing patterns) and `researcher` (external docs, prior art).
 
@@ -84,10 +84,11 @@ Runs only when Phase 6 step 7 ended with a PR. Local merge, keep, or discard →
 
 1. Write a retrospective to the project at `docs/superpowers/retros/YYYY-MM-DD-<task>.md`: what worked, what failed, iteration counts per phase, escalations used and whether they helped, gate rejections and why.
 2. Distill durable lessons (things that would change how the NEXT run behaves) and propose a self-update:
-   - Append distilled lessons to `~/.claude/new-task/LEARNINGS.md` (dated, one lesson per bullet).
+   - Route each lesson: general workflow → `~/.claude/new-task/LEARNINGS.md`; project-specific → `~/.claude/new-task/learnings/<repo-key>.md` (create if missing). Format: dated bullet, ≤300 chars, "when X, do Y (why)" — no war stories.
+   - Curate, don't just append: a lesson refining an existing bullet REWRITES it in place (newest date kept); propose deleting bullets promoted into this command file or agent definitions; a file over 30 bullets → this diff must include merges/prunes.
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`) or agent definitions in `~/.claude/agents/`.
 3. **GATE 4**: show the proposed self-update as a diff → apply ONLY what the human approves. No approval → write nothing outside the project retro.
-4. After any approved self-update (including LEARNINGS appends), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
+4. After any approved self-update (including learnings edits), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
 
 ## Escalation ladder
 
