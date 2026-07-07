@@ -13,6 +13,13 @@ done
 for f in "$REPO_DIR"/commands/*.md; do
     cp "$CLAUDE_DIR/commands/$(basename "$f")" "$f"
 done
+for f in "$REPO_DIR"/skills/*/*.md; do
+    [ -e "$f" ] || continue
+    live="$CLAUDE_DIR/skills/$(basename "$(dirname "$f")")/$(basename "$f")"
+    if [ -f "$live" ]; then
+        cp "$live" "$f"
+    fi
+done
 cp "$CLAUDE_DIR/new-task/LEARNINGS.md" "$REPO_DIR/new-task/LEARNINGS.md"
 mkdir -p "$REPO_DIR/new-task/learnings"
 for f in "$CLAUDE_DIR"/new-task/learnings/*.md; do

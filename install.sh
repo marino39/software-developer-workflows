@@ -8,10 +8,17 @@ set -eu
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 
-mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/new-task/learnings"
+mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/commands" "$CLAUDE_DIR/skills" "$CLAUDE_DIR/new-task/learnings"
 
 cp "$REPO_DIR"/agents/*.md "$CLAUDE_DIR/agents/"
 cp "$REPO_DIR"/commands/*.md "$CLAUDE_DIR/commands/"
+# Skills are source-of-truth like agents/commands: always overwritten.
+for d in "$REPO_DIR"/skills/*/; do
+    [ -d "$d" ] || continue
+    name="$(basename "$d")"
+    mkdir -p "$CLAUDE_DIR/skills/$name"
+    cp "$d"* "$CLAUDE_DIR/skills/$name/"
+done
 
 seed() {
     src="$1" dest="$2"
@@ -29,4 +36,4 @@ for f in "$REPO_DIR"/new-task/learnings/*.md; do
     seed "$f" "$CLAUDE_DIR/new-task/learnings/$(basename "$f")"
 done
 
-echo "installed: $(ls "$REPO_DIR"/agents/*.md "$REPO_DIR"/commands/*.md | wc -l | tr -d ' ') files -> $CLAUDE_DIR"
+echo "installed: $(ls "$REPO_DIR"/agents/*.md "$REPO_DIR"/commands/*.md "$REPO_DIR"/skills/*/*.md | wc -l | tr -d ' ') files -> $CLAUDE_DIR"
