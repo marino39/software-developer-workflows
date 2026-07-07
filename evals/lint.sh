@@ -88,6 +88,25 @@ else
     bad "gate-format consistency: a gate summary section is missing in $NT"
 fi
 
+# --- Check 5: agent contracts (ACI) ----------------------------------------
+# Every agent is a tool: it must declare an Input contract and an Output
+# contract, and the Output contract must list >=1 backticked field and a Role.
+bad_contracts=""
+for f in agents/*.md; do
+    [ -e "$f" ] || continue
+    grep -qE '^## Input contract'  "$f" || { bad_contracts="$bad_contracts ${f}(no-input)"; continue; }
+    grep -qE '^## Output contract' "$f" || { bad_contracts="$bad_contracts ${f}(no-output)"; continue; }
+    # within the Output contract section: at least one `field` bullet and a Role line
+    out="$(awk '/^## Output contract/{c=1;next} /^## /{c=0} c' "$f")"
+    printf '%s' "$out" | grep -qE '^- `[a-z][a-z0-9_]*`' || { bad_contracts="$bad_contracts ${f}(no-field)"; continue; }
+    printf '%s' "$out" | grep -qE '^Role:' || bad_contracts="$bad_contracts ${f}(no-role)"
+done
+if [ -n "$bad_contracts" ]; then
+    bad "agent contracts: malformed/missing:$bad_contracts"
+else
+    pass "agent contracts (all agents declare Input + Output contract, fields, Role)"
+fi
+
 # ---------------------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
     printf 'workflow-lint: all checks passed\n'

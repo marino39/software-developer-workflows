@@ -10,19 +10,22 @@ command; this directory holds its inputs and outputs.
 
 ```
 rubric.md        shared scoring rubric (5 dimensions) — the contract for scoring
+lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
 fixtures/base/   one minimal Go module all tasks run against (seeded bug + auth
                  helper + doc file); builds green except the seeded calc bug
 tasks/           frozen task specs: statement + expected behaviour + score overrides
 variants/        ablation deltas (e.g. skeptic-off) prepended to a run for A/B
+contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
 
-## Two layers
+## Layers
 
 1. **Workflow lint** (deterministic, cheap, always runs): `evals/lint.sh` — a
    no-LLM, no-network script checking `commands/`, `agents/`, `skills/` for
-   reference integrity, route/tier consistency, phase completeness, and
-   gate-format consistency. Catches drift like a branch that lets an escalated
+   reference integrity, route/tier consistency, phase completeness, gate-format
+   consistency, and **agent contracts** (every agent declares a well-formed
+   Input/Output contract). Catches drift like a branch that lets an escalated
    `scoped` task auto-approve. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with
@@ -32,6 +35,11 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    logs every gate (so it runs headless — `/new-task` itself is never modified). A
    judge subagent scores the gate summaries + Phase 7 retro + fixture test result
    against `rubric.md`.
+3. **Agent contract test** (`--contracts`, on demand): each agent is dispatched on
+   its `contracts/<agent>.md` fixture stimulus; a judge checks the output honors
+   the agent's declared Output contract fields and Role. The *static* half (are the
+   contracts present/well-formed) is Layer 1; this is the *behavioral* half (does
+   the live agent honor them).
 
 ## Running
 
@@ -41,6 +49,8 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 /workflow-eval --tasks 02,03                   # subset
 /workflow-eval --tasks 02 --variant skeptic-off  # ablation A/B vs baseline
 /workflow-eval --repeat 3 --tasks 02           # more samples (tame LLM variance)
+/workflow-eval --contracts                     # all 7 agent contract tests
+/workflow-eval --contracts --agent searcher    # one agent (cheapest smoke)
 ```
 
 Scorecards land in `results/` and diff against the newest prior scorecard (or

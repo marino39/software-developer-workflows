@@ -11,11 +11,18 @@ Changes to the workflow must be evaluated, not just written. Two tiers:
 
 1. **Every change to `commands/`, `agents/`, or `skills/` must pass the lint.**
    `evals/lint.sh` is deterministic (no LLM, no network) and checks reference
-   integrity, route/tier consistency, phase completeness, and gate-format. The
-   pre-commit hook runs it automatically and **blocks the commit on failure**; run
-   it yourself any time with `sh evals/lint.sh` or `/workflow-eval --lint-only`.
-   Do not bypass with `--no-verify` unless the lint itself is wrong (then fix the
-   lint in the same change).
+   integrity, route/tier consistency, phase completeness, gate-format, and agent
+   contracts. The pre-commit hook runs it automatically and **blocks the commit on
+   failure**; run it yourself any time with `sh evals/lint.sh` or
+   `/workflow-eval --lint-only`. Do not bypass with `--no-verify` unless the lint
+   itself is wrong (then fix the lint in the same change).
+
+   **Agents are tools with contracts.** Each `agents/*.md` declares an
+   `## Input contract` and `## Output contract` (backticked fields + a `Role:`
+   line); the lint enforces their presence. When you change an agent's Output
+   contract, update its `evals/contracts/<agent>.md` expected-fields spec in the
+   same change, and re-run `/workflow-eval --contracts --agent <name>` to confirm
+   the live agent still honors it.
 
 2. **Behavior-affecting changes require a live eval + scorecard diff before merge.**
    If the change alters how a run behaves — edits to `commands/new-task.md`, an

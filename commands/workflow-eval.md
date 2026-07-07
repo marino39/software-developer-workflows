@@ -14,6 +14,8 @@ expensive **live outcome-eval**. `$ARGUMENTS` flags:
   emit an A/B comparison vs the baseline.
 - `--baseline <path>` — scorecard to diff against (default: newest in `evals/results/`).
 - `--repeat N` — samples per task per condition (default 1). Averages, and reports spread.
+- `--contracts` — run the agent contract test (Layer 3 below) instead of the
+  outcome-eval. `--agent <name>` restricts it to one agent (default: all 7).
 
 Locate the workflow repo the way `/workflow-maintenance` does — the directory
 containing this repo's `capture.sh` (default `~/Prywatne/software-developer-workflows`).
@@ -35,9 +37,11 @@ checks the instruction files (`commands/`, `agents/`, `skills/`) for: reference
 integrity (every non-`superpowers:*` skill/agent referenced exists); route/tier
 consistency (`commands/new-task.md` — no path lets a route escalated after Phase 0
 auto-approve GATE 3 or take the reduced tier; route declared monotonic); phase
-completeness (iteration caps + escalation ladder present); and gate-format
-consistency (the four-section summary contract). This is the same script the
-pre-commit hook runs, so the command and the hook can never disagree.
+completeness (iteration caps + escalation ladder present); gate-format
+consistency (the four-section summary contract); and agent contracts (every
+`agents/*.md` declares a well-formed Input + Output contract with fields and a
+Role — the static half of Layer 3). This is the same script the pre-commit hook
+runs, so the command and the hook can never disagree.
 
 Surface the script's pass/fail lines verbatim. Non-zero exit is a deterministic
 regression. `--lint-only` → emit the lint block of the summary and stop here.
@@ -64,6 +68,37 @@ For each selected task, `--repeat` times:
    scores (0–100, honoring `expect` overrides and `n/a` reweights), the list of any
    escaped defects, and a one-line justification per dimension. Multiple repeats →
    average the dimensions and note the min–max spread.
+
+## Layer 3 — Agent contract test (`--contracts`)
+
+Behavioral ACI test: does each agent honor its declared Input/Output contract?
+Static presence/format is already covered by `evals/lint.sh` Check 5 (and the
+pre-commit hook); this layer exercises the live agent. For each selected agent
+(all of `evals/contracts/*.md`, or the one named by `--agent`):
+
+1. **Setup**: copy `evals/fixtures/base` into a fresh temp dir; perform any setup
+   the contract's Stimulus section names (e.g. reviewer/coder need a committed diff).
+   A contract tagged `network-dependent` (researcher) is **skipped when offline** —
+   record `skipped (network)`.
+2. **Dispatch** the agent (via the Agent tool, its own `agentType`) with the
+   Stimulus as its prompt, pointed at the fixture copy. Collect only its returned
+   report — no raw transcript.
+3. **Judge**: spawn a FRESH `reviewer` as judge, fed only the agent's output, the
+   contract's **Expected output fields** + **Role constraints**, and the agent's
+   `## Output contract` from `agents/<name>.md`. It returns, per agent:
+   - `conform` — `pass` iff every declared output field is present AND no role
+     constraint was violated (read-only agents changed no fixture files, spawn
+     limits respected).
+   - `missing` — declared fields absent from the output.
+   - `violations` — role breaches (out-of-scope edits, forbidden spawns).
+4. Determine file-edit role adherence deterministically where possible: `git
+   status` in the fixture copy after a read-only agent must be clean.
+
+Output a **contract report** (not the 5-dimension scorecard): a per-agent table of
+`conform` / missing fields / violations, written to
+`evals/results/YYYY-MM-DD-contracts.md`. Any `fail` is a regression — the agent
+drifted from its contract, or the contract is stale and needs updating alongside
+the agent.
 
 ## Scorecard
 
