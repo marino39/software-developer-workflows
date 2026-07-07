@@ -18,7 +18,7 @@ Run the three checks below in order. Each check reports; only check 1 may commit
 For `~/.claude/new-task/LEARNINGS.md` and each `~/.claude/new-task/learnings/*.md`:
 
 1. Count bullets. Over 25 → propose merges/prunes to get comfortably under the 30 cap.
-2. Flag bullets that duplicate a skill (`~/.claude/skills/verify-fix`, `convention-scan`, `ci-triage`) or a rule already in `new-task.md` — these are promoted and should be deleted per the curation rules.
+2. Flag bullets that duplicate a skill (`~/.claude/skills/verify-fix`, `verify-feature`, `convention-scan`, `ci-triage`) or a rule already in `new-task.md` — these are promoted and should be deleted per the curation rules.
 3. Flag contradicting bullet pairs (newest wins; propose deleting the older).
 4. Output the proposal as a unified diff **in the report only** — NEVER apply it. Applying learnings edits is a human/GATE 4 action.
 

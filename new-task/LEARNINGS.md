@@ -9,7 +9,6 @@ Rules — enforced at Phase 7 / GATE 4:
 - Soft cap 30 bullets: over cap, the GATE 4 diff must include merges/prunes.
 - Read at Phase 0; newest bullet wins over older ones and the command file.
 
-- 2026-07-03: For correctness reviews, run a separate adversarial skeptic pass (fresh agent, default-refute) on every high-severity finding, distinct from the finder. Auditor confidence alone rates benign divergences as breaks and misses reproducible crashes.
 - 2026-07-03: When "why didn't the suite catch this?" needs an out-of-scope heavy run to settle, don't expand scope or force certainty — record the best hypothesis plus a follow-up note and ship.
 - 2026-07-03: A checkbox task index can lie — merged work stays `[ ]`. Before picking, filter candidates through git (grep log/`origin/<default>` for the ID), and have the fix PR clear its own index entry in the same diff.
 - 2026-07-03: At a byte/format-compat boundary, reject-vs-accept is settled by the reference decode path: a field read unbounded inside a checksum-protected block is valid data — accept (with fallback), don't reject with a typed error; rejection breaks interop.
