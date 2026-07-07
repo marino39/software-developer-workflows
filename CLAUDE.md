@@ -31,11 +31,18 @@ Changes to the workflow must be evaluated, not just written. Two tiers:
    `evals/results/` baseline) to the PR. Pure doc/comment/typo changes are exempt;
    say so in the PR.
 
-3. **Adding or removing a complexity layer is gated on ablation.** Do not add a new
-   review pass, tier, or escalation — or cut an existing one — without an
-   `/workflow-eval --variant` A/B showing the layer earns (or fails to earn) its
-   cost on the suite. Evidence over intuition; single-run deltas are noise, so
-   raise `--repeat` before trusting a small result.
+3. **Adding or removing a complexity layer is gated on ablation, and earns a ledger
+   row.** Do not add a new review pass, tier, or escalation — or cut an existing one
+   — without an `/workflow-eval --variant` A/B showing the layer earns (or fails to
+   earn) its cost on the suite. Evidence over intuition; single-run deltas are
+   noise, so raise `--repeat` before trusting a small result. Any new construct must
+   also add a row to `evals/complexity-ledger.md` naming the concrete failure it
+   prevents and its source (a dated retro or an eval case — not bare intuition); the
+   lint (Check 6) enforces that every ledger row has both. The lint cannot enforce
+   *completeness* — that every construct is listed — so listing new complexity in
+   the ledger is part of the change, not an afterthought. Rows sourced to
+   `intuition — unverified` are the standing simplification backlog: give each an
+   ablation variant and cut it if the A/B says it doesn't pay.
 
 The live eval is expensive and non-deterministic, so it is **not** run per commit —
 only the lint is. The scorecard is a pre-PR / on-demand step.
