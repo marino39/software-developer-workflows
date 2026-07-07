@@ -1,6 +1,6 @@
 # software-developer-workflows
 
-Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, and the schedulable `/workflow-maintenance` command.
+Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
 
 The live copies run from `~/.claude/`; this repo versions them so improvements — hand edits here, or self-improvement edits made live by `/new-task` Phase 7 — are reviewed and tracked in git.
 
@@ -12,8 +12,12 @@ agents/              7 subagent definitions (architect, coder, debugger,
 commands/            /new-task (full lifecycle; scoped tasks take a fast path)
                      /workflow-maintenance (capture sync, learnings curation,
                      trunk health — idempotent, safe to schedule)
+                     /workflow-eval (lint + scored live run of /new-task against
+                     frozen tasks, with ablation A/B — expensive, opt-in)
 skills/              procedural skills promoted from learnings:
                      verify-fix, verify-feature, convention-scan, ci-triage
+evals/               /workflow-eval inputs & outputs: rubric, one Go fixture,
+                     frozen tasks, ablation variants, dated result scorecards
 new-task/LEARNINGS.md  general lessons memory (live file is runtime state)
 new-task/learnings/<repo>.md  per-repo lessons (live files are runtime state)
 install.sh           repo -> ~/.claude  (learnings seeded only if missing)
@@ -26,6 +30,7 @@ capture.sh           ~/.claude -> repo  (pull live self-improvements, then
 - **Improve in repo:** edit files here → `./install.sh` → use.
 - **Improve via runs:** `/new-task` GATE 4 edits live files → `./capture.sh` → `git diff` → commit what you keep.
 - **Maintain on a schedule:** run `/workflow-maintenance` periodically — local cron (`claude -p "/workflow-maintenance"`) or a remote routine. It commits faithful capture diffs, proposes (never applies) learnings prunes, and reports red trunks.
+- **Measure before adding/cutting complexity:** run `/workflow-eval` to score the workflow. `--lint-only` is a cheap deterministic consistency check over the instruction files (run any time); a full run scores `/new-task` against the `evals/` fixture tasks and writes a dated scorecard, and `--variant <name>` ablates a layer (e.g. the skeptic pass) for an A/B verdict on whether it earns its cost. The live layer is expensive and opt-in — never auto-scheduled. See `evals/README.md`.
 
 `install.sh` never overwrites the live learnings files — they are curated runtime state owned by `/new-task` runs (general lessons in `LEARNINGS.md`, per-repo lessons in `learnings/<repo-key>.md`; one dated bullet ≤300 chars, rewritten in place at GATE 4, soft cap 30 per file); `capture.sh` is how they get versioned. Consequence: bullets pruned here (e.g. after promotion into a skill) do NOT propagate to `~/.claude` — that drift is expected, and `/workflow-maintenance` check 2 flags live bullets duplicating a skill so the next GATE 4 can delete them.
 
