@@ -30,3 +30,4 @@ completeness is a review discipline (see `CLAUDE.md`).
 | Route re-check, two checkpoints (Phase 0 / 3.5 / 6.0) | a mis-routed scoped task shipping under-reviewed | Prop #4 plan 2026-07 | keep | — |
 | Event-driven CI wait + webhook gap guard (Phase 6.5) | holding the turn open / missed CI success events | loops-article revision 2026-07 | keep | — |
 | Behavioral verification via verify-feature (Phase 6.1) | green-tests-but-broken feature shipping | design-note verify-feature 2026-07 | keep | — |
+| Learnings trigger tags + evidence links (Phase 0 / 7) | misapplying an irrelevant lesson; unauditable rule-overrides | Prop #5 plan 2026-07 | keep | — |

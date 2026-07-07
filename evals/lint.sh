@@ -131,6 +131,27 @@ else
     fi
 fi
 
+# --- Check 7: learnings bullets tagged + evidence-linked --------------------
+# Every lesson bullet (date-prefixed; the header "Rules" bullets are not) must
+# carry >=1 trigger tag `[tag]` and a `src:` evidence ref, so Phase 0 retrieval
+# is tag-scoped and overrides are auditable.
+bad_bullets=""
+for f in new-task/LEARNINGS.md new-task/learnings/*.md; do
+    [ -e "$f" ] || continue
+    n="$(awk '
+        /^- [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ {
+            if ($0 !~ /\[[a-z][a-z0-9-]*\]/ || $0 !~ /src:/) c++;
+        }
+        END { print c+0 }
+    ' "$f")"
+    [ "$n" -eq 0 ] || bad_bullets="$bad_bullets ${f}($n)"
+done
+if [ -z "$bad_bullets" ]; then
+    pass "learnings bullets (every dated bullet has a tag + src:)"
+else
+    bad "learnings bullets: malformed (missing tag or src:):$bad_bullets"
+fi
+
 # ---------------------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
     printf 'workflow-lint: all checks passed\n'

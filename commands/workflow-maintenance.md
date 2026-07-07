@@ -20,7 +20,8 @@ For `~/.claude/new-task/LEARNINGS.md` and each `~/.claude/new-task/learnings/*.m
 1. Count bullets. Over 25 → propose merges/prunes to get comfortably under the 30 cap.
 2. Flag bullets that duplicate a skill (`~/.claude/skills/verify-fix`, `verify-feature`, `convention-scan`, `ci-triage`) or a rule already in `new-task.md` — these are promoted and should be deleted per the curation rules.
 3. Flag contradicting bullet pairs (newest wins; propose deleting the older).
-4. Output the proposal as a unified diff **in the report only** — NEVER apply it. Applying learnings edits is a human/GATE 4 action.
+4. Flag any dated bullet missing a trigger tag `[tag]` or a `src:` ref (v2 format) — propose the tag/src to add. This is the curable side of lint Check 7.
+5. Output the proposal as a unified diff **in the report only** — NEVER apply it. Applying learnings edits is a human/GATE 4 action.
 
 ## 3. Trunk health
 

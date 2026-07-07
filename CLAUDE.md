@@ -9,13 +9,15 @@ pulls live self-improvements back. See `README.md` for the full model.
 
 Changes to the workflow must be evaluated, not just written. Two tiers:
 
-1. **Every change to `commands/`, `agents/`, or `skills/` must pass the lint.**
-   `evals/lint.sh` is deterministic (no LLM, no network) and checks reference
-   integrity, route/tier consistency, phase completeness, gate-format, and agent
-   contracts. The pre-commit hook runs it automatically and **blocks the commit on
-   failure**; run it yourself any time with `sh evals/lint.sh` or
-   `/workflow-eval --lint-only`. Do not bypass with `--no-verify` unless the lint
-   itself is wrong (then fix the lint in the same change).
+1. **Every change to `commands/`, `agents/`, `skills/`, or `new-task/` must pass the
+   lint.** `evals/lint.sh` is deterministic (no LLM, no network) and checks reference
+   integrity, route/tier consistency, phase completeness, gate-format, agent
+   contracts, the complexity ledger, and learnings-bullet format (every dated bullet
+   carries a trigger tag + a `src:` ref). The pre-commit hook runs it automatically
+   and **blocks the commit on failure**; run it yourself any time with
+   `sh evals/lint.sh` or `/workflow-eval --lint-only`. Do not bypass with
+   `--no-verify` unless the lint itself is wrong (then fix the lint in the same
+   change).
 
    **Agents are tools with contracts.** Each `agents/*.md` declares an
    `## Input contract` and `## Output contract` (backticked fields + a `Role:`
