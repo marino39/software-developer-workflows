@@ -50,8 +50,8 @@ Phases 1–4 collapse; Phases 5–7 run as written.
 ## Phase 2 — Approach review (max 5 iterations)
 
 1. Spawn a FRESH `architect` **on fable** (Agent tool `model` param; clean context — never the instance that helped write the design) with only the design doc and the task statement. Instruction: adversarial review — soundness, missed alternatives, risks, scope. It must return numbered **blocking** issues or the literal `no blocking issues`; non-blocking observations go in a separate list and never block. The phase exits ONLY on `no blocking issues` — never on an overall impression.
-2. Blocking issues found → revise the design → re-review. **Iterations 2+ are delta reviews, not full re-reviews**: a fresh architect (opus default) gets the revised design doc + the prior iteration's numbered blocking issues as a checklist — mark each `resolved` / `unresolved`, and scan only the revised sections for new blockers. Exit ⇔ every checklist item resolved AND no new blockers. Count iterations.
-3. Same issue unresolved after 2 iterations → escalation rules below. A "different issue each iteration" signal counts only genuinely new blockers from revised sections — not re-judgments of unchanged content. 5 iterations exhausted → halt with failure digest.
+2. Blocking issues found → revise the design → re-review per **Review loop conventions**. Checklist source: the prior iteration's numbered blocking issues; reviewer: a fresh `architect` (opus default). Exit ⇔ every blocking issue resolved AND no new blocker.
+3. Same blocker unresolved after 2 iterations → escalation rules below. Phase 2 has no earlier phase to return to, so a different-blocker-each-iteration triggers no backtrack here; 5 iterations exhausted → halt with a failure digest.
 4. **GATE 1**: gate summary — Results: chosen approach, rejected alternatives, remaining risks; deviations vs the human-confirmed brainstorm direction → human approves or rejects.
 
 ## Phase 3 — Plan (human input allowed)
@@ -62,8 +62,8 @@ Phases 1–4 collapse; Phases 5–7 run as written.
 ## Phase 4 — Plan review (max 5 iterations)
 
 1. Spawn a fresh `reviewer` with the plan + approved design doc. It must output a **mapping table**: every design decision → the plan step(s) implementing it, and every plan step → its verification. The phase exits ⇔ the table is complete with no gaps. FAIL output = the unmapped rows (decision with no step, step with no verification, step tracing to no decision), not prose judgment.
-2. Issues → send digest back to a fresh `architect` for plan revision → re-review. **Iterations 2+ are delta reviews**: a fresh `reviewer` gets the revised plan + the prior iteration's unmapped rows as a checklist — verify each row is now mapped, and re-check only the revised plan steps for new gaps. Exit ⇔ the table is complete. Count iterations.
-3. Different issue each iteration → the design is wrong: return to Phase 1 output with a failure digest (no full re-brainstorm; targeted design fix, then re-enter Phase 2). This signal counts only genuinely new gaps from revised steps — not re-judgments of unchanged content.
+2. Issues → send digest back to a fresh `architect` for plan revision → re-review per **Review loop conventions**. Checklist source: the prior iteration's unmapped rows; reviewer: a fresh `reviewer`. Exit ⇔ the mapping table is complete with no gaps.
+3. Different issue each iteration → the design is wrong: return to Phase 1 output with a failure digest (no full re-brainstorm; targeted design fix, then re-enter Phase 2).
 4. **GATE 2**: gate summary — Results: plan steps; deviations vs the approved design → human approves or rejects.
 
 ## Phase 5 — Implement
@@ -90,7 +90,7 @@ Compute once: `BASE_SHA=$(git merge-base HEAD <default-branch>)`, `HEAD_SHA=$(gi
      - C2 git history — blame/history of the modified code; bugs in light of that historical context.
      - C3 compliance — CLAUDE.md files covering the modified dirs + code comments in modified files; flag violations only if explicitly stated there.
 4. **Consolidation:** spawn a FRESH `reviewer` (clean context) fed only the channel reports + the plan. It dedupes overlapping findings, scores each 0–100 confidence (0 = false positive, 25 = unverified, 50 = verified but minor, 75 = verified & impactful, 100 = certain; same issue from 2+ channels bumps confidence), drops <50, tags 50–79 = Should-fix and ≥80 = Must-fix, and returns the numbered consolidated issue list. **Skeptic pass (iteration 1 only):** each Must-fix finding then gets one fresh parallel `reviewer` with a default-refute stance — verify the finding against the actual code and try to refute it. A finding survives as Must-fix only if the skeptic fails to refute; refuted → demoted to Should-fix with the refutation noted. The verdict is COMPUTED on the surviving set, never judged: **PASS ⇔ tests green AND zero Must-fix remain AND behavioral verification passed (or exempt).**
-5. FAIL → route numbered Must-fix issues to `coder` (fix verification per the `verify-fix` skill). Iterations 2+ re-review light: a single fresh `reviewer` walks the iteration-1 consolidated issue list as a checklist — each numbered issue marked fixed / not fixed / new issue found — and scans newly changed lines for new large bugs only; no repeat fan-out, no new consolidation pass, no repeat skeptic pass, no fresh overall impression. Count iterations.
+5. FAIL → route numbered Must-fix issues to `coder` (fix verification per the `verify-fix` skill), then re-review per **Review loop conventions**. Checklist source: the iteration-1 consolidated issue list; reviewer: a single fresh `reviewer`, also scanning newly changed lines for new large bugs only. Exit ⇔ the step-4 verdict computes PASS.
 6. Same issue rejected twice → escalate per ladder (coder → `debugger`; debugger → fable debugger). Different issue each iteration → the plan is wrong: back to Phase 3 with failure digest.
 7. High-stakes route (auth, payments, migrations, data deletion) — whether classified so at Phase 0 or escalated there via a route re-check (fast-path step 3.5 or step 0 above) → always the full tier; run the consolidator, Channel C reviewers, and Must-fix skeptics escalated (opus/fable) from the first pass.
 8. **GATE 3**: gate summary — Results: final route (and any re-classification since Phase 0, with the trigger that caused it), files changed, test status, behavioral verification result (per-item pass/fail or exempt reason), fan-out tier, channels run/skipped with per-channel finding counts, consolidated Must-fix/Should-fix counts (skeptic demotions noted); deviations vs the approved plan (a route escalation is a deviation); decisions include escalations used → human approves or rejects.
@@ -120,6 +120,14 @@ Runs only when Phase 6 step 9 ended with a PR. Local merge, keep, or discard →
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`), agent definitions in `~/.claude/agents/`, or skills in `~/.claude/skills/`.
 3. **GATE 4**: gate summary (Results: the proposed self-update shown as a diff; deviations vs the retro/self-update rules above) → apply ONLY what the human approves. No approval → write nothing outside the project retro.
 4. After any approved self-update (including learnings edits), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
+
+## Review loop conventions
+
+Phases 2, 4, and 6 are bounded review loops (max 5 iterations; exhaustion halts with a failure digest at the gate — never a silent pass, per the Human contract). They share this re-review machinery; each phase supplies its own checklist source, reviewer, exit condition, and escalate/backtrack consequences.
+
+- **Iteration 1** runs the phase's full review as written in that phase.
+- **Iterations 2+ are delta re-reviews, never full re-reviews:** a fresh reviewer gets the revised artifact + the prior iteration's findings as a **checklist** (mark each `resolved` / `unresolved`; Phase 6: `fixed` / `not fixed` / `new`) and scans ONLY the revised sections for new issues — no repeat of iteration 1's heavy machinery (fan-out, consolidation, skeptic pass, or from-scratch mapping) and no fresh overall impression. Count every iteration.
+- **"Different issue each iteration"** always means genuinely new issues surfaced from the *revised* sections — never re-judgments of unchanged content. Each phase below states what that signal triggers.
 
 ## Escalation ladder
 

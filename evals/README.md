@@ -11,10 +11,13 @@ command; this directory holds its inputs and outputs.
 ```
 rubric.md        shared scoring rubric (5 dimensions) — the contract for scoring
 lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
+complexity-ledger.md  the complexity budget: each accreted construct → the failure it
+                 prevents → source → status; `intuition — unverified` rows are the backlog
 fixtures/base/   one minimal Go module all tasks run against (seeded bug + auth
                  helper + doc file); builds green except the seeded calc bug
 tasks/           frozen task specs: statement + expected behaviour + score overrides
-variants/        ablation deltas (e.g. skeptic-off) prepended to a run for A/B
+variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
+                 brainstorm-single) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -24,8 +27,9 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 1. **Workflow lint** (deterministic, cheap, always runs): `evals/lint.sh` — a
    no-LLM, no-network script checking `commands/`, `agents/`, `skills/` for
    reference integrity, route/tier consistency, phase completeness, gate-format
-   consistency, and **agent contracts** (every agent declares a well-formed
-   Input/Output contract). Catches drift like a branch that lets an escalated
+   consistency, **agent contracts** (every agent declares a well-formed
+   Input/Output contract), and the **complexity ledger** (every row names a failure
+   it prevents + a source). Catches drift like a branch that lets an escalated
    `scoped` task auto-approve. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with

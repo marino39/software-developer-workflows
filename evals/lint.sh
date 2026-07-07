@@ -107,6 +107,30 @@ else
     pass "agent contracts (all agents declare Input + Output contract, fields, Role)"
 fi
 
+# --- Check 6: complexity ledger well-formed --------------------------------
+# The complexity budget: every accreted construct must name the failure it
+# prevents and its source. Enforce that each ledger table row has a non-empty
+# Prevents (col 2) and Source (col 3). Completeness is a review discipline, not
+# lintable.
+LEDGER="evals/complexity-ledger.md"
+if [ ! -f "$LEDGER" ]; then
+    bad "complexity ledger: $LEDGER missing"
+else
+    bad_rows="$(awk -F'|' '
+        /^\|/ && !/Construct/ && !/---/ {
+            p=$3; s=$4;
+            gsub(/^[ \t]+|[ \t]+$/, "", p); gsub(/^[ \t]+|[ \t]+$/, "", s);
+            if (p !~ /[A-Za-z0-9]/ || s !~ /[A-Za-z0-9]/) c++;
+        }
+        END { print c+0 }
+    ' "$LEDGER")"
+    if [ "$bad_rows" -eq 0 ]; then
+        pass "complexity ledger (every row has Prevents + Source)"
+    else
+        bad "complexity ledger: $bad_rows row(s) missing Prevents or Source in $LEDGER"
+    fi
+fi
+
 # ---------------------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
     printf 'workflow-lint: all checks passed\n'
