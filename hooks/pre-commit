@@ -5,7 +5,7 @@
 set -eu
 
 changed="$(git diff --cached --name-only --diff-filter=ACM \
-           | grep -E '^(commands|agents|skills)/' || true)"
+           | grep -E '^(commands|agents|skills|new-task)/' || true)"
 [ -z "$changed" ] && exit 0
 
 root="$(git rev-parse --show-toplevel)"

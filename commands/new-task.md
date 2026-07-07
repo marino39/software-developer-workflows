@@ -20,7 +20,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 
 ## Phase 0 — Setup
 
-1. Read `~/.claude/new-task/LEARNINGS.md` (general) and `~/.claude/new-task/learnings/<repo-key>.md` (repo key = origin remote repo name minus `.git`; no remote → main working-tree dir basename; file missing → skip). Apply relevant lessons to this run. If a lesson conflicts with these instructions, the lesson wins (it is newer).
+1. Read `~/.claude/new-task/LEARNINGS.md` (general) and `~/.claude/new-task/learnings/<repo-key>.md` (repo key = origin remote repo name minus `.git`; no remote → main working-tree dir basename; file missing → skip). **Apply only the bullets whose trigger tags match this task's signals** — language, area, task-type, and repo-key (a bullet with no matching tag is out of scope for this run). If an applicable lesson conflicts with these instructions, the lesson wins (it is newer) — and you MUST record that override as a Deviation citing the lesson's `src:`, so it is auditable.
 2. Invoke the `superpowers:using-git-worktrees` skill — all implementation happens in an isolated worktree.
 3. If the task needs context you lack, fan out in parallel: `searcher` (codebase layout, existing patterns) and `researcher` (external docs, prior art).
 4. **Route the task** — set the **route** (state it, with rationale, at the first human touchpoint):
@@ -114,7 +114,7 @@ Runs only when Phase 6 step 9 ended with a PR. Local merge, keep, or discard →
 
 1. Write a retrospective to the project at `docs/superpowers/retros/YYYY-MM-DD-<task>.md`: what worked, what failed, iteration counts per phase, escalations used and whether they helped, gate rejections and why.
 2. Distill durable lessons (things that would change how the NEXT run behaves) and propose a self-update:
-   - Route each lesson: general workflow → `~/.claude/new-task/LEARNINGS.md`; project-specific → `~/.claude/new-task/learnings/<repo-key>.md` (create if missing). Format: dated bullet, ≤300 chars, "when X, do Y (why)" — no war stories.
+   - Route each lesson: general workflow → `~/.claude/new-task/LEARNINGS.md`; project-specific → `~/.claude/new-task/learnings/<repo-key>.md` (create if missing). Format (v2, per each file's header): `- YYYY-MM-DD [tag][tag] when X, do Y (why) — src: <this run's retro slug>` — lesson text ≤300 chars, ≥1 trigger tag from the documented vocabulary (reuse before inventing), and a `src:` linking the retro written in step 1. No war stories.
    - Curate, don't just append: a lesson refining an existing bullet REWRITES it in place (newest date kept); propose deleting bullets promoted into this command file, agent definitions, or skills; a file over 30 bullets → this diff must include merges/prunes.
    - Multi-step *procedures* belong in a skill (`~/.claude/skills/<name>/SKILL.md` — new or existing), not in a bullet; bullets are for one-line heuristics.
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`), agent definitions in `~/.claude/agents/`, or skills in `~/.claude/skills/`.
