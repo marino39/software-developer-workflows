@@ -9,7 +9,12 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 ## Human contract
 
 - Human **input** (clarifying questions, design discussion) is allowed ONLY in Phase 1 (Brainstorm) and Phase 3 (Plan).
-- Every other human touchpoint is a **gate**: a summary of ≤10 lines — what was done, the approach, deviations from the previous approved artifact, and what happens next — followed by a single approve/reject. Keep human effort minimal.
+- Every other human touchpoint is a **gate**: a summary in the fixed format below (≤25 lines total), followed by a single approve/reject. Keep human effort minimal.
+- **Gate summary format** — four sections, in order:
+  - **Results** — what was produced since the last gate, plus the gate-specific fields listed at each gate.
+  - **Key decisions** — decisions made autonomously since the last gate (approach picks, library choices, scope trims, escalations), each with a one-line rationale.
+  - **Deviations (up to 5)** — departures from the previously approved artifact AND from these workflow instructions (e.g. skipped review channel, extra iterations, a learning overriding a rule), each: what changed → why → impact. More than 5 → show the 5 highest-impact and state the total count. None → write `Deviations: none`.
+  - **Next** — what happens on approval.
 - A review loop that exhausts its iteration cap NEVER silently passes — it halts and presents a failure digest at the gate.
 
 ## Phase 0 — Setup
@@ -30,7 +35,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 1. Spawn a FRESH `architect` (clean context — never the instance that helped write the design) with only the design doc and the task statement. Instruction: adversarial review — soundness, missed alternatives, risks, scope.
 2. Issues found → revise the design → spawn another fresh architect. Count iterations.
 3. Same issue unresolved after 2 iterations → escalation rules below. 5 iterations exhausted → halt with failure digest.
-4. **GATE 1**: summary (chosen approach, rejected alternatives, remaining risks) → human approves or rejects.
+4. **GATE 1**: gate summary — Results: chosen approach, rejected alternatives, remaining risks; deviations vs the human-confirmed brainstorm direction → human approves or rejects.
 
 ## Phase 3 — Plan (human input allowed)
 
@@ -42,7 +47,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 1. Spawn a fresh `reviewer` with the plan + approved design doc. Check: does every design decision map to plan steps, are steps independently verifiable, are interfaces precise, anything unplanned?
 2. Issues → send digest back to a fresh `architect` for plan revision → re-review. Count iterations.
 3. Different issue each iteration → the design is wrong: return to Phase 1 output with a failure digest (no full re-brainstorm; targeted design fix, then re-enter Phase 2).
-4. **GATE 2**: summary (plan steps, deviations from approved design) → human approves or rejects.
+4. **GATE 2**: gate summary — Results: plan steps; deviations vs the approved design → human approves or rejects.
 
 ## Phase 5 — Implement
 
@@ -66,7 +71,7 @@ Compute once: `BASE_SHA=$(git merge-base HEAD <default-branch>)`, `HEAD_SHA=$(gi
 3. FAIL → route numbered Must-fix issues to `coder`. Iterations 2+ re-review light: a single fresh `reviewer` verifies the fixes against the iteration-1 consolidated issue list and scans newly changed lines for new large bugs only — no repeat fan-out, no new consolidation pass. Count iterations.
 4. Same issue rejected twice → escalate per ladder (coder → `debugger`; debugger → fable debugger). Different issue each iteration → the plan is wrong: back to Phase 3 with failure digest.
 5. High-stakes diff (auth, payments, migrations, data deletion) → run the consolidator and Channel C reviewers escalated (opus/fable) from the first pass.
-6. **GATE 3**: summary (files changed, test status, channels run/skipped with per-channel finding counts, consolidated Must-fix/Should-fix counts, deviations from plan, escalations used) → human approves or rejects.
+6. **GATE 3**: gate summary — Results: files changed, test status, channels run/skipped with per-channel finding counts, consolidated Must-fix/Should-fix counts; deviations vs the approved plan; decisions include escalations used → human approves or rejects.
 7. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree. If the outcome is a PR, run Phase 6.5 before Phase 7.
 
 ## Phase 6.5 — CI verification (PR path only, max 5 iterations)
@@ -87,7 +92,7 @@ Runs only when Phase 6 step 7 ended with a PR. Local merge, keep, or discard →
    - Route each lesson: general workflow → `~/.claude/new-task/LEARNINGS.md`; project-specific → `~/.claude/new-task/learnings/<repo-key>.md` (create if missing). Format: dated bullet, ≤300 chars, "when X, do Y (why)" — no war stories.
    - Curate, don't just append: a lesson refining an existing bullet REWRITES it in place (newest date kept); propose deleting bullets promoted into this command file or agent definitions; a file over 30 bullets → this diff must include merges/prunes.
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`) or agent definitions in `~/.claude/agents/`.
-3. **GATE 4**: show the proposed self-update as a diff → apply ONLY what the human approves. No approval → write nothing outside the project retro.
+3. **GATE 4**: gate summary (Results: the proposed self-update shown as a diff; deviations vs the retro/self-update rules above) → apply ONLY what the human approves. No approval → write nothing outside the project retro.
 4. After any approved self-update (including learnings edits), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
 
 ## Escalation ladder
