@@ -36,4 +36,17 @@ for f in "$REPO_DIR"/new-task/learnings/*.md; do
     seed "$f" "$CLAUDE_DIR/new-task/learnings/$(basename "$f")"
 done
 
+# Install the repo's own pre-commit hook so a commit touching workflow files
+# runs the deterministic lint (evals/lint.sh). Only when run inside the repo's
+# git checkout; harmless to skip otherwise.
+if hooks_dir="$(git -C "$REPO_DIR" rev-parse --git-path hooks 2>/dev/null)"; then
+    case "$hooks_dir" in /*) : ;; *) hooks_dir="$REPO_DIR/$hooks_dir" ;; esac
+    mkdir -p "$hooks_dir"
+    cp "$REPO_DIR/hooks/pre-commit" "$hooks_dir/pre-commit"
+    chmod +x "$hooks_dir/pre-commit"
+    echo "installed: pre-commit hook -> $hooks_dir/pre-commit"
+else
+    echo "skipped: pre-commit hook (not a git checkout)"
+fi
+
 echo "installed: $(ls "$REPO_DIR"/agents/*.md "$REPO_DIR"/commands/*.md "$REPO_DIR"/skills/*/*.md | wc -l | tr -d ' ') files -> $CLAUDE_DIR"

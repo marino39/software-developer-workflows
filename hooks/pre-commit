@@ -1,0 +1,21 @@
+#!/bin/sh
+# Workflow repo pre-commit hook: run the deterministic lint whenever a commit
+# touches the workflow instruction files. Blocks the commit on lint failure.
+# Installed into the repo's git hooks dir by install.sh.
+set -eu
+
+changed="$(git diff --cached --name-only --diff-filter=ACM \
+           | grep -E '^(commands|agents|skills)/' || true)"
+[ -z "$changed" ] && exit 0
+
+root="$(git rev-parse --show-toplevel)"
+if [ ! -x "$root/evals/lint.sh" ]; then
+    echo "pre-commit: evals/lint.sh missing or not executable — skipping lint" >&2
+    exit 0
+fi
+
+echo "pre-commit: workflow files changed, running lint…"
+if ! sh "$root/evals/lint.sh"; then
+    echo "pre-commit: workflow-lint failed — commit blocked. Fix the issues above or commit with --no-verify to override." >&2
+    exit 1
+fi

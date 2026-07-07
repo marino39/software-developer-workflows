@@ -19,10 +19,14 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 
 ## Two layers
 
-1. **Workflow lint** (deterministic, cheap, always runs): internal-consistency
-   checks over `commands/`, `agents/`, `skills/` — reference integrity, route/tier
-   consistency, phase completeness, gate-format consistency. Catches drift like a
-   branch that lets an escalated `scoped` task auto-approve.
+1. **Workflow lint** (deterministic, cheap, always runs): `evals/lint.sh` — a
+   no-LLM, no-network script checking `commands/`, `agents/`, `skills/` for
+   reference integrity, route/tier consistency, phase completeness, and
+   gate-format consistency. Catches drift like a branch that lets an escalated
+   `scoped` task auto-approve. It is enforced by the repo's **pre-commit hook**
+   (installed by `install.sh`), so every commit touching workflow files must pass
+   it; `/workflow-eval --lint-only` runs the same script. Run it directly with
+   `sh evals/lint.sh`.
 2. **Live outcome-eval** (scored, on demand): each task's `fixtures/base` copy is
    run through `/new-task` under an eval-harness instruction that auto-approves and
    logs every gate (so it runs headless — `/new-task` itself is never modified). A

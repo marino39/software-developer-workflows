@@ -21,29 +21,26 @@ Read `evals/` from there and write scorecards back there. Repo not found → rep
 `eval: repo not found` and stop. Everything runs against subagents; never ingest a
 raw run transcript — collect only the structured artifacts named below.
 
-## Layer 1 — Workflow lint (always, unless a live-only future flag says otherwise)
+## Layer 1 — Workflow lint (always)
 
-Deterministic checks over `commands/`, `agents/`, `skills/` in the located repo.
-Delegate the mechanical scanning to a `searcher`; you adjudicate pass/fail. Report
-each check `pass` or `fail` with offending `file:line` refs — no prose padding.
+Run the deterministic lint script and report its result — do NOT re-implement the
+checks with an LLM:
 
-1. **Reference integrity** — every skill invoked (`superpowers:*` excluded; those
-   are external) and every agent named in a command/agent file exists under
-   `skills/<name>/SKILL.md` or `agents/<name>.md`. A dangling reference → fail.
-2. **Route/tier consistency** (`commands/new-task.md`) — the `scoped` /
-   `standard` / `high-stakes` route, the `DIFF_LINES` triggers, `auto-approve`,
-   and the `reduced` / `full tier` pick must be mutually consistent: no path lets a
-   route escalated after Phase 0 auto-approve GATE 3 or take the reduced tier, and
-   the route is stated as monotonic (upgrade-only). Any contradiction → fail.
-3. **Phase completeness** — every review phase (2, 4, 6, 6.5) names an exit
-   criterion AND an iteration cap; the escalation-ladder table has a default +
-   escalate-to rule for every agent that appears in a phase. Missing → fail.
-4. **Gate-format consistency** — the four-section gate summary contract (Results /
-   Key decisions / Deviations / Next) is the format referenced at every gate that
-   emits a summary. Divergence → fail.
+```
+sh <repo>/evals/lint.sh
+```
 
-Lint failures are deterministic regressions — surface them plainly. `--lint-only`
-→ emit the lint block of the summary and stop here.
+`evals/lint.sh` is no-LLM, no-network, and exits non-zero on any failure. It
+checks the instruction files (`commands/`, `agents/`, `skills/`) for: reference
+integrity (every non-`superpowers:*` skill/agent referenced exists); route/tier
+consistency (`commands/new-task.md` — no path lets a route escalated after Phase 0
+auto-approve GATE 3 or take the reduced tier; route declared monotonic); phase
+completeness (iteration caps + escalation ladder present); and gate-format
+consistency (the four-section summary contract). This is the same script the
+pre-commit hook runs, so the command and the hook can never disagree.
+
+Surface the script's pass/fail lines verbatim. Non-zero exit is a deterministic
+regression. `--lint-only` → emit the lint block of the summary and stop here.
 
 ## Layer 2 — Live outcome-eval (skipped under `--lint-only`)
 
