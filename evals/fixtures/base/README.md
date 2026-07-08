@@ -9,5 +9,6 @@ A tiny Go module used by the workflow eval harness. It is deliberately minimal.
 
 ## Status
 
-All packages build. The test suite is green except for one intentionally seeded
-bug in `calc` (see `calc/calc.go`), which the bug-fix eval task exercises.
+All packages build and the test suite is green. Scenarios that need a failing
+baseline (the bug-fix task, the test-runner contract test) introduce it via their
+own `## Seed` step applied to the fixture copy — the base itself stays green.

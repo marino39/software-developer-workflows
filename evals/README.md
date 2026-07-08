@@ -13,9 +13,11 @@ rubric.md        shared scoring rubric (5 dimensions) — the contract for scori
 lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
 complexity-ledger.md  the complexity budget: each accreted construct → the failure it
                  prevents → source → status; `intuition — unverified` rows are the backlog
-fixtures/base/   one minimal Go module all tasks run against (seeded bug + auth
-                 helper + doc file); builds green except the seeded calc bug
-tasks/           frozen task specs: statement + expected behaviour + score overrides
+fixtures/base/   one minimal Go module all tasks run against (calc + auth helper +
+                 doc file); builds and tests fully green
+tasks/           frozen task specs: statement + expected behaviour + score overrides;
+                 a task/contract needing a failing baseline carries a `## Seed` step
+                 (command/patch) applied to its fixture copy after copy, before dispatch
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
                  brainstorm-single) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role

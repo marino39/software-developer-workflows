@@ -7,14 +7,15 @@
 
 ## Fixture
 
-`fixtures/base` — unmodified.
+`fixtures/base` — unmodified (green; no `## Seed`).
 
 ## Expected behaviour
 
 - Route: **scoped**, stays scoped (no high-stakes path, tiny diff).
 - Takes the fast path; behavioral verification is **exempt** (doc-only).
-- **GATE 3 auto-approves** (all criteria hold, route not escalated).
-- No `.go` files touched; `go build ./...` still passes.
+- **GATE 3 auto-approves** — all criteria hold: the base suite is green, so
+  "tests green" is genuinely satisfied by the test-inert doc diff; route not escalated.
+- No `.go` files touched; `go build ./...` and `go test ./...` stay green.
 
 ## expect (scoring overrides)
 

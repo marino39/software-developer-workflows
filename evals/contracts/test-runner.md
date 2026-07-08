@@ -1,10 +1,18 @@
 # Contract test — test-runner
 
+## Seed
+
+Applied to the fixture copy after copy, before dispatch (same seed as task 02):
+
+```sh
+sed -i 's/for i := 0; i < len(xs)/for i := 1; i < len(xs)/' calc/calc.go
+```
+
 ## Stimulus
 
 > Run `go test ./...` in the `evalfixture` module (fixture copy) and report.
 
-The base fixture carries the seeded `calc` bug, so this run fails — exercising the
+The Seed introduces the `calc` off-by-one, so this run fails — exercising the
 failure-digest branch of the contract.
 
 ## Expected output fields (per `agents/test-runner.md` Output contract)
@@ -15,4 +23,6 @@ failure-digest branch of the contract.
 
 ## Role constraints
 
-- No code modified; the command is run as given, not altered or retried.
+- No source modified — even if a request would require it (e.g. a revert-discriminate
+  swap); the agent refuses and flags rather than editing. The command is run as given,
+  not altered or retried. `git status` in the fixture copy stays clean after the run.

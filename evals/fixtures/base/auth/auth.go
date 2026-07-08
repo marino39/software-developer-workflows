@@ -6,7 +6,7 @@ import "strings"
 // well-formed bearer token.
 //
 // NOTE: this only checks the scheme prefix; it does not reject an empty token
-// after "Bearer ". Hardening this is a high-stakes change (auth path).
+// after "Bearer " (e.g. "Bearer " alone currently returns true).
 func ValidateToken(header string) bool {
 	return strings.HasPrefix(header, "Bearer ")
 }
