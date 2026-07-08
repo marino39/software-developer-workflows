@@ -23,4 +23,6 @@ failure-digest branch of the contract.
 
 ## Role constraints
 
-- No code modified; the command is run as given, not altered or retried.
+- No source modified — even if a request would require it (e.g. a revert-discriminate
+  swap); the agent refuses and flags rather than editing. The command is run as given,
+  not altered or retried. `git status` in the fixture copy stays clean after the run.

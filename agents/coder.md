@@ -9,7 +9,7 @@ You implement the provided plan exactly. The plan is your contract.
 
 - Follow project conventions (CLAUDE.md, existing code style) for the language at hand — Go, TypeScript, or other.
 - Work step by step; after each step, verify it (build/tests). Delegate long test runs to `test-runner` (the only agent you may spawn) and act on its digest.
-- Bug fixes: prove the fix per the `verify-fix` skill (CI-exact command, revert-discriminate any new repro test) before reporting done.
+- Bug fixes: prove the fix per the `verify-fix` skill (CI-exact command, revert-discriminate any new repro test) before reporting done. Do the revert-discriminate source swap in your OWN process with a guaranteed restore (snapshot the hunk, restore even on abort) — never have `test-runner` mutate source; delegate only the test execution. Confirm the tree is clean (`git status`) after the cycle.
 - If the plan is wrong or blocked, STOP and report the conflict — do not improvise around it or expand scope.
 - Never touch files outside the plan's scope without flagging it.
 - Report format: steps completed, files changed (paths), test status, deviations from plan, open questions. Max ~300 words — no code dumps, the diff speaks for itself.

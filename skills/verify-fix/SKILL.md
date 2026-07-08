@@ -19,6 +19,10 @@ A new test only counts as a repro if it discriminates:
 2. Re-run — the test MUST fail. If it passes, it doesn't guard the bug; fix the test.
 3. Restore the production hunk; the test passes again.
 
+**Do the source swap safely, in your own process.** Never delegate the revert/restore to a `test-runner` (or any command-running helper): it only executes build/test/CI commands and must not mutate source, so a swap driven through it can stall mid-cycle and strand the tree in the reverted state. Snapshot the hunk before reverting (`git stash push -- <file>` or copy) and guarantee the restore even on abort. Delegate only the *execution* (`go test …`) to `test-runner`; keep the edit yourself.
+
+**Then re-adjudicate the FINAL settled tree — don't trust prose.** After the cycle, confirm `git status` is clean (only the intended fix + test remain), the build passes, and the suite is green. A report claiming "restored" is not evidence; the tree is.
+
 For lost-wakeup/interleaving tests, additionally confirm the interleaving hook fires in the condition-read→wait gap and stays textually stable across old and new code.
 
 ## 3. Wrong test or wrong fix?
