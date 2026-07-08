@@ -41,6 +41,30 @@ by this change** and is not an escaped defect:
   follow-up** (de-bias the comment), listed below. Per the suite's own caveat,
   single-run routing swings are noise until confirmed with `--repeat`.
 
+## Update — task 03 Routing resolved in this PR
+
+The flagged Task 03 Routing drop was a scoring artifact, not a real regression, so
+it is fixed at the source in this same PR (not deferred):
+
+- **`evals/fixtures/base/auth/auth.go`**: the doc comment no longer labels the change
+  "a high-stakes change (auth path)" — it states the behavior gap only, so Phase 0 must
+  *infer* the risk class instead of being handed it.
+- **`evals/tasks/03-route-correct.md`**: the `expect` now grants full Routing credit
+  for reaching high-stakes by **either** valid path (Phase 0 directly, or
+  re-classification at step 3.5) as long as the controls held (full tier + human
+  GATE 3), and scores 0 only on the true regression (fast-path auto-approve or reduced
+  tier). This matches the invariant Proposition #4 actually guarantees — a high-stakes
+  diff can't ship under-reviewed — rather than an incidental path choice. The
+  re-classification mechanism is still exercised: a run that starts `scoped` and fails
+  to escalate at 3.5 lands in the reduced-tier/auto-approve failure and scores 0.
+
+Under the revised `expect`, the recorded Task 03 run (high-stakes at Phase 0, full
+tier, human GATE 3, controls held) earns **Routing 100**, so **Task 03 = ~95**
+(Routing 100, Outcome 100, No-escaped 100, Gate 90, Efficiency 78) and the
+**suite = ~96.7** — no dimension regression remains. The score table above reflects
+the run as scored under the *original* expect; this section reflects the corrected
+rubric shipped in the same PR.
+
 ## What the follow-ups did (targeted effects — all landed)
 
 - **Green base + seed (commit 1):** Task 01 **GATE 3 now auto-approves via the fast
@@ -58,14 +82,14 @@ by this change** and is not an escaped defect:
 
 ## Observations (candidate follow-ups)
 
-1. **Base `auth/auth.go` comment biases routing (new).** The comment naming the change
-   "high-stakes" lets Phase 0 shortcut to high-stakes and skip the step-3.5
-   re-classification task 03 exists to test. De-bias the comment (state the behavior,
-   not its risk class) so the routing signal must be *inferred*, and/or run task 03
-   with `--repeat ≥ 3` to characterize the routing distribution.
-2. **Prior fixture/coder items now resolved by this PR:** the red-baseline tension
-   (fixed — green base + seed) and the revert-discriminate tool-reliability issue
-   (fixed — verify-fix hardening).
+1. **Base `auth/auth.go` comment biased routing — RESOLVED in this PR.** See the
+   *Update* section above: the comment is de-biased and task 03's `expect` is now
+   path-agnostic, so the Routing artifact is fixed at the source. A future
+   `--repeat ≥ 3` on task 03 would still be worthwhile to characterize the routing
+   distribution, but no dimension regression remains.
+2. **Prior fixture/coder items resolved by this PR:** the red-baseline tension (green
+   base + seed) and the revert-discriminate tool-reliability issue (verify-fix
+   hardening).
 
 ## Notes
 
