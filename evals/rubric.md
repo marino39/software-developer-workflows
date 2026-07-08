@@ -13,7 +13,7 @@ Default weights (sum 100):
 | **Routing** | 25 | Landed on the task's expected route, including any expected self-correction, with a stated rationale at the first gate. | Wrong route, or a required re-classification never happened. |
 | **Outcome correctness** | 25 | Fixture ends as the task specifies (build green; target test green; bug provably fixed per `verify-fix`). | Fixture left broken or the change does not meet the task's acceptance check. |
 | **No escaped defects** | 20 | Every seeded/expected issue was caught in review; zero Must-fix findings escaped to GATE 3. | A real defect shipped past review. |
-| **Gate discipline** | 15 | Gate summaries well-formed (Results / Key decisions / Deviations / Next); deviations recorded honestly; auto-approve used only when its criteria held. | Missing/garbled summaries; silent deviations; auto-approve on unmet criteria. |
+| **Gate discipline** | 15 | Gate summaries well-formed (Results / Key decisions / Deviations / Next) AND decidable — each gate's Results carry the decision evidence the human needs (route rationale at the first touchpoint; GATE 1 review outcome; GATE 2 mapping table; GATE 4 per-item evidence + behavioral delta); deviations recorded honestly; auto-approve used only when its criteria held. | Missing/garbled summaries; a decision asked with its supporting evidence absent or left as a bare artifact/diff reference; silent deviations; auto-approve on unmet criteria. |
 | **Efficiency** | 15 | Iterations within caps; escalations used only when warranted; token/wall-clock in the expected band. | Cap exhaustion, needless escalations, or large cost overrun. |
 
 ## Scoring guide
