@@ -77,15 +77,24 @@ else
 fi
 
 # --- Check 4: gate-format consistency --------------------------------------
-# The four-section gate summary contract must be defined.
+# The four-section gate summary contract must be defined, and gates that ask a
+# decision must be decidable — carry their decision evidence, not just an
+# artifact/diff reference.
 c4=0
 for section in 'Results' 'Key decisions' 'Deviations' 'Next'; do
     grep -qE "\*\*$section" "$NT" || c4=1
 done
+# GATE 4 (self-update) must present a per-item decision table with per-row
+# evidence + the behavioral delta, not a bare diff.
+grep -qiE 'per-item decision table' "$NT" || c4=1
+grep -qiE 'behavioral delta'        "$NT" || c4=1
+# The fast-path scope gate — the first touchpoint on that path — must carry the
+# route rationale so a misroute is catchable.
+grep -E 'Scope gate' "$NT" | grep -qiE 'route rationale' || c4=1
 if [ "$c4" -eq 0 ]; then
-    pass "gate-format consistency (Results / Key decisions / Deviations / Next all defined)"
+    pass "gate-format consistency (four sections + GATE 4 per-item evidence + scope-gate route rationale)"
 else
-    bad "gate-format consistency: a gate summary section is missing in $NT"
+    bad "gate-format consistency: a gate summary section, GATE 4 decision-table structure, or scope-gate route rationale is missing in $NT"
 fi
 
 # --- Check 5: agent contracts (ACI) ----------------------------------------

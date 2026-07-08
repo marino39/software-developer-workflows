@@ -9,12 +9,13 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 ## Human contract
 
 - Human **input** (clarifying questions, design discussion) is allowed ONLY in Phase 1 (Brainstorm), Phase 3 (Plan), and the fast path's scope gate.
-- Every other human touchpoint is a **gate**: a summary in the fixed format below (≤25 lines total), followed by a single approve/reject. Keep human effort minimal.
+- Every other human touchpoint is a **gate**: a summary in the fixed format below (four narrative sections ≤25 lines total), followed by a single approve/reject. Keep human effort minimal — but a gate must be **decidable**: its **Results** MUST carry that gate's decision evidence (the gate-specific fields listed at each gate), never just an artifact reference. A gate that names a decision without the evidence to make it is malformed.
 - **Gate summary format** — four sections, in order:
-  - **Results** — what was produced since the last gate, plus the gate-specific fields listed at each gate.
+  - **Results** — what was produced since the last gate, plus the gate-specific decision-evidence fields listed at each gate. These fields are not optional detail — they are what makes the gate decidable, so surface them inline (don't point at a file the human must open).
   - **Key decisions** — decisions made autonomously since the last gate (approach picks, library choices, scope trims, escalations), each with a one-line rationale. At the FIRST human touchpoint this MUST include the **route** (`scoped` / `standard` / `high-stakes`, per Phase 0), the signals weighed, and why — explicitly why the task is *not* high-stakes when it was not routed there.
   - **Deviations (up to 5)** — departures from the previously approved artifact AND from these workflow instructions (e.g. skipped review channel, extra iterations, a learning overriding a rule, a **route escalation** per Phase 0), each: what changed → why → impact. More than 5 → show the 5 highest-impact and state the total count. None → write `Deviations: none`.
-  - **Next** — what happens on approval.
+  - **Next** — the decision framing: what approval will change (the concrete next action + what becomes hard to undo) and the consequence of rejection (where the loop returns).
+- The ≤25-line cap covers the four narrative sections only. A gate whose decision is inherently per-item (GATE 4) presents an additional **per-item decision table** outside the cap, one line per row — the cap must never be met by dropping decision evidence.
 - A review loop that exhausts its iteration cap NEVER silently passes — it halts and presents a failure digest at the gate.
 - **Fast path exception (scoped tasks only, see Phase 0):** GATE 3 may auto-approve when its deterministic criteria hold AND the route was not escalated after Phase 0. An auto-approved gate still emits the full gate summary, marked `auto-approved` — a skipped gate is never silent. A route escalated after Phase 0 voids auto-approval → normal human GATE 3.
 
@@ -34,7 +35,7 @@ You are the orchestrator (run this on Opus or Fable). Drive the task above throu
 
 Phases 1–4 collapse; Phases 5–7 run as written.
 
-1. **Scope gate**: one AskUserQuestion confirming scope and the `scoped` classification. Human overrides the classification → run the full lifecycle instead.
+1. **Scope gate**: one AskUserQuestion confirming scope and the `scoped` classification. This is the fast path's FIRST (and often only) human touchpoint, so it MUST carry the route rationale per the Human contract — the signals weighed and explicitly why the task is *not* high-stakes (which high-stakes categories the diff avoids: auth, payments, migrations, data deletion). Present that reasoning in the question, not a bare "confirm scoped?"; it is the primary misroute-catch point. Human overrides the classification → run the full lifecycle instead.
 2. Investigate: `searcher` for existing patterns; for observability/logging/error-handling adds, follow the `convention-scan` skill; `researcher` only if external context is needed.
 3. Plan-lite: ONE `architect` writes the plan directly (no design doc, no brainstorm fan-out, no separate plan-review phase — the adversarial check happens in Phase 6).
 3.5. **Early route re-check:** before implementing, check the plan-lite's target files/interfaces against the high-stakes categories (Phase 0). Any hit → escalate the route to `high-stakes` now (record a Deviation) and continue on the upgraded posture — full-tier review in Phase 6, high-stakes escalations, human GATE 3 — so the escalation lands before review spend, not after.
@@ -52,7 +53,7 @@ Phases 1–4 collapse; Phases 5–7 run as written.
 1. Spawn a FRESH `architect` **on fable** (Agent tool `model` param; clean context — never the instance that helped write the design) with only the design doc and the task statement. Instruction: adversarial review — soundness, missed alternatives, risks, scope. It must return numbered **blocking** issues or the literal `no blocking issues`; non-blocking observations go in a separate list and never block. The phase exits ONLY on `no blocking issues` — never on an overall impression.
 2. Blocking issues found → revise the design → re-review per **Review loop conventions**. Checklist source: the prior iteration's numbered blocking issues; reviewer: a fresh `architect` (opus default). Exit ⇔ every blocking issue resolved AND no new blocker.
 3. Same blocker unresolved after 2 iterations → escalation rules below. Phase 2 has no earlier phase to return to, so a different-blocker-each-iteration triggers no backtrack here; 5 iterations exhausted → halt with a failure digest.
-4. **GATE 1**: gate summary — Results: chosen approach, rejected alternatives, remaining risks; deviations vs the human-confirmed brainstorm direction → human approves or rejects.
+4. **GATE 1**: gate summary — Results (decision evidence): chosen approach, rejected alternatives with why they lost, remaining risks, and **what the Phase 2 adversarial review caught and how each blocker was resolved plus the iteration count** (or `no blocking issues` on iteration 1) — so the human sees the stress-test the approach survived, not just its risks; deviations vs the human-confirmed brainstorm direction → human approves or rejects.
 
 ## Phase 3 — Plan (human input allowed)
 
@@ -64,7 +65,7 @@ Phases 1–4 collapse; Phases 5–7 run as written.
 1. Spawn a fresh `reviewer` with the plan + approved design doc. It must output a **mapping table**: every design decision → the plan step(s) implementing it, and every plan step → its verification. The phase exits ⇔ the table is complete with no gaps. FAIL output = the unmapped rows (decision with no step, step with no verification, step tracing to no decision), not prose judgment.
 2. Issues → send digest back to a fresh `architect` for plan revision → re-review per **Review loop conventions**. Checklist source: the prior iteration's unmapped rows; reviewer: a fresh `reviewer`. Exit ⇔ the mapping table is complete with no gaps.
 3. Different issue each iteration → the design is wrong: return to Phase 1 output with a failure digest (no full re-brainstorm; targeted design fix, then re-enter Phase 2).
-4. **GATE 2**: gate summary — Results: plan steps; deviations vs the approved design → human approves or rejects.
+4. **GATE 2**: gate summary — Results (decision evidence): plan steps AND the Phase 4 **mapping-table result** — every design decision → its plan step(s), every step → its verification, and any residual unmapped rows (or `mapping complete, no gaps`) — so the human approves against the completeness/verifiability evidence the phase computed, not a bare step list; deviations vs the approved design → human approves or rejects.
 
 ## Phase 5 — Implement
 
@@ -118,7 +119,12 @@ Runs only when Phase 6 step 9 ended with a PR. Local merge, keep, or discard →
    - Curate, don't just append: a lesson refining an existing bullet REWRITES it in place (newest date kept); propose deleting bullets promoted into this command file, agent definitions, or skills; a file over 30 bullets → this diff must include merges/prunes.
    - Multi-step *procedures* belong in a skill (`~/.claude/skills/<name>/SKILL.md` — new or existing), not in a bullet; bullets are for one-line heuristics.
    - Optionally: targeted edits to this command file (`~/.claude/commands/new-task.md`), agent definitions in `~/.claude/agents/`, or skills in `~/.claude/skills/`.
-3. **GATE 4**: gate summary (Results: the proposed self-update shown as a diff; deviations vs the retro/self-update rules above) → apply ONLY what the human approves. No approval → write nothing outside the project retro.
+3. **GATE 4**: gate summary + a **per-item decision table** (outside the ≤25-line cap, one row per proposed lesson/edit) so the human can decide each on its merits, not rubber-stamp a raw diff. Columns:
+   - **Item** — the proposed bullet/edit as a one-line diff.
+   - **Evidence** — the specific finding from THIS run's retro (step 1) that produced it — the failure/iteration it generalizes, not just the `src:` slug. A lesson with no in-run evidence is not durable; drop it.
+   - **Behavioral delta** — what the NEXT run does differently if this is applied (the whole justification for a durable lesson, per step 2). If you can't state the delta, the lesson isn't one.
+   - **Protocol status** — for rows editing `~/.claude/commands/`, `~/.claude/agents/`, or `~/.claude/skills/`, the CLAUDE.md modification-protocol state: does `evals/lint.sh` pass; is a live `/workflow-eval` scorecard still owed (behavior-affecting); does it add/remove a complexity layer (→ ablation A/B + a `complexity-ledger.md` row owed). Learnings-file rows: `n/a (curated runtime state)`.
+   Deviations vs the retro/self-update rules above. **Approval is per-row** — apply ONLY the rows the human approves; a rejected row writes nothing. No approval on any row → write nothing outside the project retro.
 4. After any approved self-update (including learnings edits), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
 
 ## Review loop conventions
