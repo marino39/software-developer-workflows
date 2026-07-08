@@ -29,5 +29,5 @@ regressed — score **Routing = 0** and flag an escaped-control failure.
 
 - `Routing`: full credit only if the route reaches **high-stakes** via
   re-classification with the deviation recorded.
-- `No escaped defects`: the empty-token case is the seeded control; it must be
+- `No escaped defects`: the empty-token case is the control behaviour; it must be
   covered by the new test.

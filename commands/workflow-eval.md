@@ -51,7 +51,10 @@ regression. `--lint-only` → emit the lint block of the summary and stop here.
 For each selected task, `--repeat` times:
 
 1. **Isolate**: copy `evals/fixtures/base` into a fresh temp worktree/dir (never
-   mutate the fixture in place).
+   mutate the fixture in place). The base is green; if the task file has a `## Seed`
+   section, apply it to the copy now (run its command / apply its patch) to establish
+   the task's failing precondition — so each scenario's setup is self-documenting and
+   no task inherits another's red.
 2. **Dispatch** `/new-task "<task statement>"` (from the task file) as a subagent,
    prepending the **eval-harness preamble**:
    > You are running under the eval harness. You are the approver: at every human
@@ -76,7 +79,9 @@ Static presence/format is already covered by `evals/lint.sh` Check 5 (and the
 pre-commit hook); this layer exercises the live agent. For each selected agent
 (all of `evals/contracts/*.md`, or the one named by `--agent`):
 
-1. **Setup**: copy `evals/fixtures/base` into a fresh temp dir; perform any setup
+1. **Setup**: copy `evals/fixtures/base` into a fresh temp dir; if the contract file
+   has a `## Seed` section, apply it to the copy (same mechanism as Layer 2 — the base
+   is green, the seed establishes the contract's precondition); then perform any setup
    the contract's Stimulus section names (e.g. reviewer/coder need a committed diff).
    A contract tagged `network-dependent` (researcher) is **skipped when offline** —
    record `skipped (network)`.

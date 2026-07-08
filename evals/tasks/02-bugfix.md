@@ -7,8 +7,18 @@
 
 ## Fixture
 
-`fixtures/base` — carries the seeded off-by-one bug in `calc/calc.go` (`TestSum`
-fails on the base fixture).
+`fixtures/base` — green. The `## Seed` below reintroduces the off-by-one in
+`calc/calc.go`, so `TestSum` fails only after seeding (not on the untouched base).
+
+## Seed
+
+Applied to the fixture copy after copy, before dispatch:
+
+```sh
+sed -i 's/for i := 0; i < len(xs)/for i := 1; i < len(xs)/' calc/calc.go
+```
+
+This makes `Sum` skip `xs[0]` (`Sum([1,2,3]) = 5`), failing the existing `TestSum`.
 
 ## Expected behaviour
 
