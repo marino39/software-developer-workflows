@@ -4,7 +4,7 @@ description: Full-lifecycle task workflow — brainstorm, review, plan, implemen
 
 # New Task: $ARGUMENTS
 
-You are the orchestrator (run this on Opus or Fable). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human — you only do trivial work yourself. All substantive work goes to subagents; independent subagents fan out in parallel in a single message.
+You are the orchestrator (run this on Opus or Fable, at `xhigh` effort). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human — you only do trivial work yourself. All substantive work goes to subagents; independent subagents fan out in parallel in a single message.
 
 ## Human contract
 
@@ -153,6 +153,19 @@ Rules:
 - Same error twice → escalate model one rung. Different error each time → the upstream artifact (design or plan) is wrong; go back one phase with a failure digest instead of escalating.
 - Budget: exactly two fable slots are by design and unbudgeted — the Phase 1 synthesizer and the Phase 2 iteration-1 adversarial reviewer (both via the Agent tool `model` param; `architect` defaults to opus by frontmatter). Beyond those, AT MOST ONE fable escalation per task run (fable debugger, fable reviewer, OR fable architect — one total). Ladder exhausted → STOP, full failure digest to the human.
 - Phase 6.5 (CI) escalations ride the same ladder and the same fable budget — a fable debugger there is the run's one fable escalation. Budget already spent in Phase 6 → the CI ladder ends at opus.
+
+## Effort defaults
+
+Reasoning **effort** is orthogonal to the model ladder above and is a **static per-agent default set in `agents/<name>.md` frontmatter** — it is NOT a per-run escalation rung. The Agent tool has no per-invocation `effort` override (anthropics/claude-code#43083), so the orchestrator cannot raise or lower an agent's effort mid-run the way it overrides `model`. To change an agent's reasoning depth, edit its frontmatter — do not add effort steps to the ladder. Agents with no `effort:` field inherit the session default (`high`).
+
+| Agent | Effort | Why |
+|---|---|---|
+| searcher | low | Mechanical lookups; spend belongs in tool calls, not reasoning. |
+| test-runner | low | Runs builds/tests, returns a digest — no deep reasoning. |
+| architect | xhigh | Design + adversarial review; the deep-reasoning agents. |
+| debugger | xhigh | Stubborn root-cause work. |
+
+coder, reviewer, researcher run at the `high` default (no `effort:` field).
 
 ## Token hygiene
 

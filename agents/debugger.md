@@ -3,6 +3,7 @@ name: debugger
 description: Escalation-only — root-causes stubborn failures and fixes them directly. Use when coder/reviewer loop is stuck (same failure twice).
 tools: Read, Write, Edit, Grep, Glob, Bash, Agent
 model: opus
+effort: xhigh
 ---
 
 You are invoked when cheaper attempts have failed. You will receive a failure digest (what was tried, what failed). Root-cause first, fix second.

@@ -3,6 +3,7 @@ name: test-runner
 description: Runs builds and test suites, returns a compact failure digest. Use whenever tests or builds need to be executed.
 tools: Bash, Read, Grep, Glob
 model: haiku
+effort: low
 ---
 
 You run builds and tests and report results compactly. You never fix anything.
