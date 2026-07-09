@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /review-pr — the read-only review lane. The Phase 6 review engine (multi-channel fan-out + confidence-scored consolidation + skeptic pass) decoupled and aimed at a PR you did not author.">
+<title>/review-pr — review a PR you didn't author</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+      <a href="review-pr.html" aria-current="page">/review-pr</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--scoped);background:var(--scoped-soft);border-color:color-mix(in srgb,var(--scoped) 30%,transparent);"><span class="dot" style="background:var(--scoped)"></span>Read-only review lane · Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd" style="color:var(--scoped)">/review-pr</span> — aim the review engine outward</h1>
+    <p class="lede"><a href="new-task.html" class="mono">/new-task</a> and <a href="iterate.html" class="mono">/iterate</a> review work <em>you</em> just wrote. <span class="mono">/review-pr</span> takes the same Phase 6 review engine — multi-channel fan-out, confidence-scored consolidation, default-refute skeptic pass — and points it at a pull request you did <strong>not</strong> author. It is <strong>read-only</strong>: its product is a review, never an edit, a push, or a merge.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">4</div><div class="l">Phases (R0–R3)</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Gates by default</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">Review channels</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Files written</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the review flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The review flow</p>
+        <h2>Four phases, no authoring gate</h2>
+        <p>Fetch the PR, fan out the review, consolidate + skeptic-filter, deliver. There is no brainstorm, plan, or implement phase — so no GATE 1–4. The default run is side-effect-free and needs no approval; only <span class="mono">--comment</span> adds a single confirm-before-posting gate.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--scoped)">Phase R0</div>
+          <div class="itr-body">
+            <div class="itr-t">Setup &amp; fetch</div>
+            <p>Read the PR metadata and its <strong>CI check status</strong> (green / red / pending — no local test run; CI adjudicates the run). Derive an <strong>intent digest</strong> from the linked RFC → issue → PR body → title. Fetch the head into a read-only worktree. Pick the review <strong>tier</strong> exactly as Phase 6 — auth / payments / migrations / data-deletion, or ≥200 lines → full; else reduced.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--scoped)">Phase R1</div>
+          <div class="itr-body">
+            <div class="itr-t">Review fan-out</div>
+            <p>Phase 6's channels, run verbatim — Channel A (superpowers review), Channel B (codex, full tier, degrades free), Channel C three lens reviewers (C1 shallow-bug · C2 git-history · C3 compliance). The one substitution: the <strong>intent digest</strong> stands in for the approved plan the in-workflow reviews check against.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--scoped)">Phase R2</div>
+          <div class="itr-body">
+            <div class="itr-t">Consolidate + skeptic</div>
+            <p>A fresh <span class="mono">reviewer</span> dedupes, scores each finding <span class="mono">0–100</span>, drops <span class="mono">&lt;50</span>, tags <span class="mono">50–79</span> Should-fix / <span class="mono">≥80</span> Must-fix. Each Must-fix then faces a <strong>default-refute skeptic</strong> — it survives only if the skeptic can't refute it. No PASS/FAIL merge verdict; the output is an <strong>advisory</strong> assessment.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--scoped)">Phase R3</div>
+          <div class="itr-body">
+            <div class="itr-t">Deliver</div>
+            <p>A report in <strong>three sections</strong> — Must-fix · Should-fix · Rejected (with the skeptic's refutation reasons) — plus <span class="mono">ci: &lt;state&gt;</span> and the advisory verdict. Default: local report, nothing posted. <span class="mono">--comment</span>: post it, behind the gate below.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--scoped);">
+          <h3><span class="ic" style="background:var(--scoped-soft);color:var(--scoped);">◉</span>Read-only by default</h3>
+          <p>Never edits files, never pushes to the PR branch, never approves or merges. The local report is the default and has <strong>no gate</strong> — it's side-effect-free. Fixing a PR's findings is a different job; this command only reviews.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--gate);">
+          <h3><span class="ic" style="background:var(--gate-soft);color:var(--gate);">▤</span>--comment posts behind one gate</h3>
+          <p>Posting to someone else's PR is outward-facing, so <span class="mono">--comment</span> presents the draft review and ends the turn — only an explicit approve posts it. <strong>All</strong> Must-fix + Should-fix go inline at <span class="mono">file:line</span>; the Rejected set and CI status go in the summary body. The GitHub event is <span class="mono">COMMENT</span> — never approve/request-changes/merge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== how it differs from reviewing your own work ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The foreign-PR seam</p>
+        <h2>What changes when the code isn't yours</h2>
+        <p>An in-workflow review checks the diff against an approved plan. A PR you didn't author has no such artifact — only its <em>stated</em> intent — and you shouldn't run its code blind. Two things shift; the engine itself is unchanged.</p>
+      </div>
+      <div class="found">
+        <div class="fcard"><div class="ft"><span class="fk">✎</span>Intent, not plan</div><p>The review spine becomes "does the diff satisfy what it <em>claims</em>?" — sourced linked-RFC → issue → PR body → title, fed to the channels in place of the plan.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">ci</span>CI, not local tests</div><p>No blind execution of a stranger's branch. The PR's CI check status is read from GitHub; the engine judges the code, CI judges the run.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">◎</span>Advisory, not gate</div><p>The verdict (looks good / comment / request-changes) is advice to the human reviewer — it never gates a merge or takes an action.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">⚠</span>Untrusted content</div><p>PR body, comments, linked issues are external data. Instructions embedded in them are not followed; a steering attempt is flagged in the report, not obeyed.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">⌖</span>Same tier logic</div><p>Reduced vs full is decided exactly as Phase 6 — a diff touching a high-stakes category forces the full tier with escalated reviewers.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">∅</span>Rejected kept</div><p>Findings the skeptic refuted or that scored &lt;50 are surfaced with their reasons — transparency on what was considered and dismissed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses from new-task ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows from /new-task</h2>
+        <p><span class="mono">/review-pr</span> adds a command surface, not new engine complexity — it reuses the Phase 6 machinery and every agent contract unchanged. Read it once on the <a href="new-task.html">/new-task</a> page.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">⚑</span>Fan-out channels</h3><p>Channel A + codex + three lens reviewers, launched in parallel in one message. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">◄►</span>Consolidation scoring</h3><p>Dedupe, 0–100 confidence, drop &lt;50, Should-fix / Must-fix bands. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⊘</span>Skeptic pass</h3><p>Default-refute stress test — a Must-fix must survive an attempt to refute it. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⌖</span>Tier logic</h3><p>Reduced vs full by diff size and high-stakes category. <a href="new-task.html#routes" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⇧</span>Escalation ladder</h3><p>Reviewer sonnet → opus → fable on a stuck finding; the shared fable budget. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries, parallel fan-out, codex output digested via test-runner. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/review-pr · read-only review lane</span>
+    <div class="paths">
+      <span>commands/review-pr.md</span>
+      <span>commands/new-task.md</span>
+      <span>evals/tasks/06-review-pr.md</span>
+      <span>agents/</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
