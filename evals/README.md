@@ -1,10 +1,11 @@
 # Workflow evals
 
 The measure-and-iterate loop for this workflow. Because the repo defines
-*instructions* (not code), the harness cannot unit-test functions — it **runs
-`/new-task` against frozen tasks and scores the outputs**, plus a cheap
-deterministic lint over the instruction files. Driven by the `/workflow-eval`
-command; this directory holds its inputs and outputs.
+*instructions* (not code), the harness cannot unit-test functions — it **runs the
+workflow commands against frozen tasks and scores the outputs** (most tasks drive
+`/new-task`; a task's `## Command` section can name a different driver, e.g. task 06
+drives `/review-pr`), plus a cheap deterministic lint over the instruction files.
+Driven by the `/workflow-eval` command; this directory holds its inputs and outputs.
 
 ## Layout
 
@@ -17,7 +18,8 @@ fixtures/base/   one minimal Go module all tasks run against (calc + auth helper
                  doc file); builds and tests fully green
 tasks/           frozen task specs: statement + expected behaviour + score overrides;
                  a task/contract needing a failing baseline carries a `## Seed` step
-                 (command/patch) applied to its fixture copy after copy, before dispatch
+                 (command/patch) applied to its fixture copy after copy, before dispatch;
+                 a `## Command` section names a non-default driver (task 06 → /review-pr)
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
                  brainstorm-single) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
@@ -67,11 +69,17 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 5 tasks / 1 fixture covering the routing, bug-fix,
-  auto-approve, and `/iterate` warm-start paths — representative, not exhaustive.
-  Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+- The first cut is 6 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, `/iterate` warm-start, and `/review-pr` paths — representative, not
+  exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
   and the `iterate-cold` A/B on it (repeat 3) firms the earn-its-cost magnitude the
   doc-only task 04 could only sketch (see the `/iterate` ledger row, status `keep`).
+- Task 06 exercises `/review-pr` offline: its `## Seed` builds a two-commit git
+  history in the fixture copy (base + a "PR" commit) so the engine reviews
+  `HEAD~1..HEAD` as a foreign diff, with the PR body/CI supplied as the `## Intent`
+  block. The diff touches `auth/` (high-stakes → full tier) and plants one Must-fix
+  the green CI misses, scoring the engine's finding recall + post-skeptic
+  false-positive rate.
