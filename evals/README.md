@@ -67,5 +67,11 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 3 tasks / 1 fixture covering the routing, bug-fix, and
-  auto-approve paths — representative, not exhaustive.
+- The first cut is 5 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, and `/iterate` warm-start paths — representative, not exhaustive.
+  Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+  `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
+  run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
+  `.go`, so the warm path runs real behavioral verification + a real delta review —
+  and the `iterate-cold` A/B on it (repeat 3) firms the earn-its-cost magnitude the
+  doc-only task 04 could only sketch (see the `/iterate` ledger row, status `keep`).

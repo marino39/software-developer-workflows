@@ -96,6 +96,7 @@ Compute once: `BASE_SHA=$(git merge-base HEAD <default-branch>)`, `HEAD_SHA=$(gi
 7. High-stakes route (auth, payments, migrations, data deletion) — whether classified so at Phase 0 or escalated there via a route re-check (fast-path step 3.5 or step 0 above) → always the full tier; run the consolidator, Channel C reviewers, and Must-fix skeptics escalated (opus/fable) from the first pass.
 8. **GATE 3**: gate summary — Results: final route (and any re-classification since Phase 0, with the trigger that caused it), files changed, test status, behavioral verification result (per-item pass/fail or exempt reason), fan-out tier, channels run/skipped with per-channel finding counts, consolidated Must-fix/Should-fix counts (skeptic demotions noted); deviations vs the approved plan (a route escalation is a deviation); decisions include escalations used → human approves or rejects.
 9. On approval: invoke `superpowers:finishing-a-development-branch` to merge/PR/clean up the worktree. If the outcome is a PR, run Phase 6.5 before Phase 7.
+10. **Write the run manifest** (enables warm-start `/iterate` — see `commands/iterate.md`): to `docs/superpowers/runs/YYYY-MM-DD-<task>-manifest.md`, record final route, design-doc + plan + retro paths, `BASE_SHA`/`HEAD_SHA`, default branch, branch name, outcome (merged / PR #N / local-kept), the behavioral-verification result, and the **open Should-fix** findings this run did not fix. If the outcome is a PR, do NOT delete the worktree — record its path so `/iterate` reuses it warm; for a local merge/discard the manifest's branch + `HEAD_SHA` still let `/iterate` recreate one. Writing the manifest is additive — it does not change any gate decision.
 
 ## Phase 6.5 — CI verification (PR path only, max 5 iterations)
 
@@ -112,6 +113,8 @@ Runs only when Phase 6 step 9 ended with a PR. Local merge, keep, or discard →
 6. All checks green → proceed to Phase 7, no gate. Cap or ladder exhausted → HALT: leave the PR open, present the failure digest (checks still red, what was tried, escalations used).
 
 ## Phase 7 — Retrospective + self-improvement
+
+When reached as the **batched retro for an `/iterate` session** (`commands/iterate.md`), this phase runs ONCE over the whole session: the retrospective and distilled lessons cover every entry in the manifest's iteration log, not a single tweak.
 
 1. Write a retrospective to the project at `docs/superpowers/retros/YYYY-MM-DD-<task>.md`: what worked, what failed, iteration counts per phase, escalations used and whether they helped, gate rejections and why.
 2. Distill durable lessons (things that would change how the NEXT run behaves) and propose a self-update:
