@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /iterate — the warm-start follow-up entry point for a delta on a baseline /new-task already reviewed. Phases I0-I2, one gate, deferred batched retro.">
+<title>/iterate — warm-start follow-up</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html" aria-current="page">/iterate</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--gate);background:var(--gate-soft);border-color:color-mix(in srgb,var(--gate) 30%,transparent);"><span class="dot" style="background:var(--gate)"></span>Follow-up entry point · Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd" style="color:var(--gate)">/iterate</span> — the warm-start fast lane</h1>
+    <p class="lede">When a change has already been carried through <a href="new-task.html" class="mono">/new-task</a>'s review, tweaking or extending it shouldn't re-pay the full lifecycle. <span class="mono">/iterate</span> treats the follow-up as a <strong>delta on a reviewed baseline</strong>: no brainstorm, no plan-review, no from-scratch review fan-out, and no per-tweak retrospective.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">3</div><div class="l">Phases (I0–I2)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Gate (GATE I)</div></div>
+      <div class="stat"><div class="n">5×</div><div class="l">Review-loop cap</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Retro / session</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the warm-start flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The warm-start flow</p>
+        <h2>Three phases, one gate</h2>
+        <p>Left to right: load the baseline, implement the delta, review only what changed, decide. It reuses <span class="mono">/new-task</span>'s review-loop conventions, escalation ladder, and route model verbatim — only the warm-start seam and the deferred retro are new.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag">Phase I0</div>
+          <div class="itr-body">
+            <div class="itr-t">Warm setup</div>
+            <p>Load the prior run's <strong>manifest</strong> — route, SHAs, design/plan/retro paths, outcome, and carried open Should-fix. Reuse the worktree warm if it still exists. Seed context from the manifest instead of re-running searcher / researcher. Inherit the route as a floor (monotonic — escalate only).</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag">Phase I1</div>
+          <div class="itr-body">
+            <div class="itr-t">Delta implement</div>
+            <p>ONE <span class="mono">architect</span> writes a delta plan-lite against the seeded baseline; carried Should-fix fold in. <span class="mono">coder</span>s implement in parallel where independent, delegating test runs to <span class="mono">test-runner</span>. Bug-fix deltas proven per <span class="mono">verify-fix</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag">Phase I2 <span class="loop-badge">↻ max 5</span></div>
+          <div class="itr-body">
+            <div class="itr-t">Delta review</div>
+            <p>The baseline is trusted, so review is <strong>delta by construction</strong>: one fresh <span class="mono">reviewer</span> over the iteration diff, seeded with the carried Should-fix checklist. An escalation to high-stakes triggers the full Phase 6 fan-out instead. Verdict computed: <span class="mono" style="color:var(--pass)">PASS ⇔ green ∧ zero Must-fix ∧ verified</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node gate">
+          <div class="itr-tag">GATE I</div>
+          <div class="itr-body">
+            <div class="itr-t">One gate</div>
+            <p>Same four-section decidable summary, rendered as plain text that ends the turn. <strong>Auto-approves</strong> on fully-green criteria and no route escalation — marked <span class="mono">auto-approved</span>, never silent. On approval, finish the branch or push to the manifest's PR (then Phase 6.5 CI applies).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--gate);">
+          <h3><span class="ic" style="background:var(--gate-soft);color:var(--gate);">⇄</span>Retro is deferred &amp; batched</h3>
+          <p>No per-iteration Phase 7 — that tax is the whole reason <span class="mono">/iterate</span> exists. Each iteration appends a compact entry to the manifest's log and bumps its <span class="mono">HEAD_SHA</span>. At session end (or <span class="mono">--finish</span>), Phase 7 runs <strong>once</strong> over the whole session — one retro, one curated GATE 4, keyed to the batch, not to each tweak.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--stakes);">
+          <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">⤴</span>When to bounce to /new-task</h3>
+          <p>No readable manifest, or the request isn't a delta on that baseline — a new subsystem, an unrelated area, a greenfield feature, or a delta that is itself ≥200 lines of new surface → <span class="mono">/iterate</span> stops and hands you back to <a href="new-task.html" class="mono">/new-task</a>. It assumes an already-reviewed baseline; without one there's nothing to delta against.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the manifest ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The handoff</p>
+        <h2>What the run manifest carries</h2>
+        <p>Written by <span class="mono">/new-task</span> Phase 6 on approval, the manifest is the single artifact <span class="mono">/iterate</span> reads to start warm. It is additive — writing it changes no gate decision.</p>
+      </div>
+      <div class="found">
+        <div class="fcard"><div class="ft"><span class="fk">route</span>Final route</div><p>The floor <span class="mono">/iterate</span> inherits — it may only escalate from here.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">sha</span>BASE / HEAD SHA</div><p>The reviewed baseline. <span class="mono">/iterate</span>'s <span class="mono">BASE_SHA</span> = this <span class="mono">HEAD_SHA</span>.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">tree</span>Worktree + branch</div><p>Reused warm if it still exists; otherwise recreated from the branch / SHA.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">paths</span>Design · plan · retro</div><p>The seeded context, so legwork isn't re-run for what the first pass covered.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">out</span>Outcome</div><p>merged · PR #N · local-kept — decides how the branch is finished.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">todo</span>Open Should-fix</div><p>Findings the first run didn't fix, carried as the delta-review checklist.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses from new-task ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows from /new-task</h2>
+        <p><span class="mono">/iterate</span> adds only the warm-start seam and the deferred retro. Everything else is the same machinery — read it once on the <a href="new-task.html">/new-task</a> page.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">↻</span>Review loop conventions</h3><p>Iteration 1 full, 2+ delta re-reviews on a checklist; cap 5, exhaustion halts. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⇧</span>Escalation ladder</h3><p>Same error twice → one rung up; the shared one-fable budget applies. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⌖</span>Route model</h3><p>scoped · standard · high-stakes, monotonic, re-checked against the real diff. <a href="new-task.html#routes" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">▤</span>Gate format</h3><p>Four decidable sections, plain-text, turn-ending; auto-approve on green. <a href="new-task.html#gates" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⚑</span>Full fan-out (on escalation)</h3><p>High-stakes deltas run the full Phase 6 tier + skeptic pass. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries, parallel fan-out, tests via test-runner. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/iterate · warm-start follow-up entry point</span>
+    <div class="paths">
+      <span>commands/iterate.md</span>
+      <span>commands/new-task.md</span>
+      <span>agents/</span>
+      <span>skills/</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: the /new-task full-lifecycle multi-agent workflow — pipeline graph (phases 0-7 + 6.5), routes, agent cast, gates, review machinery, and self-improvement loop.">
+<title>/new-task — full lifecycle</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html" aria-current="page">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+    </div>
+  </div>
+</nav>
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd">/new-task</span> — the full-lifecycle task workflow</h1>
+    <p class="lede">The cold-start entry point. One orchestrator drives a task from brainstorm to retrospective — judging results, routing work, and talking to the human, while every substantive step is delegated to a subagent and every human touchpoint is a fixed-format gate. Already-reviewed work? Follow up on the warm-start <a href="iterate.html" class="mono">/iterate</a> lane instead.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">8</div><div class="l">Phases (0–7 + 6.5)</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">Human gates</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
+      <div class="stat"><div class="n">5×</div><div class="l">Review-loop cap</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ PIPELINE ============ -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The pipeline</p>
+        <h2>How a task flows through the workflow</h2>
+        <p>The spine runs top to bottom. Teal nodes are phases; circular amber nodes are human gates. Scoped tasks take the dashed <span class="mono">fast path</span>, collapsing phases 1–4. Review phases (2, 4, 6) are bounded loops that never silently pass.</p>
+      </div>
+
+      <div class="spine-note">
+        <span class="k"><span class="swatch" style="background:var(--flow)"></span>Phase</span>
+        <span class="k"><span class="swatch" style="background:var(--gate)"></span>Human gate</span>
+        <span class="k"><span class="swatch" style="background:var(--scoped)"></span>Scoped fast path</span>
+        <span class="k"><span class="swatch" style="background:var(--stakes)"></span>High-stakes escalation</span>
+        <span class="k">↻ = bounded review loop (max 5)</span>
+      </div>
+
+      <div class="flow">
+
+        <!-- Phase 0 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">0</span></div></div>
+          <div class="card">
+            <h3>Setup &amp; route</h3>
+            <p>Read tag-matched learnings, open an isolated git worktree, fan out <span class="mono">searcher</span> + <span class="mono">researcher</span> for missing context, then classify the task's route. The route is <strong>monotonic</strong> — it may only escalate.</p>
+            <div class="detail">
+              <span class="tag skill">using-git-worktrees</span>
+              <span class="tag agent">searcher</span>
+              <span class="tag agent">researcher</span>
+            </div>
+            <div class="fastpath">
+              <span class="lab">↳ Scoped fast path</span>
+              <p>Audits, single scoped bug fixes, doc-only or dead-code changes bypass phases 1–4: one scope gate → <span class="mono">searcher</span> → a single <span class="mono">architect</span> plan-lite → straight to implementation. An early route re-check (step 3.5) can still escalate to high-stakes before any review spend.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 1 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">1</span></div></div>
+          <div class="card">
+            <h3>Brainstorm <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
+            <p>Three <span class="mono">architect</span> agents each explore a distinct lens (simplest / most robust / alternative paradigm) in parallel with clarifying questions. A fresh <span class="mono">fable</span> architect synthesizes and ranks them into one recommendation, written to a design doc.</p>
+            <div class="detail">
+              <span class="tag skill">brainstorming</span>
+              <span class="tag agent">architect ×3</span>
+              <span class="tag agent">architect · fable synth</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">2</span></div></div>
+          <div class="card">
+            <h3>Approach review <span class="loop-badge">↻ max 5</span></h3>
+            <p>A fresh <span class="mono">fable</span> architect (clean context) adversarially reviews the design and returns numbered <strong>blocking</strong> issues or the literal <span class="mono">no blocking issues</span>. The phase exits only on that string — never on a gut impression.</p>
+            <div class="detail"><span class="tag agent">architect · fable adversarial</span></div>
+          </div>
+        </div>
+
+        <!-- GATE 1 -->
+        <div class="node gate-node">
+          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">1</span></div></div>
+          <div class="card gate-card">
+            <h3>GATE 1 · Approach</h3>
+            <p>Gate summary: chosen approach, rejected alternatives, remaining risks, deviations vs the confirmed brainstorm direction. Human approves or rejects.</p>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">3</span></div></div>
+          <div class="card">
+            <h3>Plan <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
+            <p>An <span class="mono">architect</span> with clean context drafts a plan fed only the approved design — file-level steps, interface contracts, and per-step verification.</p>
+            <div class="detail"><span class="tag skill">writing-plans</span><span class="tag agent">architect</span></div>
+          </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">4</span></div></div>
+          <div class="card">
+            <h3>Plan review <span class="loop-badge">↻ max 5</span></h3>
+            <p>A fresh <span class="mono">reviewer</span> builds a <strong>mapping table</strong>: every design decision → its plan step(s), every step → its verification. Exits only when the table has no gaps. Failures return the unmapped rows, not prose.</p>
+            <div class="detail"><span class="tag agent">reviewer</span></div>
+          </div>
+        </div>
+
+        <!-- GATE 2 -->
+        <div class="node gate-node">
+          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">2</span></div></div>
+          <div class="card gate-card">
+            <h3>GATE 2 · Plan</h3>
+            <p>Gate summary: plan steps and deviations vs the approved design. Human approves or rejects.</p>
+          </div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">5</span></div></div>
+          <div class="card">
+            <h3>Implement</h3>
+            <p>Each plan task goes to a <span class="mono">coder</span>; independent tasks run in parallel. Coders route test runs to <span class="mono">test-runner</span> so raw output never reaches the orchestrator. Stuck after two attempts → escalate to <span class="mono">debugger</span>.</p>
+            <div class="detail">
+              <span class="tag skill">subagent-driven-development</span>
+              <span class="tag agent">coder</span>
+              <span class="tag agent">test-runner</span>
+              <span class="tag skill">verify-fix</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">6</span></div></div>
+          <div class="card">
+            <h3>Implementation review <span class="loop-badge">↻ max 5</span></h3>
+            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — superpowers review, codex, and three lens reviewers. A fresh consolidator scores and dedupes findings; each Must-fix survives a default-refute <strong>skeptic pass</strong>. Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
+            <div class="detail">
+              <span class="tag skill">verify-feature</span>
+              <span class="tag skill">requesting-code-review</span>
+              <span class="tag agent">reviewer ×N lenses</span>
+              <span class="tag">codex (full tier)</span>
+              <span class="tag agent">consolidator + skeptics</span>
+              <span class="tag">run manifest → /iterate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GATE 3 -->
+        <div class="node gate-node">
+          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">3</span></div></div>
+          <div class="card gate-card">
+            <h3>GATE 3 · Implementation <span class="tag" style="border-color:color-mix(in srgb,var(--pass) 40%,transparent);color:var(--pass);background:var(--pass-soft)">auto-approves on the fast path</span></h3>
+            <p>Gate summary: final route, files changed, test + behavioral-verification status, fan-out tier, per-channel finding counts, Must-fix / Should-fix. On a non-escalated scoped route with fully green criteria, this gate auto-approves — still emitting the full summary, marked <span class="mono">auto-approved</span>. On approval → finish the branch (merge / PR).</p>
+          </div>
+        </div>
+
+        <!-- Phase 6.5 -->
+        <div class="node">
+          <div class="rail"><div class="badge half"><span class="p">Phase</span><span class="num">6.5</span></div></div>
+          <div class="card">
+            <h3>CI verification <span class="tag">PR path only</span> <span class="loop-badge">↻ max 5</span></h3>
+            <p>Runs only when phase 6 produced a PR. Event-driven — it subscribes to PR activity and ends the turn rather than holding it open on a poll. Failures triage through <span class="mono">test-runner</span>; fixes are reviewed before pushing. Green → phase 7; cap exhausted → HALT with the PR left open.</p>
+            <div class="detail"><span class="tag skill">ci-triage</span><span class="tag agent">test-runner</span><span class="tag agent">coder</span></div>
+          </div>
+        </div>
+
+        <!-- Phase 7 -->
+        <div class="node">
+          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">7</span></div></div>
+          <div class="card">
+            <h3>Retrospective &amp; self-improvement</h3>
+            <p>Write a retro, distill durable lessons, and propose a self-update to the learnings memory, command file, agents, or skills. <strong>GATE 4</strong> shows the update as a diff — only approved edits are applied, then versioned via <span class="mono">capture.sh</span>.</p>
+            <div class="detail"><span class="tag loop">GATE 4</span><span class="tag">LEARNINGS.md</span><span class="tag">capture.sh</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROUTES ============ -->
+  <section id="routes">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Routing</p>
+        <h2>Three routes, set once and only ever escalated</h2>
+        <p>Phase 0 classifies the task by the diff it will produce. The route is re-checked against the real work at two later checkpoints and can only move in one direction.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="route scoped">
+          <div class="rname">scoped</div>
+          <p class="trigger">Audit, single scoped bug fix, scoped hygiene / observability add, or dead-code / doc-only change.</p>
+          <div class="path">→ fast path · phases 1–4 collapse · GATE 3 may auto-approve</div>
+        </div>
+        <div class="route standard">
+          <div class="rname">standard</div>
+          <p class="trigger">Everything else — the default full lifecycle across all eight phases.</p>
+          <div class="path">→ full lifecycle · all four gates</div>
+        </div>
+        <div class="route stakes">
+          <div class="rname">high-stakes</div>
+          <p class="trigger">Diff touches auth, payments, migrations, or data deletion.</p>
+          <div class="path">→ full tier from pass 1 · escalated reviewers · human GATE 3</div>
+        </div>
+      </div>
+      <div class="monotonic">
+        <span>Monotonic escalation:</span>
+        <span class="chip scoped">scoped</span><span class="arrow">→</span>
+        <span class="chip standard">standard</span><span class="arrow">→</span>
+        <span class="chip stakes">high-stakes</span>
+        <span style="color:var(--ink-3)">· auto-triggers: any high-stakes category, or DIFF_LINES ≥ 200 → at least standard</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AGENTS ============ -->
+  <section id="agents">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The cast</p>
+        <h2>Seven subagents, each with a fixed model tier</h2>
+        <p>The orchestrator never does substantive work itself. Agents are tools with input/output contracts; each returns a capped structured summary, never a raw transcript. Model tier is the default — the escalation ladder overrides it one rung at a time.</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Agent</th><th>Default</th><th>Role</th><th>Escalates to</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="aname">searcher</span></td>
+              <td><span class="tier haiku">haiku</span></td>
+              <td class="role">Fast codebase lookups — definitions, callers, usages, config. Answers the exact question, ≤200 words.</td>
+              <td><span class="tier sonnet">sonnet</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">researcher</span></td>
+              <td><span class="tier sonnet">sonnet</span></td>
+              <td class="role">External research — docs, APIs, prior art. Returns synthesized findings with sources and confidence.</td>
+              <td><span class="tier opus">opus</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">architect</span></td>
+              <td><span class="tier opus">opus</span></td>
+              <td class="role">Designs plans — file-level steps, interfaces, trade-offs. Writes no code; may spawn only searcher / researcher.</td>
+              <td><span class="tier fable">fable</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">coder</span></td>
+              <td><span class="tier sonnet">sonnet</span></td>
+              <td class="role">Implements the plan exactly, step by step. Delegates test runs to test-runner; proves bug fixes before reporting.</td>
+              <td><span class="role" style="color:var(--ink-3)">→ debugger (no model bump)</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">reviewer</span></td>
+              <td><span class="tier sonnet">sonnet</span></td>
+              <td class="role">Reviews a diff against the plan — correctness, edge cases, conventions. Read-only; PASS/FAIL + numbered issues.</td>
+              <td><span class="tier opus">opus</span> → <span class="tier fable">fable</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">debugger</span></td>
+              <td><span class="tier opus">opus</span></td>
+              <td class="role">Escalation-only. Root-causes stubborn failures — reproduce, isolate, verify hypothesis — then fixes minimally.</td>
+              <td><span class="tier fable">fable</span></td>
+            </tr>
+            <tr>
+              <td><span class="aname">test-runner</span></td>
+              <td><span class="tier haiku">haiku</span></td>
+              <td class="role">Runs builds / tests / CI-log digests and reports compactly. Never fixes anything; raw output stops here.</td>
+              <td><span class="role" style="color:var(--ink-3)">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GATES + LOOPS ============ -->
+  <section id="gates">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Human contract</p>
+        <h2>Four gates, one fixed format</h2>
+        <p>Work-shaping input is allowed only in phases 1, 3, and the fast-path scope gate. Every other touchpoint is a gate: a ≤25-line summary with four sections — <span class="mono">Results · Key decisions · Deviations · Next</span> — then a single approve / reject. A gate must be <strong>decidable</strong>: its Results carry the decision evidence inline, never just a link to open.</p>
+      </div>
+      <div class="gate-grid">
+        <div class="gitem"><span class="gid">GATE 1</span><div><div class="gt">Approach</div><div class="gd">Chosen approach, rejected alternatives, remaining risks. After phase 2.</div></div></div>
+        <div class="gitem"><span class="gid">GATE 2</span><div><div class="gt">Plan</div><div class="gd">Plan steps and deviations vs the approved design. After phase 4.</div></div></div>
+        <div class="gitem auto"><span class="gid">GATE 3</span><div><div class="gt">Implementation <span style="font-weight:400;color:var(--pass)">· fast-path auto-approve</span></div><div class="gd">Route, files, tests, verification, fan-out tier, Must-fix counts. After phase 6.</div></div></div>
+        <div class="gitem"><span class="gid">GATE 4</span><div><div class="gt">Self-update</div><div class="gd">Proposed learnings / workflow edits shown as a diff. After phase 7.</div></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:16px;">
+        <div class="panel">
+          <h3><span class="ic">▤</span>Rendered as plain text, then the turn ends</h3>
+          <p>Every gate — GATES 1–4, GATE I, and the scope gate — is presented as a single plain-text message whose body <em>is</em> the full summary, then the turn ends. It is never collected through <span class="mono">AskUserQuestion</span>, whose picker would hide the evidence behind the widget. The summary stays the last visible text.</p>
+        </div>
+        <div class="panel">
+          <h3><span class="ic">?</span>A clarifying question ≠ a decision</h3>
+          <p>A clarifying question is allowed at <strong>any</strong> gate — it is how the human makes the gate decidable. It is answered in-band and the summary is re-presented; a question never counts as approve / reject and never advances or returns the phase. Only an explicit approve / reject moves the workflow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MACHINERY ============ -->
+  <section id="machinery">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Shared machinery</p>
+        <h2>The parts that make it reliable</h2>
+      </div>
+      <div class="grid cols-2">
+
+        <div class="panel">
+          <h3><span class="ic">↻</span>Bounded review loops</h3>
+          <p>Phases 2, 4, and 6 share one delta-review engine. Iteration 1 runs the full review; iterations 2+ hand a fresh reviewer the prior findings as a checklist and scan only revised sections. Cap is 5 — exhaustion halts with a failure digest at the gate, never a silent pass.</p>
+          <div class="loopviz">
+            <span class="step">review</span><span class="op">→</span>
+            <span class="step">numbered issues?</span><span class="op">→</span>
+            <span class="ret">revise ↺</span><span class="op">→</span>
+            <span class="step">exit on clean</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3><span class="ic">⇧</span>Escalation ladder &amp; fable budget</h3>
+          <p>Same error twice → escalate one model rung with fresh context. Different error each time → the upstream artifact is wrong; go back a phase instead.</p>
+          <ul>
+            <li>Two <span class="tier fable">fable</span> slots are by-design &amp; unbudgeted: the phase-1 synthesizer and the phase-2 adversarial reviewer.</li>
+            <li>Beyond those, <strong>at most one</strong> fable escalation per run — debugger, reviewer, or architect.</li>
+            <li>Ladder exhausted → STOP with a full failure digest.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3><span class="ic">⌖</span>Risk-scaled review fan-out</h3>
+          <p>Phase 6 sizes its review to the diff. Small, non-high-stakes changes get a <strong>reduced</strong> tier (one combined reviewer, codex skipped, orchestrator consolidates). Larger or high-stakes changes get the <strong>full</strong> tier.</p>
+          <ul>
+            <li><strong>Channel A</strong> — superpowers code review.</li>
+            <li><strong>Channel B</strong> — codex CLI (full tier, degrades gracefully).</li>
+            <li><strong>Channel C</strong> — three lens reviewers: bug scan · git history · CLAUDE.md compliance.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3><span class="ic">⚑</span>Skeptic pass &amp; computed verdict</h3>
+          <p>A fresh consolidator dedupes findings, scores each 0–100 confidence, drops &lt;50, and tags Should-fix (50–79) vs Must-fix (≥80). Each Must-fix then faces a default-refute skeptic — it survives only if the skeptic can't refute it.</p>
+          <p style="font-family:var(--mono);font-size:12.5px;color:var(--pass);background:var(--pass-soft);border:1px solid color-mix(in srgb,var(--pass) 35%,transparent);border-radius:6px;padding:9px 12px;">PASS ⇔ tests green ∧ zero Must-fix ∧ behavioral verification passed</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SELF-IMPROVEMENT ============ -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Memory &amp; self-improvement</p>
+        <h2>The workflow improves itself, under review</h2>
+        <p>Phase 0 loads only the learnings whose trigger tags match the task; phase 7 writes new ones back. Every self-edit passes GATE 4 and is versioned in git — hand edits and run-time self-improvements share the same source of truth.</p>
+      </div>
+      <div class="cycle">
+        <div class="cyc"><div class="n">load</div><div class="t">Tag-matched recall</div><div class="d">Phase 0 applies only bullets whose language / area / task-type / repo tags match this run.</div></div>
+        <div class="cyc"><div class="n">apply</div><div class="t">Lesson overrides rule</div><div class="d">A conflicting lesson wins (it's newer) and is recorded as an auditable deviation citing its <code>src:</code>.</div></div>
+        <div class="cyc"><div class="n">distill</div><div class="t">Phase 7 retro</div><div class="d">Durable lessons become dated one-line bullets; multi-step procedures graduate into skills.</div></div>
+        <div class="cyc"><div class="n">version</div><div class="t">GATE 4 → capture</div><div class="d">Approved edits only, then <code>capture.sh</code> pulls live changes back into the repo for review.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOKEN HYGIENE ============ -->
+  <section id="hygiene" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Token hygiene</p>
+        <h2>Why the orchestrator stays cheap</h2>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">∅</span>No raw transcripts</h3><p>Every subagent returns a capped structured summary. The orchestrator never ingests raw agent output.</p></div>
+        <div class="panel"><h3><span class="ic">∥</span>Parallel fan-out</h3><p>Independent subagents run in a single message; dependent ones run in order.</p></div>
+        <div class="panel"><h3><span class="ic">▷</span>Tests via test-runner</h3><p>All builds, test suites, and CI logs are digested by test-runner — raw logs never reach the orchestrator's context.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/new-task + /iterate · multi-agent workflow reference</span>
+    <div class="paths">
+      <span>commands/new-task.md</span>
+      <span>commands/iterate.md</span>
+      <span>agents/</span>
+      <span>skills/</span>
+      <span>new-task/LEARNINGS.md</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
