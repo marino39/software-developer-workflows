@@ -56,11 +56,13 @@ default side-effect-free.
 `--comment`: post findings to the PR. Because posting to someone else's PR is an
 **outward-facing, hard-to-undo** action, `--comment` requires an explicit
 confirmation gate: the draft comments are presented, the human approves, then they
-post. Posting obeys the repo's **"be frugal about comments"** rule (CLAUDE.md):
-only genuinely necessary, high-confidence findings become inline comments (Must-fix,
-plus top Should-fix at most); everything else is folded into a single summary body.
-The submitted review event is `COMMENT` — never `APPROVE` or `REQUEST_CHANGES`
-unless the invocation explicitly asks — so the command never gates a merge.
+post. **All Must-fix and all Should-fix** findings post as inline comments at
+`file:line`; the **Rejected** set (findings the skeptic refuted or the consolidator
+dropped, each with its refutation reason) goes in the **summary body**, not inline —
+refuted findings are transparency for the reviewer, not actionable asks for the PR
+author, so inlining them would be noise. The submitted review event is `COMMENT` —
+never `APPROVE` or `REQUEST_CHANGES` unless the invocation explicitly asks — so the
+command never gates a merge.
 
 ## 5. Flow
 
@@ -92,10 +94,11 @@ Invocation: `/review-pr <pr-ref> [--comment]` where `<pr-ref>` is a URL,
 Reuse Phase 6 steps 2–3 exactly, with two substitutions:
 
 - `PLAN_OR_REQUIREMENTS` → the R0 **intent digest** (there is no plan file).
-- **Behavioral verification is off by default** — you should not blindly execute a
-  stranger's branch, and there is no plan Verification section. Record
-  `verification: not run (external PR)`. (Could become an opt-in `--run-tests` flag
-  later, sandboxed.)
+- **No local test execution.** We do not run a stranger's branch (unsafe, and no
+  plan Verification section to drive). Instead, **read the PR's CI check status from
+  GitHub** (via the GitHub MCP check/status tools) and report it as `ci: <state>`
+  (green / red / pending / none). CI is the adjudicator of test status here; the
+  review engine judges the code, CI judges the run.
 
 Channels A/B/C, tier selection, and codex-degradation rules are otherwise identical
 to Phase 6.
@@ -109,17 +112,22 @@ default-refute skeptic pass on each Must-fix.
 **Difference:** there is no PASS/FAIL *merge* verdict (nothing is being merged).
 The output is the ranked findings list plus an **advisory assessment**
 (`looks good` / `comment` / `request-changes`) — advice to the human reviewer, not
-an action.
+an action. The consolidator additionally returns the **Rejected** set: every finding
+the skeptic refuted or that scored `<50`, each with its one-line reason, so the
+report shows what was considered and dismissed, not only what survived.
 
 ### R3 — Deliver
 
-- **Default (local):** a structured report — one-paragraph summary + numbered
-  findings, each with severity (Must/Should), `file:line`, what's wrong and why
-  (not how to rewrite) — plus the advisory assessment.
-- **`--comment`:** present the draft inline comments + summary, get explicit
-  approval (§4), then post via the GitHub review workflow (create pending review →
-  add inline comments at `file:line` → submit as `COMMENT`). Frugal: Must-fix and
-  at most top Should-fix inline; the rest in the summary body.
+Both delivery modes surface **three sections** — Must-fix, Should-fix, and Rejected
+(with reasons) — plus the CI status (`ci: <state>`) and the advisory assessment.
+
+- **Default (local):** a structured report — one-paragraph summary + the three
+  numbered sections, each finding with severity, `file:line`, what's wrong and why
+  (not how to rewrite); Rejected findings carry their refutation reason.
+- **`--comment`:** present the draft comments + summary, get explicit approval (§4),
+  then post via the GitHub review workflow (create pending review → add inline
+  comments → submit as `COMMENT`). **All Must-fix and all Should-fix** post inline at
+  `file:line`; **Rejected** and the CI status go in the summary body (§4).
 
 ## 6. Intent source (the key design problem)
 
@@ -139,7 +147,7 @@ history C2) do not depend on a plan and carry over as-is.
 | `searcher` agent | optional R0 context | none |
 | `test-runner` agent | digest codex output | none |
 | Phase 6 tier logic | R0 step 4 | none — copied |
-| Phase 6 fan-out (steps 2–4) | R1/R2 | `PLAN` → intent digest; no PASS/FAIL verdict; no behavioral verification |
+| Phase 6 fan-out (steps 2–4) | R1/R2 | `PLAN` → intent digest; no PASS/FAIL verdict; CI status read from GitHub instead of local test runs |
 | `superpowers:using-git-worktrees` | R0 read-only checkout | read-only use |
 | GitHub MCP review tools | R3 `--comment` | new usage (post inline review) |
 
@@ -172,21 +180,25 @@ untouched, so it adds a command surface, not new complexity inside the engine.
   not author (a teammate's PR), so multi-channel + skeptic review was unavailable
   for inbound review*; source: this proposal (dated).
 - **Live scorecard:** `/workflow-eval` scores **`/new-task`** against frozen tasks.
-  `/review-pr` does not touch `/new-task`'s behavior, so it introduces no scorecard
-  regression risk and owes no `/new-task` scorecard. A dedicated eval fixture for
-  `/review-pr` is a reasonable **follow-up**, not a v1 blocker — call this out in the
-  PR as the exemption rationale.
+  `/review-pr` does not touch `/new-task`'s behavior, so it introduces no `/new-task`
+  scorecard regression risk. It ships instead with its **own frozen eval fixture**
+  (v1 requirement, not a follow-up): a known PR with a known expected findings set,
+  added under `evals/` so `/review-pr`'s consolidation can be scored and regression-
+  checked the way `/new-task` is. Shape TBD in the command-writing step — reuse the
+  existing rubric dimensions where they apply (finding precision/recall, false-
+  positive rate after the skeptic pass).
 
-## 10. Open questions
+## 10. Resolved decisions
 
-1. **Advisory verdict vocabulary** — `looks good / comment / request-changes`, or
-   just a findings list with no verdict?
-2. **Should-fix in comments** — inline the top N Should-fix, or Must-fix only inline
-   and all Should-fix in the summary?
-3. **Optional `--run-tests`** — is a sandboxed test run of the PR ever worth it, or
-   is behavioral verification permanently out of scope for foreign code?
-4. **Eval fixture** — do we want a frozen `/review-pr` fixture (a known PR with known
-   findings) in `evals/` before merge, or ship v1 lint-clean and add it later?
+1. **Advisory verdict** — the assessment is advisory
+   (`looks good / comment / request-changes`), never an action. ✓
+2. **All findings surfaced** — report and `--comment` both carry all Must-fix, all
+   Should-fix, and the Rejected set (with reasons); Rejected stays in the summary
+   body, not inline (§4, §5-R3). ✓
+3. **No local test runs** — CI check status is read from GitHub (`ci: <state>`);
+   sandboxed `--run-tests` is out of scope (§5-R1). ✓
+4. **Eval fixture is a v1 requirement** — `/review-pr` ships with its own frozen
+   fixture under `evals/` (§9). ✓
 
 ## 11. Recommendation
 
