@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Visual reference for the /new-task multi-agent Claude Code workflow: pipeline graph, routes, agent cast, gates, and self-improvement loop.">
+<meta name="description" content="Visual reference for the /new-task + /iterate multi-agent Claude Code workflow: pipeline graph, routes, agent cast, gates, warm-start iterate lane, and self-improvement loop.">
 <title>/new-task — workflow reference</title>
 <style>
   :root {
@@ -369,6 +369,28 @@
   .loopviz .op { color: var(--ink-3); }
   .loopviz .ret { color: var(--gate); font-weight: 600; }
 
+  /* iterate flow — horizontal warm-start lane */
+  .itr-flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 10px; }
+  .itr-node {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    border-top: 3px solid var(--flow);
+    padding: 16px 17px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  .itr-node.gate { border-top-color: var(--gate); }
+  .itr-tag {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; font-weight: 600;
+    color: var(--flow); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .itr-node.gate .itr-tag { color: var(--gate); }
+  .itr-t { font-weight: 660; font-size: 15px; margin-top: 8px; letter-spacing: -.01em; }
+  .itr-body p { color: var(--ink-2); font-size: 13px; margin: 7px 0 0; }
+  .itr-arrow { align-self: center; color: var(--flow); font-family: var(--mono); font-size: 20px; opacity: .55; }
+  @media (max-width: 860px) {
+    .itr-flow { grid-template-columns: 1fr; }
+    .itr-arrow { transform: rotate(90deg); justify-self: center; padding: 2px 0; }
+  }
+
   /* self-improvement loop */
   .cycle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 4px; }
   .cyc {
@@ -403,15 +425,15 @@
 
 <header>
   <div class="wrap head-grid">
-    <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable</span>
+    <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable · xhigh effort</span>
     <h1><span class="cmd">/new-task</span> — the full-lifecycle task workflow</h1>
-    <p class="lede">One orchestrator drives a task from brainstorm to retrospective. It judges results, routes work, and talks to the human — every substantive step is delegated to a subagent, and every human touchpoint is a fixed-format gate.</p>
+    <p class="lede">One orchestrator drives a task from brainstorm to retrospective. It judges results, routes work, and talks to the human — every substantive step is delegated to a subagent, and every human touchpoint is a fixed-format gate. Follow-up tweaks on a finished task take the warm-start <span class="cmd" style="font-size:.92em">/iterate</span> lane.</p>
     <div class="stat-row">
       <div class="stat"><div class="n">8</div><div class="l">Phases (0–7 + 6.5)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">Human gates</div></div>
       <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
       <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
-      <div class="stat"><div class="n">5×</div><div class="l">Review-loop cap</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Entry points</div></div>
     </div>
   </div>
 </header>
@@ -536,13 +558,14 @@
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">6</span></div></div>
           <div class="card">
             <h3>Implementation review <span class="loop-badge">↻ max 5</span></h3>
-            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — superpowers review, codex, and three lens reviewers. A fresh consolidator scores and dedupes findings; each Must-fix survives a default-refute <strong>skeptic pass</strong>. Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>.</p>
+            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — superpowers review, codex, and three lens reviewers. A fresh consolidator scores and dedupes findings; each Must-fix survives a default-refute <strong>skeptic pass</strong>. Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
             <div class="detail">
               <span class="tag skill">verify-feature</span>
               <span class="tag skill">requesting-code-review</span>
               <span class="tag agent">reviewer ×N lenses</span>
               <span class="tag">codex (full tier)</span>
               <span class="tag agent">consolidator + skeptics</span>
+              <span class="tag">run manifest → /iterate</span>
             </div>
           </div>
         </div>
@@ -683,13 +706,79 @@
       <div class="sec-head">
         <p class="eyebrow">Human contract</p>
         <h2>Four gates, one fixed format</h2>
-        <p>Human input is allowed only in phases 1, 3, and the fast-path scope gate. Every other touchpoint is a gate: a ≤25-line summary with four sections — <span class="mono">Results · Key decisions · Deviations · Next</span> — then a single approve / reject.</p>
+        <p>Work-shaping input is allowed only in phases 1, 3, and the fast-path scope gate. Every other touchpoint is a gate: a ≤25-line summary with four sections — <span class="mono">Results · Key decisions · Deviations · Next</span> — then a single approve / reject. A gate must be <strong>decidable</strong>: its Results carry the decision evidence inline, never just a link to open.</p>
       </div>
       <div class="gate-grid">
         <div class="gitem"><span class="gid">GATE 1</span><div><div class="gt">Approach</div><div class="gd">Chosen approach, rejected alternatives, remaining risks. After phase 2.</div></div></div>
         <div class="gitem"><span class="gid">GATE 2</span><div><div class="gt">Plan</div><div class="gd">Plan steps and deviations vs the approved design. After phase 4.</div></div></div>
         <div class="gitem auto"><span class="gid">GATE 3</span><div><div class="gt">Implementation <span style="font-weight:400;color:var(--pass)">· fast-path auto-approve</span></div><div class="gd">Route, files, tests, verification, fan-out tier, Must-fix counts. After phase 6.</div></div></div>
         <div class="gitem"><span class="gid">GATE 4</span><div><div class="gt">Self-update</div><div class="gd">Proposed learnings / workflow edits shown as a diff. After phase 7.</div></div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:16px;">
+        <div class="panel">
+          <h3><span class="ic">▤</span>Rendered as plain text, then the turn ends</h3>
+          <p>Every gate — GATES 1–4, GATE I, and the scope gate — is presented as a single plain-text message whose body <em>is</em> the full summary, then the turn ends. It is never collected through <span class="mono">AskUserQuestion</span>, whose picker would hide the evidence behind the widget. The summary stays the last visible text.</p>
+        </div>
+        <div class="panel">
+          <h3><span class="ic">?</span>A clarifying question ≠ a decision</h3>
+          <p>A clarifying question is allowed at <strong>any</strong> gate — it is how the human makes the gate decidable. It is answered in-band and the summary is re-presented; a question never counts as approve / reject and never advances or returns the phase. Only an explicit approve / reject moves the workflow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ITERATE ============ -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The follow-up entry point</p>
+        <h2><span class="mono" style="color:var(--flow)">/iterate</span> — the warm-start fast lane</h2>
+        <p>When a change has already been carried through <span class="mono">/new-task</span>'s review, tweaking or extending it shouldn't re-pay the full lifecycle. <span class="mono">/iterate</span> treats the follow-up as a <strong>delta on a reviewed baseline</strong>: no brainstorm, no plan-review, no from-scratch review fan-out, and no per-tweak retrospective. It reuses <span class="mono">/new-task</span>'s review-loop conventions, escalation ladder, and route model verbatim — only the warm-start seam and the deferred retro are new. Runs on Opus / Fable at <span class="mono">xhigh</span> effort.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag">Phase I0</div>
+          <div class="itr-body">
+            <div class="itr-t">Warm setup</div>
+            <p>Load the prior run's <strong>manifest</strong> — route, SHAs, design/plan/retro paths, outcome, and carried open Should-fix. Reuse the worktree warm if it still exists. Seed context from the manifest instead of re-running searcher / researcher. Inherit the route as a floor (monotonic — escalate only).</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag">Phase I1</div>
+          <div class="itr-body">
+            <div class="itr-t">Delta implement</div>
+            <p>ONE <span class="mono">architect</span> writes a delta plan-lite against the seeded baseline; carried Should-fix fold in. <span class="mono">coder</span>s implement in parallel where independent, delegating test runs to <span class="mono">test-runner</span>. Bug-fix deltas proven per <span class="mono">verify-fix</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag">Phase I2 <span class="loop-badge">↻ max 5</span></div>
+          <div class="itr-body">
+            <div class="itr-t">Delta review</div>
+            <p>The baseline is trusted, so review is <strong>delta by construction</strong>: one fresh <span class="mono">reviewer</span> over the iteration diff, seeded with the carried Should-fix checklist. An escalation to high-stakes triggers the full Phase 6 fan-out instead. Verdict computed: <span class="mono" style="color:var(--pass)">PASS ⇔ green ∧ zero Must-fix ∧ verified</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node gate">
+          <div class="itr-tag">GATE I</div>
+          <div class="itr-body">
+            <div class="itr-t">One gate</div>
+            <p>Same four-section decidable summary. <strong>Auto-approves</strong> on fully-green criteria and no route escalation — marked <span class="mono">auto-approved</span>, never silent. On approval, finish the branch or push to the manifest's PR (then Phase 6.5 CI applies).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--gate);">
+          <h3><span class="ic" style="background:var(--gate-soft);color:var(--gate);">⇄</span>Retro is deferred &amp; batched</h3>
+          <p>No per-iteration Phase 7 — that tax is the whole reason <span class="mono">/iterate</span> exists. Each iteration appends a compact entry to the manifest's log and bumps its <span class="mono">HEAD_SHA</span>. At session end (or <span class="mono">--finish</span>), Phase 7 runs <strong>once</strong> over the whole session — one retro, one curated GATE 4, keyed to the batch, not to each tweak.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--stakes);">
+          <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">⤴</span>When to bounce to /new-task</h3>
+          <p>No readable manifest, or the request isn't a delta on that baseline — a new subsystem, an unrelated area, a greenfield feature, or a delta that is itself ≥200 lines of new surface → <span class="mono">/iterate</span> stops and hands you back to <span class="mono">/new-task</span>. It assumes an already-reviewed baseline; without one there's nothing to delta against.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -779,9 +868,10 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task · full-lifecycle multi-agent workflow reference</span>
+    <span>/new-task + /iterate · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
+      <span>commands/iterate.md</span>
       <span>agents/</span>
       <span>skills/</span>
       <span>new-task/LEARNINGS.md</span>
