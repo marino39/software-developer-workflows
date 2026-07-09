@@ -20,7 +20,11 @@ subagents fan out in parallel in a single message.
 ## Human contract
 
 Same four-section decidable gate format as `/new-task` (Results / Key decisions /
-Deviations / Next — read there). `/iterate` has **one gate (GATE I)**, which may
+Deviations / Next — read there), **including its Gate rendering & follow-ups rule**:
+GATE I is presented as a plain-text message whose body is the full summary and then
+ends the turn — never collected via `AskUserQuestion` — and a human clarifying
+question is answered in-band with the gate re-presented, never read as approve/reject.
+`/iterate` has **one gate (GATE I)**, which may
 auto-approve on fully-green criteria exactly like the fast path's GATE 3. An
 auto-approved gate still emits the full summary, marked `auto-approved` — never
 silent. A review loop that exhausts its cap halts with a failure digest, never a
