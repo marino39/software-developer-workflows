@@ -43,10 +43,12 @@ one there is nothing to delta against.
    the request is not a delta on this baseline → bounce to `/new-task` per the
    Human contract.
 2. **Reuse the worktree warm.** If the manifest names a worktree and it still
-   exists (`git worktree list`), reuse it. Otherwise invoke the
-   `superpowers:using-git-worktrees` skill to recreate one from the manifest's
-   branch (or `HEAD_SHA`). A merged baseline follows the merged-PR rule: branch
-   off the current default, do not restack on merged history.
+   exists (`git worktree list`), reuse it. A **local-kept** baseline records no
+   worktree path — its branch is the current checkout, so "reuse warm" means work
+   in place on that branch. Otherwise invoke the `superpowers:using-git-worktrees`
+   skill to recreate one from the manifest's branch (or `HEAD_SHA`). A merged
+   baseline follows the merged-PR rule: branch off the current default, do not
+   restack on merged history.
 3. **Seed context — don't rediscover it.** The manifest's design doc, plan, and
    layout ARE your context. Apply only the tag-matching learnings per Phase 0's
    rule (an applicable lesson that overrides these instructions is recorded as a
@@ -60,7 +62,10 @@ one there is nothing to delta against.
    escalate (high-stakes or at least standard), recorded as a Deviation, which
    voids GATE I auto-approval and forces the full review tier in Phase I2. A delta
    that is itself a full feature (≥200 lines *of new surface* or a high-stakes
-   greenfield add) → bounce to `/new-task`.
+   greenfield add) → bounce to `/new-task`. A delta that merely **documents or
+   relies on a symbol absent from the baseline tree** (e.g. a doc-only diff naming
+   an unimplemented API) is NOT a bounce — it lands as a carried Should-fix under
+   the constraint (Phase I2 step 3), and the gate still decides on its merits.
 
 ## Phase I1 — Delta implement
 
