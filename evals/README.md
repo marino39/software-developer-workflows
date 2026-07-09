@@ -67,5 +67,9 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 3 tasks / 1 fixture covering the routing, bug-fix, and
-  auto-approve paths — representative, not exhaustive.
+- The first cut is 4 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, and `/iterate` warm-start paths — representative, not exhaustive.
+  Task 04 exercises `/iterate` (not `/new-task`): its `## Seed` stands in for a
+  completed prior run (baseline diff + run manifest) so the delta has a reviewed
+  baseline. A live scorecard + an ablation variant for the `/iterate` layer are
+  owed per `CLAUDE.md` before it merges (see the ledger row, status `candidate`).
