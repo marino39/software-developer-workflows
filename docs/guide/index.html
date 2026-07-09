@@ -3,864 +3,134 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Visual reference for the /new-task + /iterate multi-agent Claude Code workflow: pipeline graph, routes, agent cast, gates, warm-start iterate lane, and self-improvement loop.">
-<title>/new-task — workflow reference</title>
-<style>
-  :root {
-    --ground: #F7F8FA;
-    --panel: #FFFFFF;
-    --panel-2: #F0F2F5;
-    --ink: #111820;
-    --ink-2: #3B4652;
-    --ink-3: #66727F;
-    --line: #DDE2E8;
-    --line-2: #C6CDD6;
-
-    --flow: #0B7A6F;        /* teal — the pipeline / spine */
-    --flow-soft: #E1F1EE;
-    --gate: #B0730C;        /* amber — human checkpoints */
-    --gate-soft: #F8EEDC;
-    --stakes: #A6231F;      /* crimson — high-stakes route */
-    --stakes-soft: #F7E3E2;
-    --pass: #2E7D4F;        /* green — PASS / green tests */
-    --pass-soft: #E2F0E7;
-    --scoped: #2C5FA8;      /* blue — scoped / fast path */
-    --scoped-soft: #E3ECF7;
-
-    --radius: 10px;
-    --radius-sm: 6px;
-    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
-    --maxw: 1080px;
-    --shadow: 0 1px 2px rgba(17,24,32,.04), 0 8px 24px rgba(17,24,32,.05);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #0E1317;
-      --panel: #151B21;
-      --panel-2: #1B232A;
-      --ink: #E7ECF0;
-      --ink-2: #B3BDC6;
-      --ink-3: #7E8B96;
-      --line: #26303A;
-      --line-2: #33404B;
-
-      --flow: #2FB6A6;
-      --flow-soft: #12312D;
-      --gate: #E0A63E;
-      --gate-soft: #33280F;
-      --stakes: #E7645F;
-      --stakes-soft: #331716;
-      --pass: #57B87E;
-      --pass-soft: #14291D;
-      --scoped: #6C9AE0;
-      --scoped-soft: #16233A;
-      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
-    }
-  }
-  :root[data-theme="light"] {
-    --ground: #F7F8FA; --panel: #FFFFFF; --panel-2: #F0F2F5;
-    --ink: #111820; --ink-2: #3B4652; --ink-3: #66727F;
-    --line: #DDE2E8; --line-2: #C6CDD6;
-    --flow: #0B7A6F; --flow-soft: #E1F1EE; --gate: #B0730C; --gate-soft: #F8EEDC;
-    --stakes: #A6231F; --stakes-soft: #F7E3E2; --pass: #2E7D4F; --pass-soft: #E2F0E7;
-    --scoped: #2C5FA8; --scoped-soft: #E3ECF7;
-    --shadow: 0 1px 2px rgba(17,24,32,.04), 0 8px 24px rgba(17,24,32,.05);
-  }
-  :root[data-theme="dark"] {
-    --ground: #0E1317; --panel: #151B21; --panel-2: #1B232A;
-    --ink: #E7ECF0; --ink-2: #B3BDC6; --ink-3: #7E8B96;
-    --line: #26303A; --line-2: #33404B;
-    --flow: #2FB6A6; --flow-soft: #12312D; --gate: #E0A63E; --gate-soft: #33280F;
-    --stakes: #E7645F; --stakes-soft: #331716; --pass: #57B87E; --pass-soft: #14291D;
-    --scoped: #6C9AE0; --scoped-soft: #16233A;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
-  }
-
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--ground);
-    color: var(--ink);
-    font-family: var(--sans);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-
-  a { color: var(--flow); }
-
-  /* ---------- eyebrow / labels ---------- */
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin: 0 0 10px;
-  }
-  .mono { font-family: var(--mono); }
-
-  /* ---------- header ---------- */
-  header {
-    border-bottom: 1px solid var(--line);
-    background:
-      linear-gradient(180deg, var(--panel-2), transparent 70%);
-  }
-  .head-grid { padding: 54px 0 40px; }
-  .kicker {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--mono); font-size: 12px;
-    color: var(--flow);
-    background: var(--flow-soft);
-    border: 1px solid color-mix(in srgb, var(--flow) 30%, transparent);
-    padding: 5px 11px; border-radius: 100px;
-    letter-spacing: .04em;
-  }
-  .kicker .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--flow); }
-  h1 {
-    font-size: clamp(38px, 7vw, 68px);
-    line-height: 1.02;
-    letter-spacing: -.02em;
-    margin: 22px 0 0;
-    text-wrap: balance;
-    font-weight: 720;
-  }
-  h1 .cmd { font-family: var(--mono); font-weight: 600; color: var(--flow); letter-spacing: -.01em; }
-  .lede {
-    font-size: clamp(17px, 2.1vw, 20px);
-    color: var(--ink-2);
-    max-width: 60ch;
-    margin: 18px 0 0;
-  }
-  .stat-row {
-    display: flex; flex-wrap: wrap; gap: 12px;
-    margin-top: 30px;
-  }
-  .stat {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    min-width: 118px;
-  }
-  .stat .n {
-    font-family: var(--mono); font-size: 26px; font-weight: 600;
-    color: var(--ink); line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .stat .l {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--ink-3); margin-top: 7px;
-  }
-
-  /* ---------- section scaffolding ---------- */
-  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
-  .sec-head { margin-bottom: 30px; }
-  h2 {
-    font-size: clamp(22px, 3vw, 30px);
-    letter-spacing: -.015em;
-    margin: 6px 0 0;
-    text-wrap: balance;
-    font-weight: 680;
-  }
-  .sec-head p { color: var(--ink-2); margin: 10px 0 0; max-width: 66ch; }
-
-  /* ---------- pipeline diagram ---------- */
-  .flow {
-    position: relative;
-    padding-left: 8px;
-  }
-  .spine-note {
-    display:flex; flex-wrap: wrap; gap: 14px 20px; margin-bottom: 26px;
-    font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
-  }
-  .spine-note .k { display:inline-flex; align-items:center; gap:7px; }
-  .swatch { width: 13px; height: 13px; border-radius: 3px; display:inline-block; border:1px solid rgba(0,0,0,.08); }
-
-  .node {
-    position: relative;
-    display: grid;
-    grid-template-columns: 64px 1fr;
-    gap: 20px;
-    padding-bottom: 22px;
-  }
-  /* the vertical rail */
-  .node::before {
-    content: "";
-    position: absolute;
-    left: 31px; top: 6px; bottom: -6px;
-    width: 2px;
-    background: linear-gradient(var(--flow), var(--flow));
-    opacity: .35;
-  }
-  .node:last-child::before { display: none; }
-
-  .rail {
-    position: relative;
-    z-index: 1;
-  }
-  .badge {
-    width: 64px; height: 64px;
-    border-radius: 14px;
-    background: var(--panel);
-    border: 2px solid var(--flow);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-family: var(--mono);
-    box-shadow: var(--shadow);
-  }
-  .badge .p { font-size: 9px; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; }
-  .badge .num { font-size: 24px; font-weight: 600; color: var(--flow); line-height: 1; margin-top: 2px; }
-  .badge.half { border-style: dashed; }
-
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    box-shadow: var(--shadow);
-  }
-  .card h3 {
-    margin: 0; font-size: 17px; letter-spacing: -.01em;
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .card p { margin: 9px 0 0; color: var(--ink-2); font-size: 14.5px; }
-  .card .detail { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px; }
-
-  .tag {
-    font-family: var(--mono); font-size: 11px;
-    padding: 3px 9px; border-radius: 100px;
-    border: 1px solid var(--line-2); color: var(--ink-2);
-    background: var(--panel-2);
-    white-space: nowrap;
-  }
-  .tag.agent { color: var(--flow); border-color: color-mix(in srgb, var(--flow) 35%, transparent); background: var(--flow-soft); }
-  .tag.skill { color: var(--scoped); border-color: color-mix(in srgb, var(--scoped) 35%, transparent); background: var(--scoped-soft); }
-  .tag.loop  { color: var(--gate); border-color: color-mix(in srgb, var(--gate) 40%, transparent); background: var(--gate-soft); }
-
-  /* gate node */
-  .gate-node .badge {
-    border-color: var(--gate);
-    border-radius: 50%;
-    background: var(--gate-soft);
-  }
-  .gate-node .badge .num, .gate-node .badge .p { color: var(--gate); }
-  .gate-node::before { background: var(--gate); opacity: .3; }
-  .gate-card { border-color: color-mix(in srgb, var(--gate) 40%, transparent); background: var(--gate-soft); }
-  .gate-card h3 { color: var(--gate); }
-  .gate-card p { color: var(--ink-2); }
-
-  /* fast path callout attached to phase 0 */
-  .fastpath {
-    margin-top: 14px;
-    border: 1px dashed color-mix(in srgb, var(--scoped) 55%, transparent);
-    background: var(--scoped-soft);
-    border-radius: var(--radius-sm);
-    padding: 13px 15px;
-  }
-  .fastpath .lab {
-    font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--scoped); font-weight: 600;
-  }
-  .fastpath p { margin: 6px 0 0; font-size: 13.5px; color: var(--ink-2); }
-
-  .loop-badge {
-    font-family: var(--mono); font-size: 10.5px;
-    color: var(--gate); background: var(--gate-soft);
-    border: 1px solid color-mix(in srgb, var(--gate) 40%, transparent);
-    padding: 2px 8px; border-radius: 100px; white-space: nowrap;
-  }
-
-  /* ---------- generic card grids ---------- */
-  .grid { display: grid; gap: 16px; }
-  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
-
-  .route {
-    border: 1px solid var(--line);
-    border-top-width: 4px;
-    border-radius: var(--radius);
-    padding: 20px;
-    background: var(--panel);
-    box-shadow: var(--shadow);
-  }
-  .route.scoped { border-top-color: var(--scoped); }
-  .route.standard { border-top-color: var(--flow); }
-  .route.stakes { border-top-color: var(--stakes); }
-  .route .rname { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .02em; }
-  .route.scoped .rname { color: var(--scoped); }
-  .route.standard .rname { color: var(--flow); }
-  .route.stakes .rname { color: var(--stakes); }
-  .route .trigger { font-size: 13.5px; color: var(--ink-2); margin: 10px 0 0; }
-  .route .path { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
-
-  .monotonic {
-    margin-top: 20px;
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    font-family: var(--mono); font-size: 13px; color: var(--ink-2);
-    background: var(--panel-2); border: 1px solid var(--line);
-    border-radius: var(--radius-sm); padding: 13px 16px;
-  }
-  .monotonic .chip { padding: 3px 10px; border-radius: 5px; font-weight: 600; }
-  .monotonic .arrow { color: var(--ink-3); }
-  .chip.scoped { background: var(--scoped-soft); color: var(--scoped); }
-  .chip.standard { background: var(--flow-soft); color: var(--flow); }
-  .chip.stakes { background: var(--stakes-soft); color: var(--stakes); }
-
-  /* ---------- agent table ---------- */
-  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
-  table { border-collapse: collapse; width: 100%; min-width: 640px; background: var(--panel); }
-  th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; }
-  th {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--ink-3); background: var(--panel-2); position: sticky; top: 0;
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  td .aname { font-family: var(--mono); font-weight: 600; color: var(--ink); }
-  td .role { color: var(--ink-2); font-size: 13.5px; }
-
-  .tier {
-    font-family: var(--mono); font-size: 11px; font-weight: 600;
-    padding: 3px 9px; border-radius: 5px; white-space: nowrap;
-    display: inline-block;
-  }
-  .tier.haiku { background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--line-2); }
-  .tier.sonnet { background: var(--scoped-soft); color: var(--scoped); }
-  .tier.opus { background: var(--flow-soft); color: var(--flow); }
-  .tier.fable { background: var(--stakes-soft); color: var(--stakes); }
-
-  /* ---------- gates strip ---------- */
-  .gate-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .gitem {
-    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start;
-    background: var(--panel); border: 1px solid var(--line);
-    border-left: 3px solid var(--gate);
-    border-radius: var(--radius-sm); padding: 15px 17px;
-  }
-  .gitem .gid {
-    font-family: var(--mono); font-weight: 600; font-size: 13px; color: var(--gate);
-    background: var(--gate-soft); border-radius: 6px; padding: 6px 10px; white-space: nowrap;
-  }
-  .gitem .gt { font-weight: 600; font-size: 14.5px; }
-  .gitem .gd { color: var(--ink-2); font-size: 13.5px; margin-top: 3px; }
-  .gitem.auto { border-left-color: var(--pass); }
-  .gitem.auto .gid { color: var(--pass); background: var(--pass-soft); }
-
-  /* ---------- generic feature panels ---------- */
-  .panel {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
-  }
-  .panel h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 9px; }
-  .panel .ic {
-    width: 26px; height: 26px; border-radius: 7px; flex: none;
-    display: grid; place-items: center; font-family: var(--mono); font-size: 13px; font-weight: 600;
-    background: var(--flow-soft); color: var(--flow);
-  }
-  .panel p { color: var(--ink-2); font-size: 14px; margin: 12px 0 0; }
-  .panel ul { margin: 12px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; }
-  .panel li { margin: 5px 0; }
-  .panel li code, p code, td code { font-family: var(--mono); font-size: .88em; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
-
-  /* review loop diagram */
-  .loopviz { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-family: var(--mono); font-size: 12.5px; }
-  .loopviz .step { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 7px 11px; color: var(--ink); }
-  .loopviz .op { color: var(--ink-3); }
-  .loopviz .ret { color: var(--gate); font-weight: 600; }
-
-  /* iterate flow — horizontal warm-start lane */
-  .itr-flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 10px; }
-  .itr-node {
-    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-    border-top: 3px solid var(--flow);
-    padding: 16px 17px; box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
-  }
-  .itr-node.gate { border-top-color: var(--gate); }
-  .itr-tag {
-    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; font-weight: 600;
-    color: var(--flow); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .itr-node.gate .itr-tag { color: var(--gate); }
-  .itr-t { font-weight: 660; font-size: 15px; margin-top: 8px; letter-spacing: -.01em; }
-  .itr-body p { color: var(--ink-2); font-size: 13px; margin: 7px 0 0; }
-  .itr-arrow { align-self: center; color: var(--flow); font-family: var(--mono); font-size: 20px; opacity: .55; }
-  @media (max-width: 860px) {
-    .itr-flow { grid-template-columns: 1fr; }
-    .itr-arrow { transform: rotate(90deg); justify-self: center; padding: 2px 0; }
-  }
-
-  /* self-improvement loop */
-  .cycle { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 4px; }
-  .cyc {
-    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm);
-    padding: 15px; position: relative;
-  }
-  .cyc .n { font-family: var(--mono); font-size: 11px; color: var(--flow); font-weight: 600; }
-  .cyc .t { font-weight: 600; font-size: 14px; margin-top: 6px; }
-  .cyc .d { color: var(--ink-2); font-size: 12.5px; margin-top: 5px; }
-
-  /* footer */
-  footer { padding: 40px 0 60px; }
-  .foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
-  .foot .paths { display: flex; gap: 8px; flex-wrap: wrap; }
-  .foot .paths span { background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 3px 9px; }
-
-  @media (max-width: 720px) {
-    .grid.cols-3, .grid.cols-2, .gate-grid, .cycle { grid-template-columns: 1fr; }
-    .node { grid-template-columns: 52px 1fr; gap: 14px; }
-    .node::before { left: 25px; }
-    .badge { width: 52px; height: 52px; }
-    .cycle { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .card, .route, .panel, .stat { transition: transform .15s ease, box-shadow .15s ease; }
-    .card:hover, .route:hover, .panel:hover { transform: translateY(-2px); }
-  }
-  :focus-visible { outline: 2px solid var(--flow); outline-offset: 2px; }
-</style>
+<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator, two entry points: /new-task (full lifecycle) and /iterate (warm-start follow-up).">
+<title>Workflow reference — overview</title>
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html" aria-current="page">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+    </div>
+  </div>
+</nav>
 
 <header>
   <div class="wrap head-grid">
     <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable · xhigh effort</span>
-    <h1><span class="cmd">/new-task</span> — the full-lifecycle task workflow</h1>
-    <p class="lede">One orchestrator drives a task from brainstorm to retrospective. It judges results, routes work, and talks to the human — every substantive step is delegated to a subagent, and every human touchpoint is a fixed-format gate. Follow-up tweaks on a finished task take the warm-start <span class="cmd" style="font-size:.92em">/iterate</span> lane.</p>
+    <h1>One orchestrator, two entry points</h1>
+    <p class="lede">A Claude Code workflow that drives a task through its whole lifecycle with a fleet of specialized subagents. The orchestrator judges results, routes work, and talks to the human — every substantive step is delegated, and every human touchpoint is a fixed-format gate. Start cold with <span class="cmd" style="font-size:.92em">/new-task</span>; follow up warm with <span class="cmd" style="font-size:.92em">/iterate</span>.</p>
     <div class="stat-row">
-      <div class="stat"><div class="n">8</div><div class="l">Phases (0–7 + 6.5)</div></div>
-      <div class="stat"><div class="n">4</div><div class="l">Human gates</div></div>
-      <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
-      <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Entry points</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">Model tiers</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
+      <div class="stat"><div class="n">5×</div><div class="l">Review-loop cap</div></div>
     </div>
   </div>
 </header>
 
 <main>
-  <!-- ============ PIPELINE ============ -->
+  <!-- ===== the two entry points ===== -->
   <section>
     <div class="wrap">
       <div class="sec-head">
-        <p class="eyebrow">The pipeline</p>
-        <h2>How a task flows through the workflow</h2>
-        <p>The spine runs top to bottom. Teal nodes are phases; circular amber nodes are human gates. Scoped tasks take the dashed <span class="mono">fast path</span>, collapsing phases 1–4. Review phases (2, 4, 6) are bounded loops that never silently pass.</p>
+        <p class="eyebrow">Pick your lane</p>
+        <h2>Two ways in</h2>
+        <p>Whether a task is cold or a follow-up on already-reviewed work decides which command you run. Both share the same subagents, routes, gates, and review machinery — they differ in how much of the lifecycle they pay for.</p>
       </div>
-
-      <div class="spine-note">
-        <span class="k"><span class="swatch" style="background:var(--flow)"></span>Phase</span>
-        <span class="k"><span class="swatch" style="background:var(--gate)"></span>Human gate</span>
-        <span class="k"><span class="swatch" style="background:var(--scoped)"></span>Scoped fast path</span>
-        <span class="k"><span class="swatch" style="background:var(--stakes)"></span>High-stakes escalation</span>
-        <span class="k">↻ = bounded review loop (max 5)</span>
-      </div>
-
-      <div class="flow">
-
-        <!-- Phase 0 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">0</span></div></div>
-          <div class="card">
-            <h3>Setup &amp; route</h3>
-            <p>Read tag-matched learnings, open an isolated git worktree, fan out <span class="mono">searcher</span> + <span class="mono">researcher</span> for missing context, then classify the task's route. The route is <strong>monotonic</strong> — it may only escalate.</p>
-            <div class="detail">
-              <span class="tag skill">using-git-worktrees</span>
-              <span class="tag agent">searcher</span>
-              <span class="tag agent">researcher</span>
-            </div>
-            <div class="fastpath">
-              <span class="lab">↳ Scoped fast path</span>
-              <p>Audits, single scoped bug fixes, doc-only or dead-code changes bypass phases 1–4: one scope gate → <span class="mono">searcher</span> → a single <span class="mono">architect</span> plan-lite → straight to implementation. An early route re-check (step 3.5) can still escalate to high-stakes before any review spend.</p>
-            </div>
+      <div class="entries">
+        <a class="entry" href="new-task.html">
+          <span class="cmd-lg">/new-task</span>
+          <span class="role-lg">The full lifecycle</span>
+          <p>For a cold task. Brainstorm → approach review → plan → plan review → implement → implementation review → CI → retrospective. Eight phases, four human gates, risk-scaled review, and a self-improvement pass that writes lessons back. On finish it leaves a run manifest so a later follow-up can start warm.</p>
+          <div class="chips">
+            <span class="tag">Phases 0–7 + 6.5</span>
+            <span class="tag">4 gates</span>
+            <span class="tag">brainstorm → retro</span>
           </div>
-        </div>
-
-        <!-- Phase 1 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">1</span></div></div>
-          <div class="card">
-            <h3>Brainstorm <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
-            <p>Three <span class="mono">architect</span> agents each explore a distinct lens (simplest / most robust / alternative paradigm) in parallel with clarifying questions. A fresh <span class="mono">fable</span> architect synthesizes and ranks them into one recommendation, written to a design doc.</p>
-            <div class="detail">
-              <span class="tag skill">brainstorming</span>
-              <span class="tag agent">architect ×3</span>
-              <span class="tag agent">architect · fable synth</span>
-            </div>
+          <span class="go">Dive into /new-task <span class="ar">→</span></span>
+        </a>
+        <a class="entry warm" href="iterate.html">
+          <span class="cmd-lg">/iterate</span>
+          <span class="role-lg">The warm-start follow-up</span>
+          <p>For a delta on a baseline <span class="mono">/new-task</span> already reviewed. Loads the run manifest, reuses the worktree warm, and runs a delta implement + delta review — no brainstorm, no plan-review, no from-scratch fan-out. One gate, and the retrospective is deferred and batched across the whole session.</p>
+          <div class="chips">
+            <span class="tag">Phases I0–I2</span>
+            <span class="tag">1 gate</span>
+            <span class="tag">delta on a baseline</span>
           </div>
-        </div>
-
-        <!-- Phase 2 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">2</span></div></div>
-          <div class="card">
-            <h3>Approach review <span class="loop-badge">↻ max 5</span></h3>
-            <p>A fresh <span class="mono">fable</span> architect (clean context) adversarially reviews the design and returns numbered <strong>blocking</strong> issues or the literal <span class="mono">no blocking issues</span>. The phase exits only on that string — never on a gut impression.</p>
-            <div class="detail"><span class="tag agent">architect · fable adversarial</span></div>
-          </div>
-        </div>
-
-        <!-- GATE 1 -->
-        <div class="node gate-node">
-          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">1</span></div></div>
-          <div class="card gate-card">
-            <h3>GATE 1 · Approach</h3>
-            <p>Gate summary: chosen approach, rejected alternatives, remaining risks, deviations vs the confirmed brainstorm direction. Human approves or rejects.</p>
-          </div>
-        </div>
-
-        <!-- Phase 3 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">3</span></div></div>
-          <div class="card">
-            <h3>Plan <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
-            <p>An <span class="mono">architect</span> with clean context drafts a plan fed only the approved design — file-level steps, interface contracts, and per-step verification.</p>
-            <div class="detail"><span class="tag skill">writing-plans</span><span class="tag agent">architect</span></div>
-          </div>
-        </div>
-
-        <!-- Phase 4 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">4</span></div></div>
-          <div class="card">
-            <h3>Plan review <span class="loop-badge">↻ max 5</span></h3>
-            <p>A fresh <span class="mono">reviewer</span> builds a <strong>mapping table</strong>: every design decision → its plan step(s), every step → its verification. Exits only when the table has no gaps. Failures return the unmapped rows, not prose.</p>
-            <div class="detail"><span class="tag agent">reviewer</span></div>
-          </div>
-        </div>
-
-        <!-- GATE 2 -->
-        <div class="node gate-node">
-          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">2</span></div></div>
-          <div class="card gate-card">
-            <h3>GATE 2 · Plan</h3>
-            <p>Gate summary: plan steps and deviations vs the approved design. Human approves or rejects.</p>
-          </div>
-        </div>
-
-        <!-- Phase 5 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">5</span></div></div>
-          <div class="card">
-            <h3>Implement</h3>
-            <p>Each plan task goes to a <span class="mono">coder</span>; independent tasks run in parallel. Coders route test runs to <span class="mono">test-runner</span> so raw output never reaches the orchestrator. Stuck after two attempts → escalate to <span class="mono">debugger</span>.</p>
-            <div class="detail">
-              <span class="tag skill">subagent-driven-development</span>
-              <span class="tag agent">coder</span>
-              <span class="tag agent">test-runner</span>
-              <span class="tag skill">verify-fix</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 6 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">6</span></div></div>
-          <div class="card">
-            <h3>Implementation review <span class="loop-badge">↻ max 5</span></h3>
-            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — superpowers review, codex, and three lens reviewers. A fresh consolidator scores and dedupes findings; each Must-fix survives a default-refute <strong>skeptic pass</strong>. Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
-            <div class="detail">
-              <span class="tag skill">verify-feature</span>
-              <span class="tag skill">requesting-code-review</span>
-              <span class="tag agent">reviewer ×N lenses</span>
-              <span class="tag">codex (full tier)</span>
-              <span class="tag agent">consolidator + skeptics</span>
-              <span class="tag">run manifest → /iterate</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- GATE 3 -->
-        <div class="node gate-node">
-          <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">3</span></div></div>
-          <div class="card gate-card">
-            <h3>GATE 3 · Implementation <span class="tag" style="border-color:color-mix(in srgb,var(--pass) 40%,transparent);color:var(--pass);background:var(--pass-soft)">auto-approves on the fast path</span></h3>
-            <p>Gate summary: final route, files changed, test + behavioral-verification status, fan-out tier, per-channel finding counts, Must-fix / Should-fix. On a non-escalated scoped route with fully green criteria, this gate auto-approves — still emitting the full summary, marked <span class="mono">auto-approved</span>. On approval → finish the branch (merge / PR).</p>
-          </div>
-        </div>
-
-        <!-- Phase 6.5 -->
-        <div class="node">
-          <div class="rail"><div class="badge half"><span class="p">Phase</span><span class="num">6.5</span></div></div>
-          <div class="card">
-            <h3>CI verification <span class="tag">PR path only</span> <span class="loop-badge">↻ max 5</span></h3>
-            <p>Runs only when phase 6 produced a PR. Event-driven — it subscribes to PR activity and ends the turn rather than holding it open on a poll. Failures triage through <span class="mono">test-runner</span>; fixes are reviewed before pushing. Green → phase 7; cap exhausted → HALT with the PR left open.</p>
-            <div class="detail"><span class="tag skill">ci-triage</span><span class="tag agent">test-runner</span><span class="tag agent">coder</span></div>
-          </div>
-        </div>
-
-        <!-- Phase 7 -->
-        <div class="node">
-          <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">7</span></div></div>
-          <div class="card">
-            <h3>Retrospective &amp; self-improvement</h3>
-            <p>Write a retro, distill durable lessons, and propose a self-update to the learnings memory, command file, agents, or skills. <strong>GATE 4</strong> shows the update as a diff — only approved edits are applied, then versioned via <span class="mono">capture.sh</span>.</p>
-            <div class="detail"><span class="tag loop">GATE 4</span><span class="tag">LEARNINGS.md</span><span class="tag">capture.sh</span></div>
-          </div>
-        </div>
-
+          <span class="go">Dive into /iterate <span class="ar">→</span></span>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ============ ROUTES ============ -->
+  <!-- ===== how they relate ===== -->
   <section>
     <div class="wrap">
       <div class="sec-head">
-        <p class="eyebrow">Routing</p>
-        <h2>Three routes, set once and only ever escalated</h2>
-        <p>Phase 0 classifies the task by the diff it will produce. The route is re-checked against the real work at two later checkpoints and can only move in one direction.</p>
+        <p class="eyebrow">How they connect</p>
+        <h2>The manifest is the handoff</h2>
+        <p>Every finished <span class="mono">/new-task</span> writes a run manifest — route, SHAs, artifact paths, outcome, and open Should-fix findings. That file is exactly what <span class="mono">/iterate</span> loads to start warm, so follow-up work never re-discovers context the first run already established.</p>
       </div>
-      <div class="grid cols-3">
-        <div class="route scoped">
-          <div class="rname">scoped</div>
-          <p class="trigger">Audit, single scoped bug fix, scoped hygiene / observability add, or dead-code / doc-only change.</p>
-          <div class="path">→ fast path · phases 1–4 collapse · GATE 3 may auto-approve</div>
-        </div>
-        <div class="route standard">
-          <div class="rname">standard</div>
-          <p class="trigger">Everything else — the default full lifecycle across all eight phases.</p>
-          <div class="path">→ full lifecycle · all four gates</div>
-        </div>
-        <div class="route stakes">
-          <div class="rname">high-stakes</div>
-          <p class="trigger">Diff touches auth, payments, migrations, or data deletion.</p>
-          <div class="path">→ full tier from pass 1 · escalated reviewers · human GATE 3</div>
-        </div>
-      </div>
-      <div class="monotonic">
-        <span>Monotonic escalation:</span>
-        <span class="chip scoped">scoped</span><span class="arrow">→</span>
-        <span class="chip standard">standard</span><span class="arrow">→</span>
-        <span class="chip stakes">high-stakes</span>
-        <span style="color:var(--ink-3)">· auto-triggers: any high-stakes category, or DIFF_LINES ≥ 200 → at least standard</span>
+      <div class="relate">
+        <span class="b nt">/new-task</span>
+        <span class="op">→ finishes, writes</span>
+        <span class="b" style="background:var(--panel);border:1px solid var(--line-2);color:var(--ink)">run manifest</span>
+        <span class="op">→</span>
+        <span class="b it">/iterate</span>
+        <span class="op">→ warm delta ↺ (loops, batched)</span>
+        <span class="op">→</span>
+        <span class="b" style="background:var(--panel);border:1px solid var(--line-2);color:var(--ink)">one retro at session end</span>
       </div>
     </div>
   </section>
 
-  <!-- ============ AGENTS ============ -->
+  <!-- ===== shared foundations ===== -->
   <section>
     <div class="wrap">
       <div class="sec-head">
-        <p class="eyebrow">The cast</p>
-        <h2>Seven subagents, each with a fixed model tier</h2>
-        <p>The orchestrator never does substantive work itself. Agents are tools with input/output contracts; each returns a capped structured summary, never a raw transcript. Model tier is the default — the escalation ladder overrides it one rung at a time.</p>
+        <p class="eyebrow">Shared foundations</p>
+        <h2>What both commands are built on</h2>
+        <p>These are defined once — in <span class="mono">/new-task</span> — and reused verbatim by <span class="mono">/iterate</span>. Follow the links to the detail.</p>
       </div>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr><th>Agent</th><th>Default</th><th>Role</th><th>Escalates to</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="aname">searcher</span></td>
-              <td><span class="tier haiku">haiku</span></td>
-              <td class="role">Fast codebase lookups — definitions, callers, usages, config. Answers the exact question, ≤200 words.</td>
-              <td><span class="tier sonnet">sonnet</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">researcher</span></td>
-              <td><span class="tier sonnet">sonnet</span></td>
-              <td class="role">External research — docs, APIs, prior art. Returns synthesized findings with sources and confidence.</td>
-              <td><span class="tier opus">opus</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">architect</span></td>
-              <td><span class="tier opus">opus</span></td>
-              <td class="role">Designs plans — file-level steps, interfaces, trade-offs. Writes no code; may spawn only searcher / researcher.</td>
-              <td><span class="tier fable">fable</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">coder</span></td>
-              <td><span class="tier sonnet">sonnet</span></td>
-              <td class="role">Implements the plan exactly, step by step. Delegates test runs to test-runner; proves bug fixes before reporting.</td>
-              <td><span class="role" style="color:var(--ink-3)">→ debugger (no model bump)</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">reviewer</span></td>
-              <td><span class="tier sonnet">sonnet</span></td>
-              <td class="role">Reviews a diff against the plan — correctness, edge cases, conventions. Read-only; PASS/FAIL + numbered issues.</td>
-              <td><span class="tier opus">opus</span> → <span class="tier fable">fable</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">debugger</span></td>
-              <td><span class="tier opus">opus</span></td>
-              <td class="role">Escalation-only. Root-causes stubborn failures — reproduce, isolate, verify hypothesis — then fixes minimally.</td>
-              <td><span class="tier fable">fable</span></td>
-            </tr>
-            <tr>
-              <td><span class="aname">test-runner</span></td>
-              <td><span class="tier haiku">haiku</span></td>
-              <td class="role">Runs builds / tests / CI-log digests and reports compactly. Never fixes anything; raw output stops here.</td>
-              <td><span class="role" style="color:var(--ink-3)">—</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ GATES + LOOPS ============ -->
-  <section>
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">Human contract</p>
-        <h2>Four gates, one fixed format</h2>
-        <p>Work-shaping input is allowed only in phases 1, 3, and the fast-path scope gate. Every other touchpoint is a gate: a ≤25-line summary with four sections — <span class="mono">Results · Key decisions · Deviations · Next</span> — then a single approve / reject. A gate must be <strong>decidable</strong>: its Results carry the decision evidence inline, never just a link to open.</p>
-      </div>
-      <div class="gate-grid">
-        <div class="gitem"><span class="gid">GATE 1</span><div><div class="gt">Approach</div><div class="gd">Chosen approach, rejected alternatives, remaining risks. After phase 2.</div></div></div>
-        <div class="gitem"><span class="gid">GATE 2</span><div><div class="gt">Plan</div><div class="gd">Plan steps and deviations vs the approved design. After phase 4.</div></div></div>
-        <div class="gitem auto"><span class="gid">GATE 3</span><div><div class="gt">Implementation <span style="font-weight:400;color:var(--pass)">· fast-path auto-approve</span></div><div class="gd">Route, files, tests, verification, fan-out tier, Must-fix counts. After phase 6.</div></div></div>
-        <div class="gitem"><span class="gid">GATE 4</span><div><div class="gt">Self-update</div><div class="gd">Proposed learnings / workflow edits shown as a diff. After phase 7.</div></div></div>
-      </div>
-      <div class="grid cols-2" style="margin-top:16px;">
-        <div class="panel">
-          <h3><span class="ic">▤</span>Rendered as plain text, then the turn ends</h3>
-          <p>Every gate — GATES 1–4, GATE I, and the scope gate — is presented as a single plain-text message whose body <em>is</em> the full summary, then the turn ends. It is never collected through <span class="mono">AskUserQuestion</span>, whose picker would hide the evidence behind the widget. The summary stays the last visible text.</p>
+      <div class="found">
+        <div class="fcard">
+          <div class="ft"><span class="fk">7</span>Subagent cast</div>
+          <p>searcher, researcher, architect, coder, reviewer, debugger, test-runner — each with a fixed model tier and a capped structured output.</p>
+          <a href="new-task.html#agents">See the cast →</a>
         </div>
-        <div class="panel">
-          <h3><span class="ic">?</span>A clarifying question ≠ a decision</h3>
-          <p>A clarifying question is allowed at <strong>any</strong> gate — it is how the human makes the gate decidable. It is answered in-band and the summary is re-presented; a question never counts as approve / reject and never advances or returns the phase. Only an explicit approve / reject moves the workflow.</p>
+        <div class="fcard">
+          <div class="ft"><span class="fk">3</span>Routes</div>
+          <p>scoped · standard · high-stakes. Set once, monotonically escalated, re-checked against the real diff.</p>
+          <a href="new-task.html#routes">See routing →</a>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ ITERATE ============ -->
-  <section>
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">The follow-up entry point</p>
-        <h2><span class="mono" style="color:var(--flow)">/iterate</span> — the warm-start fast lane</h2>
-        <p>When a change has already been carried through <span class="mono">/new-task</span>'s review, tweaking or extending it shouldn't re-pay the full lifecycle. <span class="mono">/iterate</span> treats the follow-up as a <strong>delta on a reviewed baseline</strong>: no brainstorm, no plan-review, no from-scratch review fan-out, and no per-tweak retrospective. It reuses <span class="mono">/new-task</span>'s review-loop conventions, escalation ladder, and route model verbatim — only the warm-start seam and the deferred retro are new. Runs on Opus / Fable at <span class="mono">xhigh</span> effort.</p>
-      </div>
-
-      <div class="itr-flow">
-        <div class="itr-node">
-          <div class="itr-tag">Phase I0</div>
-          <div class="itr-body">
-            <div class="itr-t">Warm setup</div>
-            <p>Load the prior run's <strong>manifest</strong> — route, SHAs, design/plan/retro paths, outcome, and carried open Should-fix. Reuse the worktree warm if it still exists. Seed context from the manifest instead of re-running searcher / researcher. Inherit the route as a floor (monotonic — escalate only).</p>
-          </div>
+        <div class="fcard">
+          <div class="ft"><span class="fk">4</span>Gates</div>
+          <p>Fixed four-section summaries, rendered as plain text that ends the turn. Decidable by design.</p>
+          <a href="new-task.html#gates">See the gates →</a>
         </div>
-        <div class="itr-arrow" aria-hidden="true">→</div>
-        <div class="itr-node">
-          <div class="itr-tag">Phase I1</div>
-          <div class="itr-body">
-            <div class="itr-t">Delta implement</div>
-            <p>ONE <span class="mono">architect</span> writes a delta plan-lite against the seeded baseline; carried Should-fix fold in. <span class="mono">coder</span>s implement in parallel where independent, delegating test runs to <span class="mono">test-runner</span>. Bug-fix deltas proven per <span class="mono">verify-fix</span>.</p>
-          </div>
+        <div class="fcard">
+          <div class="ft"><span class="fk">↻</span>Bounded review loops</div>
+          <p>Phases 2, 4, 6 (and I2) share one delta-review engine, capped at 5 — exhaustion halts, never a silent pass.</p>
+          <a href="new-task.html#machinery">See the machinery →</a>
         </div>
-        <div class="itr-arrow" aria-hidden="true">→</div>
-        <div class="itr-node">
-          <div class="itr-tag">Phase I2 <span class="loop-badge">↻ max 5</span></div>
-          <div class="itr-body">
-            <div class="itr-t">Delta review</div>
-            <p>The baseline is trusted, so review is <strong>delta by construction</strong>: one fresh <span class="mono">reviewer</span> over the iteration diff, seeded with the carried Should-fix checklist. An escalation to high-stakes triggers the full Phase 6 fan-out instead. Verdict computed: <span class="mono" style="color:var(--pass)">PASS ⇔ green ∧ zero Must-fix ∧ verified</span>.</p>
-          </div>
+        <div class="fcard">
+          <div class="ft"><span class="fk">⇧</span>Escalation ladder</div>
+          <p>Same error twice → one model rung up. Exactly two by-design fable slots; at most one more fable per run.</p>
+          <a href="new-task.html#machinery">See escalation →</a>
         </div>
-        <div class="itr-arrow" aria-hidden="true">→</div>
-        <div class="itr-node gate">
-          <div class="itr-tag">GATE I</div>
-          <div class="itr-body">
-            <div class="itr-t">One gate</div>
-            <p>Same four-section decidable summary. <strong>Auto-approves</strong> on fully-green criteria and no route escalation — marked <span class="mono">auto-approved</span>, never silent. On approval, finish the branch or push to the manifest's PR (then Phase 6.5 CI applies).</p>
-          </div>
+        <div class="fcard">
+          <div class="ft"><span class="fk">∅</span>Token hygiene</div>
+          <p>No raw transcripts; parallel fan-out; all tests via test-runner. The orchestrator stays cheap.</p>
+          <a href="new-task.html#hygiene">See hygiene →</a>
         </div>
-      </div>
-
-      <div class="grid cols-2" style="margin-top:20px;">
-        <div class="panel" style="border-left:3px solid var(--gate);">
-          <h3><span class="ic" style="background:var(--gate-soft);color:var(--gate);">⇄</span>Retro is deferred &amp; batched</h3>
-          <p>No per-iteration Phase 7 — that tax is the whole reason <span class="mono">/iterate</span> exists. Each iteration appends a compact entry to the manifest's log and bumps its <span class="mono">HEAD_SHA</span>. At session end (or <span class="mono">--finish</span>), Phase 7 runs <strong>once</strong> over the whole session — one retro, one curated GATE 4, keyed to the batch, not to each tweak.</p>
-        </div>
-        <div class="panel" style="border-left:3px solid var(--stakes);">
-          <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">⤴</span>When to bounce to /new-task</h3>
-          <p>No readable manifest, or the request isn't a delta on that baseline — a new subsystem, an unrelated area, a greenfield feature, or a delta that is itself ≥200 lines of new surface → <span class="mono">/iterate</span> stops and hands you back to <span class="mono">/new-task</span>. It assumes an already-reviewed baseline; without one there's nothing to delta against.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ MACHINERY ============ -->
-  <section>
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">Shared machinery</p>
-        <h2>The parts that make it reliable</h2>
-      </div>
-      <div class="grid cols-2">
-
-        <div class="panel">
-          <h3><span class="ic">↻</span>Bounded review loops</h3>
-          <p>Phases 2, 4, and 6 share one delta-review engine. Iteration 1 runs the full review; iterations 2+ hand a fresh reviewer the prior findings as a checklist and scan only revised sections. Cap is 5 — exhaustion halts with a failure digest at the gate, never a silent pass.</p>
-          <div class="loopviz">
-            <span class="step">review</span><span class="op">→</span>
-            <span class="step">numbered issues?</span><span class="op">→</span>
-            <span class="ret">revise ↺</span><span class="op">→</span>
-            <span class="step">exit on clean</span>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h3><span class="ic">⇧</span>Escalation ladder &amp; fable budget</h3>
-          <p>Same error twice → escalate one model rung with fresh context. Different error each time → the upstream artifact is wrong; go back a phase instead.</p>
-          <ul>
-            <li>Two <span class="tier fable">fable</span> slots are by-design &amp; unbudgeted: the phase-1 synthesizer and the phase-2 adversarial reviewer.</li>
-            <li>Beyond those, <strong>at most one</strong> fable escalation per run — debugger, reviewer, or architect.</li>
-            <li>Ladder exhausted → STOP with a full failure digest.</li>
-          </ul>
-        </div>
-
-        <div class="panel">
-          <h3><span class="ic">⌖</span>Risk-scaled review fan-out</h3>
-          <p>Phase 6 sizes its review to the diff. Small, non-high-stakes changes get a <strong>reduced</strong> tier (one combined reviewer, codex skipped, orchestrator consolidates). Larger or high-stakes changes get the <strong>full</strong> tier.</p>
-          <ul>
-            <li><strong>Channel A</strong> — superpowers code review.</li>
-            <li><strong>Channel B</strong> — codex CLI (full tier, degrades gracefully).</li>
-            <li><strong>Channel C</strong> — three lens reviewers: bug scan · git history · CLAUDE.md compliance.</li>
-          </ul>
-        </div>
-
-        <div class="panel">
-          <h3><span class="ic">⚑</span>Skeptic pass &amp; computed verdict</h3>
-          <p>A fresh consolidator dedupes findings, scores each 0–100 confidence, drops &lt;50, and tags Should-fix (50–79) vs Must-fix (≥80). Each Must-fix then faces a default-refute skeptic — it survives only if the skeptic can't refute it.</p>
-          <p style="font-family:var(--mono);font-size:12.5px;color:var(--pass);background:var(--pass-soft);border:1px solid color-mix(in srgb,var(--pass) 35%,transparent);border-radius:6px;padding:9px 12px;">PASS ⇔ tests green ∧ zero Must-fix ∧ behavioral verification passed</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ SELF-IMPROVEMENT ============ -->
-  <section>
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">Memory &amp; self-improvement</p>
-        <h2>The workflow improves itself, under review</h2>
-        <p>Phase 0 loads only the learnings whose trigger tags match the task; phase 7 writes new ones back. Every self-edit passes GATE 4 and is versioned in git — hand edits and run-time self-improvements share the same source of truth.</p>
-      </div>
-      <div class="cycle">
-        <div class="cyc"><div class="n">load</div><div class="t">Tag-matched recall</div><div class="d">Phase 0 applies only bullets whose language / area / task-type / repo tags match this run.</div></div>
-        <div class="cyc"><div class="n">apply</div><div class="t">Lesson overrides rule</div><div class="d">A conflicting lesson wins (it's newer) and is recorded as an auditable deviation citing its <code>src:</code>.</div></div>
-        <div class="cyc"><div class="n">distill</div><div class="t">Phase 7 retro</div><div class="d">Durable lessons become dated one-line bullets; multi-step procedures graduate into skills.</div></div>
-        <div class="cyc"><div class="n">version</div><div class="t">GATE 4 → capture</div><div class="d">Approved edits only, then <code>capture.sh</code> pulls live changes back into the repo for review.</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TOKEN HYGIENE ============ -->
-  <section style="border-bottom:none;">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="eyebrow">Token hygiene</p>
-        <h2>Why the orchestrator stays cheap</h2>
-      </div>
-      <div class="grid cols-3">
-        <div class="panel"><h3><span class="ic">∅</span>No raw transcripts</h3><p>Every subagent returns a capped structured summary. The orchestrator never ingests raw agent output.</p></div>
-        <div class="panel"><h3><span class="ic">∥</span>Parallel fan-out</h3><p>Independent subagents run in a single message; dependent ones run in order.</p></div>
-        <div class="panel"><h3><span class="ic">▷</span>Tests via test-runner</h3><p>All builds, test suites, and CI logs are digested by test-runner — raw logs never reach the orchestrator's context.</p></div>
       </div>
     </div>
   </section>
@@ -874,7 +144,6 @@
       <span>commands/iterate.md</span>
       <span>agents/</span>
       <span>skills/</span>
-      <span>new-task/LEARNINGS.md</span>
     </div>
   </div>
 </footer>
