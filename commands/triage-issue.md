@@ -59,7 +59,7 @@ Everything from T1 on is identical.
 
 ## Phase T1 — Investigate
 
-Reuse `new-task.md` Phase 0 step 3 / Phase 1 legwork — fan out in parallel:
+Reuse `new-task.md` Phase 0 / Phase 1 investigation legwork — fan out in parallel:
 
 - `searcher` — where the relevant code lives, how it is wired, the suspect call paths.
 - `researcher` — external docs, library behavior, similar issues / prior art.

@@ -21,7 +21,7 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
                  (command/patch) applied to its fixture copy after copy, before dispatch;
                  a `## Command` section names a non-default driver (task 06 → /review-pr)
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single) prepended to a run for A/B
+                 brainstorm-single, triage-cold) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -69,9 +69,10 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 8 tasks / 1 fixture covering the routing, bug-fix,
-  auto-approve, `/iterate` warm-start, `/review-pr`, and `/triage-issue`
-  (bug + feature) paths — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+- The first cut is 9 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
+  (bug + feature), and the `/new-task` triage warm-start seam — representative,
+  not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -96,3 +97,10 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   three-lens brainstorm (deferred to `/new-task`) and no implementation. Its
   `Efficiency` dimension penalizes running the full brainstorm — the exact
   double-design cost the light path avoids.
+- Task 09 exercises the **`/new-task` triage warm-start seam**: its `## Seed`
+  writes both the calc bug and a triage manifest (what a prior `/triage-issue`
+  would produce), and the task references that manifest. The warm run should seed
+  Phase 0 from the manifest and inherit the `scoped` route as a floor instead of
+  re-investigating cold. Paired with the `triage-cold` variant for the
+  warm-vs-cold A/B (`--tasks 09 --variant triage-cold --repeat 3`) that sizes the
+  Phase-0 legwork saving and confirms the route floor.

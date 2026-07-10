@@ -118,9 +118,9 @@
         <div class="fcard"><div class="ft"><span class="fk">↯</span>Proven repro</div><p>For a bug: the CI-exact command + the discriminating test, ready to make green.</p></div>
         <div class="fcard"><div class="ft"><span class="fk">⌖</span>Root-cause + scope</div><p>The hypothesis with <span class="mono">file:line</span> and the target files / size estimate.</p></div>
       </div>
-      <div class="panel" style="margin-top:16px;border-left:3px solid var(--line-2);">
-        <h3><span class="ic">⋯</span>The consumption seam is a documented follow-up</h3>
-        <p>The manifest here is written <strong>consumption-ready</strong>. Teaching <span class="mono">/new-task</span> Phase 0 to actually seed from it edits the protected <span class="mono">new-task.md</span> and owes its own warm-start scorecard / A/B (per <span class="mono">CLAUDE.md</span>) — so it ships as a separate, measured change, exactly like the <span class="mono">/iterate</span> warm-start earned its ledger row.</p>
+      <div class="panel" style="margin-top:16px;border-left:3px solid var(--pass);">
+        <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">↳</span>The consumption seam is wired in</h3>
+        <p><span class="mono">/new-task</span> Phase 0 now reads a referenced triage manifest: it seeds the investigation from the manifest's digests / repro / root-cause instead of re-running the legwork, and inherits the triage <strong>route as a monotonic floor</strong> — so a triage-classified high-stakes issue can never be cold-downgraded. The seam is <strong>additive and inert without a manifest</strong> (the existing suite is unaffected); its warm-vs-cold cost A/B (<span class="mono">--tasks 09 --variant triage-cold</span>) is set up and owed, exactly as the <span class="mono">/iterate</span> warm-start earned its ledger row.</p>
       </div>
     </div>
   </section>
