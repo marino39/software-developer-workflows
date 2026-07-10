@@ -69,10 +69,10 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 10 tasks / 1 fixture covering the routing, bug-fix,
+- The first cut is 14 tasks / 1 fixture covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
-  (bug + feature), the `/new-task` triage warm-start seam, and `/explain` —
-  representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+  (bug + feature), the `/new-task` triage warm-start seam, and `/explain`
+  (5 of 7 cases) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -104,8 +104,11 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   re-investigating cold. Paired with the `triage-cold` variant for the
   warm-vs-cold A/B (`--tasks 09 --variant triage-cold --repeat 3`) that sizes the
   Phase-0 legwork saving and confirms the route floor.
-- Task 10 exercises `/explain` (Mechanism case): "How does auth.ValidateToken
-  work?". It scores classification (→ Mechanism), grounding (every claim cited
-  `file:line` in `auth/auth.go`, incl. surfacing the documented empty-token edge
-  case rather than inventing behavior), and **cost** (searcher tier only, no
-  architect/opus, inline synthesis) — all read-only.
+- Tasks 10–14 exercise `/explain` across 5 of its 7 cases — Mechanism (10),
+  Why (11), Locate (12), Impact (13), Architecture (14). Each scores
+  classification, grounding (every claim `file:line`-cited, nothing invented —
+  the Why case must say "no recorded rationale found" rather than fabricate), and
+  **cost** (searcher tier only, no architect/opus, inline synthesis), all
+  read-only. The remaining two cases — Flow/trace (3) and Compare (6) — are owed:
+  the minimal `calc` + `auth` fixture has no call chain to trace and no natural
+  symbol pair to compare, so they need a richer multi-file fixture first.
