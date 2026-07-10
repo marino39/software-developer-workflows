@@ -184,7 +184,10 @@ Per `commands/iterate.md`: every run appends a compact entry to the manifest's
 **iteration log** — threads addressed with their dispositions, escalations
 used, gate outcome — and updates the manifest's `HEAD_SHA`; carried Should-fix
 findings resolved or newly opened are updated in place. An unmanifested PR
-writes its fresh manifest here. Run `new-task.md` **Phase 7 ONCE** at session
+writes its fresh manifest here, in `new-task.md` Phase 6 step 10's format:
+`BASE_SHA` keeps its meaning everywhere else — the **merge-base with the
+default branch** — and the PR head this run ingested/reviewed from is recorded
+as a separate `ingest head` line, never overloaded onto `BASE_SHA`. Run `new-task.md` **Phase 7 ONCE** at session
 end (the human signals done, or `--finish`) over the whole log — never a
 per-run retrospective.
 

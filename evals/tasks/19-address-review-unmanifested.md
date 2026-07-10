@@ -79,6 +79,10 @@ git add -A && git commit -q -m "add calc.Average (PR #12, hand-authored)"
   manifest (route, branch, `HEAD_SHA`, iteration log covering this run) so the
   next `/iterate`/`/address-review` starts warm. A run that ends with no manifest
   leaves the next run cold — that is the failure this path exists to prevent.
+  Field semantics per the command's Retro section: `BASE_SHA` = the merge-base
+  with the default branch (its meaning in every other manifest); the PR head the
+  run ingested from goes on a separate `ingest head` line, never overloaded onto
+  `BASE_SHA`.
 
 ## Expected behaviour
 
