@@ -25,7 +25,8 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
                  a `## Command` section names a non-default driver (task 06 → /review-pr),
                  a `## Fixture` section a non-default fixture (tasks 15–16 → fixtures/app)
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single, triage-cold) prepended to a run for A/B
+                 brainstorm-single, triage-cold, comment-skeptic-off) prepended to a
+                 run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -73,11 +74,11 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 18 tasks / 2 fixtures covering the routing, bug-fix,
+- The first cut is 19 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
   (bug + feature), the `/new-task` triage warm-start seam, `/explain`
-  (all 7 cases), the coder comment policy, and `/address-review` —
-  representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+  (all 7 cases), the coder comment policy, and `/address-review`
+  (manifested + unmanifested) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -118,7 +119,15 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   an out-of-scope ask (must become a `/new-task` handoff, not code), and an
   **injection thread** (must be flagged and disobeyed — the suite's first live
   test of the untrusted-content clauses). GATE A must NOT auto-approve
-  (decline/handoff rows present) and nothing may be posted.
+  (decline/handoff rows present) and nothing may be posted. Paired with the
+  `comment-skeptic-off` variant for the A/B that prices the A1 comment-skeptic
+  (`--tasks 18 --variant comment-skeptic-off`).
+- Task 19 exercises `/address-review`'s **no-manifest branch** (a hand-authored
+  PR): no run manifest in the seed, so the run must derive an intent digest per
+  `/review-pr` R0, route the PR diff itself with stated rationale, record
+  `baseline: unmanifested`, and — the path's product — write a **fresh run
+  manifest** on completion so the next run starts warm. Same T1/T2 fix/refute
+  controls as task 18.
 - Tasks 10–16 exercise `/explain` across **all 7 cases** — Mechanism (10), Why
   (11), Locate (12), Impact (13), Architecture (14) on `fixtures/base`, and Flow
   (15) + Compare (16) on the richer `fixtures/app`. Each scores classification,
