@@ -57,6 +57,11 @@ For each selected task, `--repeat` times:
    fixtures are green; if the task file has a `## Seed` section, apply it to the copy
    now (run its command / apply its patch) to establish the task's failing precondition
    — so each scenario's setup is self-documenting and no task inherits another's red.
+   A task with a `## Learnings` section supplies the **general learnings file's
+   content** for the run: extend the preamble with "treat the following block as the
+   content of `~/.claude/new-task/LEARNINGS.md` for Phase 0; do NOT read the real live
+   file" + the block — so learnings-retrieval behavior is testable without touching
+   live state.
 2. **Dispatch** the task's driver command as a subagent, prepending the
    **eval-harness preamble**. The driver defaults to `/new-task "<task statement>"`;
    a task file with a `## Command` section (e.g. task 06) declares its own driver —
