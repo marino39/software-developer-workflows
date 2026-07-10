@@ -73,6 +73,15 @@ For each selected task, `--repeat` times:
      > AskUserQuestion. When finished, return: the picked tier + rationale, the
      > three-section findings report (Must-fix / Should-fix / Rejected) with the
      > advisory assessment, and `git status` (must be clean — read-only).
+   - **`/triage-issue` tasks** — read-only on the product, no gate in `--local` mode:
+     > You are running under the eval harness. Operate on the copied fixture at
+     > `<path>`; the issue to triage is the task's `## Issue` block. Do NOT fix
+     > anything, do NOT edit any product file, do NOT use `--comment`, and NEVER call
+     > AskUserQuestion. A bug's repro may run tests (through test-runner). When
+     > finished, return: the classification, the route + rationale, the proven repro
+     > (command + discriminating test + observed failure), the root-cause hypothesis
+     > with file:line, the scope + handoff line, and `git status` (must be clean — the
+     > fix must NOT be applied).
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.

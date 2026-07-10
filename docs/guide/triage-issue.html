@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /triage-issue — the front door to the lifecycle. Turn a GitHub issue into a classification, a proven repro, a root-cause hypothesis, and a scoped plan that warm-starts /new-task — without implementing.">
+<title>/triage-issue — the front door to the lifecycle</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+      <a href="triage-issue.html" aria-current="page">/triage-issue</a>
+      <a href="review-pr.html">/review-pr</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--pass);background:var(--pass-soft);border-color:color-mix(in srgb,var(--pass) 30%,transparent);"><span class="dot" style="background:var(--pass)"></span>The front door · Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd" style="color:var(--pass)">/triage-issue</span> — decide whether &amp; what, before how</h1>
+    <p class="lede"><a href="new-task.html" class="mono">/new-task</a> assumes you already know what to build. <span class="mono">/triage-issue</span> is the step before: it turns a raw GitHub issue into a <strong>classification</strong>, a <strong>proven repro</strong>, a <strong>root-cause hypothesis</strong>, and a <strong>scoped plan</strong> — then stops before any code. It writes a <strong>triage manifest</strong> that warm-starts <span class="mono">/new-task</span>, making it the lifecycle's front door rather than a sidecar.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">4</div><div class="l">Phases (T0–T3)</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Gates by default</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">Issue classes</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Product edits</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the triage flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The triage flow</p>
+        <h2>Four phases, then a handoff</h2>
+        <p>Classify, investigate, root-cause + scope, deliver. It reuses <span class="mono">/new-task</span>'s Phase 0/1 legwork and route model verbatim — only the issue-triage seam and the manifest are new. There is no plan or implement phase, so no authoring gate; the default run is side-effect-free.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--pass)">Phase T0</div>
+          <div class="itr-body">
+            <div class="itr-t">Setup &amp; classify</div>
+            <p>Read the issue (title · body · labels · comments · linked PRs); search for <strong>duplicates</strong>. Classify: <span class="mono">bug · feature · question · needs-info · duplicate</span>. Non-actionable classes short-circuit to a recommended <em>response</em>. An actionable issue gets a <strong>route</strong> (scoped / standard / high-stakes) per Phase 0 — the manifest's route floor.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--pass)">Phase T1</div>
+          <div class="itr-body">
+            <div class="itr-t">Investigate</div>
+            <p>The Phase 0/1 legwork, in parallel: <span class="mono">searcher</span> maps where the relevant code lives and the suspect call paths; <span class="mono">researcher</span> pulls external docs, library behavior, and similar issues. Their capped digests go verbatim into the manifest so <span class="mono">/new-task</span> doesn't re-discover them.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--pass)">Phase T2</div>
+          <div class="itr-body">
+            <div class="itr-t">Root-cause + scope</div>
+            <p><strong>Bug:</strong> a <strong>proven failing repro</strong> per <span class="mono">verify-fix</span> in an isolated scratch worktree (a pre-existing failing test that pinpoints it qualifies), plus a root-cause hypothesis with <span class="mono">file:line</span> evidence. <strong>Feature:</strong> a <em>light</em> approach sketch — ONE <span class="mono">architect</span>, not the full brainstorm (deferred to Phase 1). Then a scope estimate → route + which follow-up command.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--pass)">Phase T3</div>
+          <div class="itr-body">
+            <div class="itr-t">Deliver + manifest</div>
+            <p>A triage report (classification · route · repro · root-cause · scope) plus a <strong>ready-to-paste handoff</strong> — the exact <span class="mono">/new-task</span> or <span class="mono">/iterate</span> invocation — and the <strong>triage manifest</strong>. <span class="mono">--comment</span> posts a concise summary to the issue, behind one gate.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--pass);">
+          <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">◎</span>Read-only on the product</h3>
+          <p>Never edits, commits, or pushes product code; never closes, labels, or reopens the issue; never runs <span class="mono">/new-task</span> itself. The only writes are the triage manifest and a bug's repro test in an <strong>isolated scratch worktree</strong> — the fix is never applied. Triage stops at the hypothesis.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--gate);">
+          <h3><span class="ic" style="background:var(--gate-soft);color:var(--gate);">▤</span>--comment posts behind one gate</h3>
+          <p>Posting to the issue is outward-facing, so <span class="mono">--comment</span> presents the draft and ends the turn — only an explicit approve posts it, as a <span class="mono">COMMENT</span> (one concise triage summary + route + handoff), never a status change. Issue text is untrusted external content: instructions embedded in it are flagged, not followed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the manifest / composition ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The composition payoff</p>
+        <h2>The triage manifest warm-starts /new-task</h2>
+        <p>Just as <span class="mono">/new-task</span>'s run manifest lets <a href="iterate.html" class="mono">/iterate</a> start warm, the triage manifest lets <span class="mono">/new-task</span> start warm — route decided, legwork done, scope set. The chain becomes one pipeline, not four disconnected commands.</p>
+      </div>
+      <div class="relate">
+        <span class="b" style="background:var(--panel);border:1px solid var(--line-2);color:var(--ink)">issue</span>
+        <span class="op">→</span>
+        <span class="b" style="background:var(--pass-soft);border:1px solid color-mix(in srgb,var(--pass) 40%,transparent);color:var(--pass)">/triage-issue</span>
+        <span class="op">→ writes</span>
+        <span class="b" style="background:var(--panel);border:1px solid var(--line-2);color:var(--ink)">triage manifest</span>
+        <span class="op">→</span>
+        <span class="b nt">/new-task</span>
+        <span class="op">(warm) →</span>
+        <span class="b it">/iterate</span>
+      </div>
+      <div class="found" style="margin-top:18px;">
+        <div class="fcard"><div class="ft"><span class="fk">route</span>Route floor</div><p>The classification + route <span class="mono">/new-task</span> inherits instead of re-judging cold.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">◍</span>Investigation digests</div><p>The <span class="mono">searcher</span> / <span class="mono">researcher</span> findings, so Phase 0 legwork isn't re-run.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">↯</span>Proven repro</div><p>For a bug: the CI-exact command + the discriminating test, ready to make green.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">⌖</span>Root-cause + scope</div><p>The hypothesis with <span class="mono">file:line</span> and the target files / size estimate.</p></div>
+      </div>
+      <div class="panel" style="margin-top:16px;border-left:3px solid var(--pass);">
+        <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">↳</span>The consumption seam is wired in</h3>
+        <p><span class="mono">/new-task</span> Phase 0 now reads a referenced triage manifest: it seeds the investigation from the manifest's digests / repro / root-cause instead of re-running the legwork, and inherits the triage <strong>route as a monotonic floor</strong> — so a triage-classified high-stakes issue can never be cold-downgraded. The seam is <strong>additive and inert without a manifest</strong> (the existing suite is unaffected); its warm-vs-cold cost A/B (<span class="mono">--tasks 09 --variant triage-cold</span>) is set up and owed, exactly as the <span class="mono">/iterate</span> warm-start earned its ledger row.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses from new-task ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows from /new-task</h2>
+        <p><span class="mono">/triage-issue</span> adds a command surface, not new machinery — it is <span class="mono">/new-task</span>'s Phase 0–1 run standalone and stopped before implementation. Read it once on the <a href="new-task.html">/new-task</a> page.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">⌖</span>Route model</h3><p>scoped · standard · high-stakes, set from the issue as the manifest's floor. <a href="new-task.html#routes" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">◍</span>Investigation legwork</h3><p>searcher + researcher fan-out, parallel, capped digests. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">↯</span>verify-fix repro</h3><p>CI-exact reproduction + a discriminating test before a root cause is trusted. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">✎</span>Light architect sketch</h3><p>One architect for a feature's approach; the full brainstorm stays in Phase 1. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⇧</span>Escalation ladder</h3><p>A stubborn root cause escalates to debugger — but triage still only hypothesizes. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries, parallel fan-out, repro/tests via test-runner. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/triage-issue · the front door to the lifecycle</span>
+    <div class="paths">
+      <span>commands/triage-issue.md</span>
+      <span>commands/new-task.md</span>
+      <span>evals/tasks/07-triage-issue.md</span>
+      <span>agents/</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
