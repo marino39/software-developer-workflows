@@ -50,11 +50,13 @@ regression. `--lint-only` → emit the lint block of the summary and stop here.
 
 For each selected task, `--repeat` times:
 
-1. **Isolate**: copy `evals/fixtures/base` into a fresh temp worktree/dir (never
-   mutate the fixture in place). The base is green; if the task file has a `## Seed`
-   section, apply it to the copy now (run its command / apply its patch) to establish
-   the task's failing precondition — so each scenario's setup is self-documenting and
-   no task inherits another's red.
+1. **Isolate**: copy the task's fixture into a fresh temp worktree/dir (never mutate
+   the fixture in place). The fixture defaults to `evals/fixtures/base`; a task with a
+   `## Fixture` section names a different one (e.g. `fixtures/app` — a richer module
+   with a call chain + a comparable pair, for the `/explain` Flow/Compare cases). The
+   fixtures are green; if the task file has a `## Seed` section, apply it to the copy
+   now (run its command / apply its patch) to establish the task's failing precondition
+   — so each scenario's setup is self-documenting and no task inherits another's red.
 2. **Dispatch** the task's driver command as a subagent, prepending the
    **eval-harness preamble**. The driver defaults to `/new-task "<task statement>"`;
    a task file with a `## Command` section (e.g. task 06) declares its own driver —
