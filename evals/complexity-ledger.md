@@ -19,6 +19,7 @@ completeness is a review discipline (see `CLAUDE.md`).
 |---|---|---|---|---|
 | 3-architect brainstorm fan-out (Phase 1.2) | single-approach tunnel vision on wide design spaces | design-note 2026-07 (Cowork); intuition — unverified | ablation-queued | brainstorm-single |
 | Fable synthesizer, fresh instance (Phase 1.3) | biased ranking by a design's author-instance | design-note cost/quality 2026-07 | keep | — |
+| Coder comment-policy bullet (`agents/coder.md`) | agent-generated comment noise (WHAT-restating docs, per-tick narration, docs on private members) forcing later removal passes | user report 2026-07-10; intuition — unverified | candidate | — (needs variant) |
 | Phase 2 adversarial design review + fable iter-1 reviewer | a flawed design entering planning | design-note 2026-07 | keep | — |
 | Delta re-review, iterations 2+ (Phases 2/4/6) | re-review token blowup on long review loops | design-note loop-placement 2026-07 | consolidated | — |
 | Skeptic pass, default-refute (Phase 6.4) | plausible-but-wrong Must-fix reaching coders | learning 2026-07-03 (promoted) | ablation-queued | skeptic-off |
