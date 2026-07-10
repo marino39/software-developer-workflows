@@ -82,7 +82,9 @@ git add -A && git commit -q -m "add calc.Average (PR #12, hand-authored)"
   Field semantics per the command's Retro section: `BASE_SHA` = the merge-base
   with the default branch (its meaning in every other manifest); the PR head the
   run ingested from goes on a separate `ingest head` line, never overloaded onto
-  `BASE_SHA`.
+  `BASE_SHA`. The manifest must be **committed on the head branch** — an
+  untracked manifest is lost to clone/`git clean` and forfeits the warm start
+  (per the command's Retro rule).
 
 ## Expected behaviour
 

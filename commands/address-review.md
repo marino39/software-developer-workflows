@@ -187,7 +187,11 @@ findings resolved or newly opened are updated in place. An unmanifested PR
 writes its fresh manifest here, in `new-task.md` Phase 6 step 10's format:
 `BASE_SHA` keeps its meaning everywhere else — the **merge-base with the
 default branch** — and the PR head this run ingested/reviewed from is recorded
-as a separate `ingest head` line, never overloaded onto `BASE_SHA`. Run `new-task.md` **Phase 7 ONCE** at session
+as a separate `ingest head` line, never overloaded onto `BASE_SHA`. The
+manifest (fresh or updated) is **committed on the PR head branch** — an
+untracked manifest is lost to any clone or `git clean`, killing the warm start
+it exists to provide; keeping workflow docs out of the PR diff is not a reason
+to leave it untracked. Run `new-task.md` **Phase 7 ONCE** at session
 end (the human signals done, or `--finish`) over the whole log — never a
 per-run retrospective.
 
