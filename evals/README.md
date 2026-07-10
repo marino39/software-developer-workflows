@@ -69,9 +69,9 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 7 tasks / 1 fixture covering the routing, bug-fix,
-  auto-approve, `/iterate` warm-start, `/review-pr`, and `/triage-issue` paths —
-  representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+- The first cut is 8 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, `/iterate` warm-start, `/review-pr`, and `/triage-issue`
+  (bug + feature) paths — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -89,3 +89,10 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   pre-existing failing `TestSum`, and root-cause the `i = 1` loop start — all
   read-only (the fix must NOT be applied), scoring classification + root-cause
   precision.
+- Task 08 exercises `/triage-issue` on a **feature** request (no `## Seed`; the
+  requested `calc.Product` doesn't exist yet). It scores the light-design path —
+  classify feature / scoped, mirror the `calc.Sum` convention, and produce ONE
+  `architect` approach sketch + acceptance criteria, NOT the full Phase 1
+  three-lens brainstorm (deferred to `/new-task`) and no implementation. Its
+  `Efficiency` dimension penalizes running the full brainstorm — the exact
+  double-design cost the light path avoids.
