@@ -69,9 +69,9 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 6 tasks / 1 fixture covering the routing, bug-fix,
-  auto-approve, `/iterate` warm-start, and `/review-pr` paths — representative, not
-  exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+- The first cut is 7 tasks / 1 fixture covering the routing, bug-fix,
+  auto-approve, `/iterate` warm-start, `/review-pr`, and `/triage-issue` paths —
+  representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -83,3 +83,9 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   block. The diff touches `auth/` (high-stakes → full tier) and plants one Must-fix
   the green CI misses, scoring the engine's finding recall + post-skeptic
   false-positive rate.
+- Task 07 exercises `/triage-issue` offline: its `## Seed` reintroduces the calc
+  off-by-one (same as task 02), and the `## Issue` block stands in for a fetched bug
+  report. The run must classify (bug), route (scoped), prove the repro via the
+  pre-existing failing `TestSum`, and root-cause the `i = 1` loop start — all
+  read-only (the fix must NOT be applied), scoring classification + root-cause
+  precision.

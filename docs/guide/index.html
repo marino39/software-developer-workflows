@@ -16,6 +16,7 @@
       <a href="index.html" aria-current="page">Overview</a>
       <a href="new-task.html">/new-task</a>
       <a href="iterate.html">/iterate</a>
+      <a href="triage-issue.html">/triage-issue</a>
       <a href="review-pr.html">/review-pr</a>
     </div>
   </div>
@@ -93,6 +94,30 @@
     </div>
   </section>
 
+  <!-- ===== the front door ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Before the lifecycle</p>
+        <h2>Turning an issue into a plan</h2>
+        <p>The entry points above assume you already know <em>what</em> to build. <span class="mono">/triage-issue</span> is the step before — it classifies a raw GitHub issue, reproduces the bug, root-causes it, and scopes the fix, then stops before any code. It writes a <strong>triage manifest</strong> that warm-starts <span class="mono">/new-task</span>, so <span class="mono">issue → triage → /new-task → /iterate</span> is one pipeline.</p>
+      </div>
+      <div class="entries">
+        <a class="entry" href="triage-issue.html" style="border-top-color:var(--pass)">
+          <span class="cmd-lg" style="color:var(--pass)">/triage-issue</span>
+          <span class="role-lg">The front door</span>
+          <p>For a raw issue, before you know what to build. Classifies (bug / feature / question / needs-info / duplicate), routes it, runs the Phase 0/1 investigation, proves a repro per <span class="mono">verify-fix</span>, and root-causes with <span class="mono">file:line</span> evidence — read-only, no fix. Delivers a scoped plan + a ready-to-paste <span class="mono">/new-task</span> invocation and a triage manifest.</p>
+          <div class="chips">
+            <span class="tag">Phases T0–T3</span>
+            <span class="tag">0 gates (local)</span>
+            <span class="tag">read-only</span>
+          </div>
+          <span class="go" style="color:var(--pass)">Dive into /triage-issue <span class="ar">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== the review lane ===== -->
   <section>
     <div class="wrap">
@@ -163,10 +188,11 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /review-pr · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /review-pr · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
+      <span>commands/triage-issue.md</span>
       <span>commands/review-pr.md</span>
       <span>agents/</span>
       <span>skills/</span>
