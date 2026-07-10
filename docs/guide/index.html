@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator, two entry points (/new-task, /iterate), the /triage-issue front door and /review-pr lane, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
+<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator and many lanes: /new-task + /iterate to author, /triage-issue to turn an issue into a plan, /explain to understand code cheaply, /review-pr to review a teammate's PR, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
 <title>Workflow reference — overview</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -17,6 +17,7 @@
       <a href="new-task.html">/new-task</a>
       <a href="iterate.html">/iterate</a>
       <a href="triage-issue.html">/triage-issue</a>
+      <a href="explain.html">/explain</a>
       <a href="review-pr.html">/review-pr</a>
     </div>
   </div>
@@ -25,10 +26,10 @@
 <header>
   <div class="wrap head-grid">
     <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable · xhigh effort</span>
-    <h1>One orchestrator, two entry points</h1>
-    <p class="lede">A Claude Code workflow that drives a task through its whole lifecycle with a fleet of specialized subagents. The orchestrator judges results, routes work, and talks to the human — every substantive step is delegated, and every human touchpoint is a fixed-format gate. Start cold with <span class="cmd" style="font-size:.92em">/new-task</span>; follow up warm with <span class="cmd" style="font-size:.92em">/iterate</span>.</p>
+    <h1>One orchestrator, many lanes</h1>
+    <p class="lede">A Claude Code workflow that drives work through its whole lifecycle with a fleet of specialized subagents. The orchestrator judges results, routes work, and talks to the human — every substantive step is delegated, and every human touchpoint is a fixed-format gate. Author with <span class="cmd" style="font-size:.92em">/new-task</span> + <span class="cmd" style="font-size:.92em">/iterate</span>, turn an issue into a plan with <span class="cmd" style="font-size:.92em">/triage-issue</span>, understand code cheaply with <span class="cmd" style="font-size:.92em">/explain</span>, and review a teammate's PR with <span class="cmd" style="font-size:.92em">/review-pr</span> — all on the same fleet.</p>
     <div class="stat-row">
-      <div class="stat"><div class="n">2</div><div class="l">Entry points</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">Commands</div></div>
       <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
       <div class="stat"><div class="n">4</div><div class="l">Model tiers</div></div>
       <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
@@ -118,11 +119,35 @@
     </div>
   </section>
 
+  <!-- ===== the cheap read lane ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Just understand it</p>
+        <h2>The cheap read-only lane</h2>
+        <p>Not every question needs the lifecycle. <span class="mono">/explain</span> answers "how does X work / where is Y / <em>why</em> is Z this way" for the price of a few <span class="mono">haiku</span> searches — it classifies the question into one of seven cases and returns a grounded, cited answer in that case's fixed shape. No worktree, no gates, no writes.</p>
+      </div>
+      <div class="entries">
+        <a class="entry" href="explain.html" style="border-top-color:var(--explain)">
+          <span class="cmd-lg" style="color:var(--explain)">/explain</span>
+          <span class="role-lg">The cheap read-only lane</span>
+          <p>For understanding, not changing. Classifies into 7 cases (locate · mechanism · flow · architecture · impact · compare · why), sweeps with parallel <span class="mono">searcher</span>s on haiku/low effort, and synthesizes <strong>inline</strong> — no <span class="mono">architect</span>/opus. Every claim carries a <span class="mono">file:line</span>; anything absent is "not found," never invented.</p>
+          <div class="chips">
+            <span class="tag">Phases E0–E2</span>
+            <span class="tag">7 cases</span>
+            <span class="tag">haiku default</span>
+          </div>
+          <span class="go" style="color:var(--explain)">Dive into /explain <span class="ar">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== the review lane ===== -->
   <section>
     <div class="wrap">
       <div class="sec-head">
-        <p class="eyebrow">A third lane</p>
+        <p class="eyebrow">Reviewing inbound work</p>
         <h2>Reviewing work you didn't author</h2>
         <p>Both entry points above review work <em>you</em> just wrote. <span class="mono">/review-pr</span> is the read-only lane for the other case — a teammate's pull request. It takes the same Phase 6 review engine (fan-out → consolidation → skeptic) and aims it outward: it fixes nothing, approves nothing, and merges nothing. Its product is a review.</p>
       </div>
@@ -182,8 +207,8 @@
     <div class="wrap">
       <div class="sec-head">
         <p class="eyebrow">Shared foundations</p>
-        <h2>What both commands are built on</h2>
-        <p>These are defined once — in <span class="mono">/new-task</span> — and reused verbatim by <span class="mono">/iterate</span>. Follow the links to the detail.</p>
+        <h2>What every command is built on</h2>
+        <p>These are defined once — in <span class="mono">/new-task</span> — and reused by every other command (<span class="mono">/iterate</span>, <span class="mono">/triage-issue</span>, <span class="mono">/explain</span>, <span class="mono">/review-pr</span>). Follow the links to the detail.</p>
       </div>
       <div class="found">
         <div class="fcard">
@@ -223,11 +248,12 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /triage-issue + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /explain + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
       <span>commands/triage-issue.md</span>
+      <span>commands/explain.md</span>
       <span>commands/review-pr.md</span>
       <span>commands/workflow-maintenance.md</span>
       <span>commands/workflow-eval.md</span>

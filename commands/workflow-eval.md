@@ -50,11 +50,13 @@ regression. `--lint-only` → emit the lint block of the summary and stop here.
 
 For each selected task, `--repeat` times:
 
-1. **Isolate**: copy `evals/fixtures/base` into a fresh temp worktree/dir (never
-   mutate the fixture in place). The base is green; if the task file has a `## Seed`
-   section, apply it to the copy now (run its command / apply its patch) to establish
-   the task's failing precondition — so each scenario's setup is self-documenting and
-   no task inherits another's red.
+1. **Isolate**: copy the task's fixture into a fresh temp worktree/dir (never mutate
+   the fixture in place). The fixture defaults to `evals/fixtures/base`; a task with a
+   `## Fixture` section names a different one (e.g. `fixtures/app` — a richer module
+   with a call chain + a comparable pair, for the `/explain` Flow/Compare cases). The
+   fixtures are green; if the task file has a `## Seed` section, apply it to the copy
+   now (run its command / apply its patch) to establish the task's failing precondition
+   — so each scenario's setup is self-documenting and no task inherits another's red.
 2. **Dispatch** the task's driver command as a subagent, prepending the
    **eval-harness preamble**. The driver defaults to `/new-task "<task statement>"`;
    a task file with a `## Command` section (e.g. task 06) declares its own driver —
@@ -82,6 +84,14 @@ For each selected task, `--repeat` times:
      > (command + discriminating test + observed failure), the root-cause hypothesis
      > with file:line, the scope + handoff line, and `git status` (must be clean — the
      > fix must NOT be applied).
+   - **`/explain` tasks** — read-only, no gate; the question is the `## Command` line:
+     > You are running under the eval harness. Operate read-only on the copied fixture
+     > at `<path>`. Answer the `/explain` question following the command's classify →
+     > per-case output contract → grounding rules. Do NOT use `--save`, do NOT edit any
+     > file, and NEVER call AskUserQuestion. When finished, return: the resolved case
+     > (classification header), the answer in that case's fixed output shape (with every
+     > claim carrying a file:line), which agents/tiers you spawned (to show cost — no
+     > architect/opus, synthesis inline), and `git status` (must be clean — read-only).
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
