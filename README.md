@@ -6,6 +6,10 @@ Iterating on a change `/new-task` just finished takes the warm lane: `/new-task`
 
 The live copies run from `~/.claude/`; this repo versions them so improvements — hand edits here, or self-improvement edits made live by `/new-task` Phase 7 — are reviewed and tracked in git.
 
+## Guide
+
+A rendered reference guide lives under [`docs/guide/`](docs/guide/index.html) and is published at **https://marino39.github.io/software-developer-workflows/guide/**. Start on the [Overview](https://marino39.github.io/software-developer-workflows/guide/index.html), then dive into a command: [`/new-task`](https://marino39.github.io/software-developer-workflows/guide/new-task.html), [`/iterate`](https://marino39.github.io/software-developer-workflows/guide/iterate.html), [`/triage-issue`](https://marino39.github.io/software-developer-workflows/guide/triage-issue.html), and [`/review-pr`](https://marino39.github.io/software-developer-workflows/guide/review-pr.html).
+
 ## Layout
 
 ```
