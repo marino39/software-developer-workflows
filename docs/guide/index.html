@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator, two entry points: /new-task (full lifecycle) and /iterate (warm-start follow-up).">
+<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator, two entry points (/new-task, /iterate), the /triage-issue front door and /review-pr lane, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
 <title>Workflow reference — overview</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -142,6 +142,41 @@
     </div>
   </section>
 
+  <!-- ===== operating & measuring ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Around the lifecycle</p>
+        <h2>Maintaining and measuring the workflow</h2>
+        <p>The four commands above <em>do</em> the work. Two more keep the workflow itself healthy — one runs on a schedule to sync self-improvements and curate the learnings memory, the other scores the workflow so complexity is added or cut on evidence, not intuition. Both operate on the workflow files, not on your task, so they have no lifecycle pages of their own — their contracts live in the command source.</p>
+      </div>
+      <div class="entries">
+        <div class="entry" style="border-top-color:var(--gate)">
+          <span class="cmd-lg" style="color:var(--gate)">/workflow-maintenance</span>
+          <span class="role-lg">The scheduled caretaker</span>
+          <p>Idempotent and safe to schedule (local cron or a remote routine). Commits faithful <span class="mono">capture.sh</span> diffs of live self-improvements, proposes — never applies — learnings prunes, flags live bullets that duplicate a promoted skill, and reports red trunks. Run it periodically to keep repo and live copies in sync.</p>
+          <div class="chips">
+            <span class="tag">idempotent</span>
+            <span class="tag">schedulable</span>
+            <span class="tag">capture · curate · report</span>
+          </div>
+          <a class="go" style="color:var(--gate)" href="https://github.com/marino39/software-developer-workflows/blob/master/commands/workflow-maintenance.md">See commands/workflow-maintenance.md <span class="ar">→</span></a>
+        </div>
+        <div class="entry" style="border-top-color:var(--gate)">
+          <span class="cmd-lg" style="color:var(--gate)">/workflow-eval</span>
+          <span class="role-lg">The measure-and-iterate harness</span>
+          <p>Scores the workflow before you add or cut complexity. <span class="mono">--lint-only</span> runs the deterministic consistency check (run any time); a full run scores <span class="mono">/new-task</span> against frozen fixture tasks and writes a dated scorecard; <span class="mono">--variant</span> ablates a layer for an A/B verdict on whether it earns its cost; <span class="mono">--contracts</span> tests each agent against its declared contract. Expensive and opt-in — never auto-scheduled.</p>
+          <div class="chips">
+            <span class="tag">lint · score · ablate</span>
+            <span class="tag">opt-in</span>
+            <span class="tag">scorecard diff</span>
+          </div>
+          <a class="go" style="color:var(--gate)" href="https://github.com/marino39/software-developer-workflows/blob/master/commands/workflow-eval.md">See commands/workflow-eval.md <span class="ar">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== shared foundations ===== -->
   <section>
     <div class="wrap">
@@ -188,12 +223,14 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /triage-issue + /review-pr · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
       <span>commands/triage-issue.md</span>
       <span>commands/review-pr.md</span>
+      <span>commands/workflow-maintenance.md</span>
+      <span>commands/workflow-eval.md</span>
       <span>agents/</span>
       <span>skills/</span>
     </div>
