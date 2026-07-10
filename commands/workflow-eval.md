@@ -55,13 +55,24 @@ For each selected task, `--repeat` times:
    section, apply it to the copy now (run its command / apply its patch) to establish
    the task's failing precondition — so each scenario's setup is self-documenting and
    no task inherits another's red.
-2. **Dispatch** `/new-task "<task statement>"` (from the task file) as a subagent,
-   prepending the **eval-harness preamble**:
-   > You are running under the eval harness. You are the approver: at every human
-   > gate, AUTO-APPROVE and log the gate summary verbatim; NEVER call
-   > AskUserQuestion or ask the human anything. Operate on the copied fixture at
-   > `<path>`. When finished, return: final route, per-gate summaries, the Phase 7
-   > retro, the final `git diff`, and the `go test ./...` result.
+2. **Dispatch** the task's driver command as a subagent, prepending the
+   **eval-harness preamble**. The driver defaults to `/new-task "<task statement>"`;
+   a task file with a `## Command` section (e.g. task 06) declares its own driver —
+   dispatch that verbatim instead.
+   - **`/new-task` (and `/iterate`) tasks** — preamble:
+     > You are running under the eval harness. You are the approver: at every human
+     > gate, AUTO-APPROVE and log the gate summary verbatim; NEVER call
+     > AskUserQuestion or ask the human anything. Operate on the copied fixture at
+     > `<path>`. When finished, return: final route, per-gate summaries, the Phase 7
+     > retro, the final `git diff`, and the `go test ./...` result.
+   - **`/review-pr` tasks** — the command is read-only and (in `--local` mode) has no
+     gate, so the preamble instead supplies the review inputs and asks for the report:
+     > You are running under the eval harness. Operate read-only on the copied fixture
+     > at `<path>`. The intent digest is the task's `## Intent` block; the CI status is
+     > the `ci:` line there (do NOT run tests). Do NOT use `--comment` and NEVER call
+     > AskUserQuestion. When finished, return: the picked tier + rationale, the
+     > three-section findings report (Must-fix / Should-fix / Rejected) with the
+     > advisory assessment, and `git status` (must be clean — read-only).
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.

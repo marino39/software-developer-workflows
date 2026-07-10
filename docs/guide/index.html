@@ -16,6 +16,7 @@
       <a href="index.html" aria-current="page">Overview</a>
       <a href="new-task.html">/new-task</a>
       <a href="iterate.html">/iterate</a>
+      <a href="review-pr.html">/review-pr</a>
     </div>
   </div>
 </nav>
@@ -92,6 +93,30 @@
     </div>
   </section>
 
+  <!-- ===== the review lane ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">A third lane</p>
+        <h2>Reviewing work you didn't author</h2>
+        <p>Both entry points above review work <em>you</em> just wrote. <span class="mono">/review-pr</span> is the read-only lane for the other case — a teammate's pull request. It takes the same Phase 6 review engine (fan-out → consolidation → skeptic) and aims it outward: it fixes nothing, approves nothing, and merges nothing. Its product is a review.</p>
+      </div>
+      <div class="entries">
+        <a class="entry" href="review-pr.html" style="border-top-color:var(--scoped)">
+          <span class="cmd-lg" style="color:var(--scoped)">/review-pr</span>
+          <span class="role-lg">The read-only review lane</span>
+          <p>For a PR you didn't author. Derives the PR's intent in place of a plan, reads CI status instead of running the branch, then runs the risk-scaled review fan-out, confidence-scored consolidation, and default-refute skeptic pass. Delivers a three-section report (Must-fix · Should-fix · Rejected) locally by default; <span class="mono">--comment</span> posts it behind one confirm gate.</p>
+          <div class="chips">
+            <span class="tag">Phases R0–R3</span>
+            <span class="tag">0 gates (local)</span>
+            <span class="tag">read-only</span>
+          </div>
+          <span class="go" style="color:var(--scoped)">Dive into /review-pr <span class="ar">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== shared foundations ===== -->
   <section>
     <div class="wrap">
@@ -138,10 +163,11 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /review-pr · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
+      <span>commands/review-pr.md</span>
       <span>agents/</span>
       <span>skills/</span>
     </div>
