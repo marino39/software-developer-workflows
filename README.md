@@ -1,6 +1,6 @@
 # software-developer-workflows
 
-Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the cheap read-only `/explain` command, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
+Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the `/address-review` command that acts on the review comments humans leave on a PR you authored, the cheap read-only `/explain` command, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
 
 Iterating on a change `/new-task` just finished takes the warm lane: `/new-task` leaves a **run manifest** (design/plan/retro paths, base/head SHAs, worktree, open Should-fix findings), and `/iterate` starts from it — no cold Phase 0, no brainstorm, no plan-review, a **delta** review instead of a fresh fan-out, and the retrospective **deferred and batched** so a burst of tweaks produces one Phase 7, not one per tweak. A delta that grows high-stakes or ≥200 lines escalates (monotonic route) or bounces back to `/new-task`.
 
@@ -8,7 +8,7 @@ The live copies run from `~/.claude/`; this repo versions them so improvements �
 
 ## Guide
 
-A rendered reference guide lives under [`docs/guide/`](docs/guide/index.html) and is published at **https://marino39.github.io/software-developer-workflows/guide/**. Start on the [Overview](https://marino39.github.io/software-developer-workflows/guide/index.html), then dive into a command: [`/new-task`](https://marino39.github.io/software-developer-workflows/guide/new-task.html), [`/iterate`](https://marino39.github.io/software-developer-workflows/guide/iterate.html), [`/triage-issue`](https://marino39.github.io/software-developer-workflows/guide/triage-issue.html), and [`/review-pr`](https://marino39.github.io/software-developer-workflows/guide/review-pr.html).
+A rendered reference guide lives under [`docs/guide/`](docs/guide/index.html) and is published at **https://marino39.github.io/software-developer-workflows/guide/**. Start on the [Overview](https://marino39.github.io/software-developer-workflows/guide/index.html), then dive into a command: [`/new-task`](https://marino39.github.io/software-developer-workflows/guide/new-task.html), [`/iterate`](https://marino39.github.io/software-developer-workflows/guide/iterate.html), [`/triage-issue`](https://marino39.github.io/software-developer-workflows/guide/triage-issue.html), [`/review-pr`](https://marino39.github.io/software-developer-workflows/guide/review-pr.html), and [`/address-review`](https://marino39.github.io/software-developer-workflows/guide/address-review.html).
 
 ## Layout
 
@@ -27,6 +27,11 @@ commands/            /new-task (full lifecycle; scoped tasks take a fast path)
                      /review-pr (read-only review of a PR you didn't author:
                      the Phase 6 engine decoupled — fan-out + consolidation +
                      skeptic; local report by default, opt-in --comment)
+                     /address-review (act on inbound review comments on a PR
+                     you authored: ingest unresolved threads, skeptic-check
+                     each ask before coder spend, fix via the /iterate delta
+                     lane, gate every reply behind a per-thread disposition
+                     table)
                      /workflow-maintenance (capture sync, learnings curation,
                      trunk health — idempotent, safe to schedule)
                      /workflow-eval (lint + scored live run of /new-task against

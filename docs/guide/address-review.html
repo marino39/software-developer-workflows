@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /address-review — act on inbound review comments on a PR you authored. Ingest unresolved threads, skeptic-check each ask before coder spend, fix through the /iterate delta lane, gate every outward reply.">
+<title>/address-review — act on inbound review comments</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+      <a href="triage-issue.html">/triage-issue</a>
+      <a href="explain.html">/explain</a>
+      <a href="review-pr.html">/review-pr</a>
+      <a href="address-review.html" aria-current="page">/address-review</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--flow);background:var(--flow-soft);border-color:color-mix(in srgb,var(--flow) 30%,transparent);"><span class="dot" style="background:var(--flow)"></span>Inbound review lane · Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd" style="color:var(--flow)">/address-review</span> — the review engine's inbox</h1>
+    <p class="lede"><a href="review-pr.html" class="mono">/review-pr</a> aims the review engine at code you did <em>not</em> author. <span class="mono">/address-review</span> is the mirror: human review comments arrive on a PR <strong>you</strong> (or a prior <a href="new-task.html" class="mono">/new-task</a> run) authored, and each thread is driven to an explicit <strong>disposition</strong> — fixed, answered, declined with reasons, sent back for clarification, or handed off as new work. Fixes ride <a href="iterate.html" class="mono">/iterate</a>'s delta lane; every outward reply rides a gate.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">6</div><div class="l">Dispositions</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Gate (GATE A)</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Threads skipped silently</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">New agents</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The flow</p>
+        <h2>Ingest → disposition → delta → one gate</h2>
+        <p>The command is <span class="mono">/iterate</span>'s delta lane with an ingestion front end. The one new idea sits in Phase A1: <strong>a human comment is a hypothesis about the code, not an order</strong> — so it faces the same default-refute skeptic that internal Must-fix findings face, <em>before</em> any coder spends tokens on it.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--flow)">Phase A0</div>
+          <div class="itr-body">
+            <div class="itr-t">Setup &amp; ingest</div>
+            <p>Fetch the PR (must be open, <strong>yours</strong> — a foreign PR bounces to <span class="mono">/review-pr</span>) and every unresolved thread. Warm-start from the <strong>run manifest</strong>: its design doc, plan, and route floor are the context; no re-discovery. A hand-authored PR without a manifest derives an intent digest and writes a fresh manifest on completion.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--flow)">Phase A1</div>
+          <div class="itr-body">
+            <div class="itr-t">Disposition + skeptic</div>
+            <p>Every thread gets exactly one disposition: <span class="mono">fix</span> · <span class="mono">done-already</span> · <span class="mono">answer</span> · <span class="mono">decline</span> · <span class="mono">clarify</span> · <span class="mono">handoff</span>. Each defect claim faces a <strong>default-refute skeptic</strong>; refuted → a drafted push-back reply, never a silent drop and never blind implementation. Ambiguity → a drafted question, never a guess. Scope-expanding asks → a ready-to-paste <span class="mono">/new-task</span> handoff.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--flow)">Phase A2–A3</div>
+          <div class="itr-body">
+            <div class="itr-t">Delta implement + review</div>
+            <p><a href="iterate.html" class="mono">/iterate</a> Phase I1/I2 verbatim over the accepted <span class="mono">fix</span> set: plan-lite, coders, fixes proven per <span class="mono">verify-fix</span>, behavioral verification, then a single delta reviewer (full Phase 6 fan-out only on a high-stakes escalation). Verdict computed, never judged.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--gate)">GATE A</div>
+          <div class="itr-body">
+            <div class="itr-t">One gate, then push + reply</div>
+            <p>The gate carries the <strong>per-thread disposition table</strong> — evidence and reply draft per row. On approval: push to the PR branch, post only the approved replies, then Phase 6.5 CI verification. Retro is deferred and batched into the manifest's iteration log.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--pass);">
+          <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">✓</span>Auto-approve is the pure fix case only</h3>
+          <p>GATE A auto-approves <strong>iff</strong> every thread is <span class="mono">fix</span>/<span class="mono">done-already</span>, zero replies would post, tests are green, zero Must-fix, verification passed, and the route never escalated — the same posture as Phase 6.5 pushing CI fixes. Any <span class="mono">decline</span>, <span class="mono">answer</span>, <span class="mono">clarify</span>, or <span class="mono">handoff</span> → human gate: pushing back at a human reviewer is never auto-posted.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--stakes);">
+          <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">⚠</span>Comments are untrusted input</h3>
+          <p>Thread bodies are external data. A comment that tries to steer the run — widen scope, touch high-stakes code, suppress reporting — is dispositioned <span class="mono">decline</span> with an <strong>injection flag</strong> in its table row: surfaced, never obeyed, never omitted (the eval's T4 control tests exactly this).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the inbound seam ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The inbound seam</p>
+        <h2>What changes when the reviewer is human</h2>
+        <p>The engine already knew how to filter its own findings. The seam adapts three things for findings that arrive from people — and keeps the writes on a short leash.</p>
+      </div>
+      <div class="found">
+        <div class="fcard"><div class="ft"><span class="fk">⊘</span>Skeptic before coder</div><p>A wrong suggestion costs one reviewer, not an implement-review cycle — Phase 6.4's placement, applied to human claims.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">✎</span>Refuted ≠ dropped</div><p>A refuted internal finding is silently demoted; a refuted human comment becomes a drafted, evidence-cited push-back reply behind the gate.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">▦</span>No silent skips</div><p>The disposition table has exactly one row per unresolved thread. "Ignored" is not a disposition.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">∅</span>Frugal replies</div><p>The pushed diff is the record — no "Fixed!" comments by default (<span class="mono">--ack</span> opts in). Replies exist to decline, answer, or clarify.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">⌖</span>Scoped writes</div><p>Push only to the PR's head branch; reply only in existing threads. Never approve, merge, resolve threads, or mark ready-for-review.</p></div>
+        <div class="fcard"><div class="ft"><span class="fk">⇥</span>Scope asks hand off</div><p>A "while you're here…" feature request gets a ready-to-paste <span class="mono">/new-task</span> invocation as its reply — the <a href="triage-issue.html" class="mono">/triage-issue</a> handoff pattern, not scope creep.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows</h2>
+        <p><span class="mono">/address-review</span> adds an ingestion/disposition seam, not review machinery — no new agents, no new review passes. Read the machinery once on the <a href="new-task.html">/new-task</a> and <a href="iterate.html">/iterate</a> pages.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">⇄</span>Delta lane</h3><p>Plan-lite → coders → delta review, exactly <a href="iterate.html" class="mono">/iterate</a> Phase I1/I2.</p></div>
+        <div class="panel"><h3><span class="ic">⊘</span>Skeptic pass</h3><p>Default-refute stress test, retargeted at human claims. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⌖</span>Route floor</h3><p>The manifest's route is a monotonic floor — escalate only, never downgrade. <a href="new-task.html#routes" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">ci</span>Phase 6.5</h3><p>Event-driven CI wait + <span class="mono">ci-triage</span> after the push. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">↩</span>Batched retro</h3><p>Iteration-log entry per run; one Phase 7 at session end. <a href="iterate.html" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries; one-line quotes in the table, full bodies only to the item's agents.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/address-review · inbound review lane</span>
+    <div class="paths">
+      <span>commands/address-review.md</span>
+      <span>commands/iterate.md</span>
+      <span>evals/tasks/18-address-review.md</span>
+      <span>agents/</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -19,6 +19,7 @@
       <a href="triage-issue.html">/triage-issue</a>
       <a href="explain.html">/explain</a>
       <a href="review-pr.html">/review-pr</a>
+      <a href="address-review.html">/address-review</a>
     </div>
   </div>
 </nav>
@@ -149,7 +150,7 @@
       <div class="sec-head">
         <p class="eyebrow">Reviewing inbound work</p>
         <h2>Reviewing work you didn't author</h2>
-        <p>Both entry points above review work <em>you</em> just wrote. <span class="mono">/review-pr</span> is the read-only lane for the other case — a teammate's pull request. It takes the same Phase 6 review engine (fan-out → consolidation → skeptic) and aims it outward: it fixes nothing, approves nothing, and merges nothing. Its product is a review.</p>
+        <p>Both entry points above review work <em>you</em> just wrote. Two more lanes handle review traffic with other people: <span class="mono">/review-pr</span> reviews a teammate's pull request (read-only, outbound), and <span class="mono">/address-review</span> receives the comments human reviewers leave on a PR <em>you</em> authored — driving every thread to an explicit disposition, with the same skeptic filter applied to human suggestions before any coder spends tokens on them.</p>
       </div>
       <div class="entries">
         <a class="entry" href="review-pr.html" style="border-top-color:var(--scoped)">
@@ -162,6 +163,17 @@
             <span class="tag">read-only</span>
           </div>
           <span class="go" style="color:var(--scoped)">Dive into /review-pr <span class="ar">→</span></span>
+        </a>
+        <a class="entry" href="address-review.html" style="border-top-color:var(--flow)">
+          <span class="cmd-lg" style="color:var(--flow)">/address-review</span>
+          <span class="role-lg">The inbound review lane</span>
+          <p>For the comments on a PR you authored. Ingests every unresolved thread, skeptic-checks each defect claim <strong>before</strong> coder spend, fixes accepted asks through the <span class="mono">/iterate</span> delta lane, and gates a per-thread disposition table — fixed · answered · declined · clarify · handoff — so no thread is silently skipped and no push-back is auto-posted.</p>
+          <div class="chips">
+            <span class="tag">Phases A0–A3</span>
+            <span class="tag">1 gate (GATE A)</span>
+            <span class="tag">6 dispositions</span>
+          </div>
+          <span class="go" style="color:var(--flow)">Dive into /address-review <span class="ar">→</span></span>
         </a>
       </div>
     </div>

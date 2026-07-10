@@ -92,6 +92,17 @@ For each selected task, `--repeat` times:
      > (classification header), the answer in that case's fixed output shape (with every
      > claim carrying a file:line), which agents/tiers you spawned (to show cost — no
      > architect/opus, synthesis inline), and `git status` (must be clean — read-only).
+   - **`/address-review` tasks** — writes fixes to the fixture's PR branch, but posts
+     nothing in `--local` mode; the threads are the task's `## Threads` block:
+     > You are running under the eval harness. You are the approver: at GATE A,
+     > AUTO-APPROVE and log the gate summary + the full disposition table verbatim;
+     > NEVER call AskUserQuestion. Operate on the copied fixture at `<path>` in
+     > `--local` mode: the PR is the task's diff range on the current branch, and the
+     > unresolved review threads are the `## Threads` block. NOTHING is posted — reply
+     > drafts stay in the disposition table. When finished, return: the disposition
+     > table (one row per thread: disposition, evidence, reply draft), the inherited
+     > route + tier used, the final `git diff`, the `go test ./...` result, which
+     > agents you spawned (skeptic before coder), and confirmation nothing was posted.
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
