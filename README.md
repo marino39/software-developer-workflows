@@ -1,6 +1,6 @@
 # software-developer-workflows
 
-Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
+Source of truth for the multi-agent Claude Code workflow: 7 subagents, 4 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the cheap read-only `/explain` command, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
 
 Iterating on a change `/new-task` just finished takes the warm lane: `/new-task` leaves a **run manifest** (design/plan/retro paths, base/head SHAs, worktree, open Should-fix findings), and `/iterate` starts from it — no cold Phase 0, no brainstorm, no plan-review, a **delta** review instead of a fresh fan-out, and the retrospective **deferred and batched** so a burst of tweaks produces one Phase 7, not one per tweak. A delta that grows high-stakes or ≥200 lines escalates (monotonic route) or bounces back to `/new-task`.
 
@@ -21,6 +21,9 @@ commands/            /new-task (full lifecycle; scoped tasks take a fast path)
                      /triage-issue (front door: classify, reproduce, root-cause
                      and scope an issue into a ready-to-run plan + triage manifest;
                      read-only, no implementation)
+                     /explain (cheap, fast, read-only codebase Q&A: classify the
+                     question into 7 cases, sweep with parallel haiku searchers,
+                     synthesize a grounded cited answer inline)
                      /review-pr (read-only review of a PR you didn't author:
                      the Phase 6 engine decoupled — fan-out + consolidation +
                      skeptic; local report by default, opt-in --comment)

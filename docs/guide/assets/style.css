@@ -18,6 +18,8 @@
     --pass-soft: #E2F0E7;
     --scoped: #2C5FA8;      /* blue — scoped / fast path */
     --scoped-soft: #E3ECF7;
+    --explain: #6D45C9;     /* violet — /explain (cheap read-only lane) */
+    --explain-soft: #ECE6F9;
 
     --radius: 10px;
     --radius-sm: 6px;
@@ -48,6 +50,8 @@
       --pass-soft: #14291D;
       --scoped: #6C9AE0;
       --scoped-soft: #16233A;
+      --explain: #A78BE0;
+      --explain-soft: #221A33;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
     }
   }
@@ -58,6 +62,7 @@
     --flow: #0B7A6F; --flow-soft: #E1F1EE; --gate: #B0730C; --gate-soft: #F8EEDC;
     --stakes: #A6231F; --stakes-soft: #F7E3E2; --pass: #2E7D4F; --pass-soft: #E2F0E7;
     --scoped: #2C5FA8; --scoped-soft: #E3ECF7;
+    --explain: #6D45C9; --explain-soft: #ECE6F9;
     --shadow: 0 1px 2px rgba(17,24,32,.04), 0 8px 24px rgba(17,24,32,.05);
   }
   :root[data-theme="dark"] {
@@ -67,6 +72,7 @@
     --flow: #2FB6A6; --flow-soft: #12312D; --gate: #E0A63E; --gate-soft: #33280F;
     --stakes: #E7645F; --stakes-soft: #331716; --pass: #57B87E; --pass-soft: #14291D;
     --scoped: #6C9AE0; --scoped-soft: #16233A;
+    --explain: #A78BE0; --explain-soft: #221A33;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
   }
 

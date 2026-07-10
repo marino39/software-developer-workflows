@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /explain — the cheap, fast, read-only lane. Classify a codebase question into one of seven cases, sweep with parallel low-cost searchers, and synthesize a grounded, cited answer in the case's fixed output shape.">
+<title>/explain — cheap, fast, grounded codebase Q&amp;A</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+      <a href="triage-issue.html">/triage-issue</a>
+      <a href="explain.html" aria-current="page">/explain</a>
+      <a href="review-pr.html">/review-pr</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--explain);background:var(--explain-soft);border-color:color-mix(in srgb,var(--explain) 30%,transparent);"><span class="dot" style="background:var(--explain)"></span>The cheap read-only lane · Opus / Fable · xhigh effort</span>
+    <h1><span class="cmd" style="color:var(--explain)">/explain</span> — classify, sweep cheap, ground every claim</h1>
+    <p class="lede">The suite's lightest lane: no worktree, no lifecycle, no gates, no writes. <span class="mono">/explain</span> answers "how does X work / where is Y / how is Z wired / <em>why</em> is W this way" by <strong>classifying</strong> the question into one of seven cases and returning a grounded answer in that case's <strong>fixed output shape</strong>. Built to be cheap: the workhorse is <span class="mono">searcher</span> on <strong>haiku / low effort</strong>, fanned out in parallel, and the orchestrator synthesizes <strong>inline</strong> — no synthesis subagent, no <span class="mono">architect</span>/opus.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">7</div><div class="l">Cases</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Gates / writes</div></div>
+      <div class="stat"><div class="n">haiku</div><div class="l">Default tier</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">Cited claims</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The flow</p>
+        <h2>Classify → sweep → synthesize inline</h2>
+        <p>Three light steps. The fan-out width comes from the <em>case</em>, not from crawling; synthesis happens in the orchestrator, which only ever ingests capped digests. That's the whole cost story.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--explain)">Phase E0</div>
+          <div class="itr-body">
+            <div class="itr-t">Classify &amp; scope</div>
+            <p>Resolve the question to exactly one primary <strong>case</strong> (table below) from its phrasing + intent; a mixed question folds a secondary in, and a pure external-library question routes to <span class="mono">researcher</span> or is bounced — never guessed. Pick the case's angles and fan-out width (shallow by default; <span class="mono">--deep</span> widens).</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--explain)">Phase E1</div>
+          <div class="itr-body">
+            <div class="itr-t">Sweep (parallel, cheap)</div>
+            <p>Launch the case's angles as <strong>parallel <span class="mono">searcher</span>s in one message</strong> — haiku / low effort, each returning capped findings with <span class="mono">file:line</span>. A multi-modal sweep: each angle is blind to the others, so breadth is parallelism, not depth. Escalate to sonnet only on empty/off-target twice; add <span class="mono">researcher</span> only for external docs.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--explain)">Phase E2</div>
+          <div class="itr-body">
+            <div class="itr-t">Synthesize inline</div>
+            <p>The orchestrator writes the answer <strong>directly from the digests</strong> — no synthesis subagent (the main cost lever) — in the resolved case's fixed output contract, prefixed by a scope note + classification header. <span class="mono">--save</span> also writes it to a path.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--explain);">
+          <h3><span class="ic" style="background:var(--explain-soft);color:var(--explain);">$</span>Cheap by construction</h3>
+          <p><span class="mono">searcher</span> (haiku/low) is the only default tier — no <span class="mono">architect</span>/opus, an explanation doesn't need the deep-reasoning tier. Synthesis is inline, so there's no extra subagent round-trip. Shallow by default; <span class="mono">--deep</span> is the one knob that widens the sweep.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--pass);">
+          <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">✓</span>Grounding contract</h3>
+          <p>Applies to <strong>every</strong> case: each claim carries a <span class="mono">file:line</span> (or a commit sha for rationale); anything absent is reported as <strong>"not found in the searched scope,"</strong> never invented. A scope note opens each answer so gaps are visible — the anti-hallucination guarantee.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the seven cases ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The structure</p>
+        <h2>Seven cases, each a fixed output shape</h2>
+        <p>Classification isn't decoration — it binds the answer to a contract, so the same kind of question always yields the same kind of output. Diagrams are spent only on the two structural cases.</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>#</th><th>Case</th><th>Classified from</th><th>Output contract (fixed shape)</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><strong>Locate</strong></td><td>"where is / what defines / where's X configured"</td><td>Ranked <strong>location list</strong> — each <span class="mono">path:line</span> + one-line role. No prose.</td></tr>
+            <tr><td>2</td><td><strong>Mechanism</strong></td><td>"how does X work"</td><td><strong>Walkthrough</strong> — summary → numbered steps (each <span class="mono">file:line</span>) → inputs/outputs → edge cases &amp; invariants.</td></tr>
+            <tr><td>3</td><td><strong>Flow / trace</strong></td><td>"what happens when / trace A→B / lifecycle of"</td><td><strong>Ordered sequence</strong> — entry → hops (each <span class="mono">file:line</span>) → exit; + Mermaid sequence diagram.</td></tr>
+            <tr><td>4</td><td><strong>Architecture</strong></td><td>"structure of / map / overview of W"</td><td><strong>Component map</strong> — table (component → responsibility → <span class="mono">path</span>) → connections → entry points; + Mermaid diagram.</td></tr>
+            <tr><td>5</td><td><strong>Impact / usage</strong></td><td>"what calls X / who depends on / blast radius of Y"</td><td><strong>Dependents list</strong> — direct callers (<span class="mono">file:line</span>) → transitive → blast-radius summary.</td></tr>
+            <tr><td>6</td><td><strong>Compare</strong></td><td>"difference between X and Y / A vs B"</td><td><strong>Comparison table</strong> — dimension → X → Y (cited) → when-to-use.</td></tr>
+            <tr><td>7</td><td><strong>Why / rationale</strong></td><td>"why is X this way / why not Y"</td><td><strong>Rationale list</strong> — each point sourced (comment <span class="mono">file:line</span>, doc, or commit sha); explicit <strong>"no recorded rationale found"</strong> when the code is silent.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel" style="margin-top:16px;border-left:3px solid var(--explain);">
+        <h3><span class="ic" style="background:var(--explain-soft);color:var(--explain);">?</span>The Why case is the one Explore can't do</h3>
+        <p>Cases 1–6 are faster, structured versions of what a raw search agent gives you. Case 7 is different: it reads CLAUDE.md + code comments + <strong>git history</strong> (<span class="mono">log</span>/<span class="mono">blame</span>) to explain <em>why</em> the code is the way it is — and says <strong>"no recorded rationale found"</strong> rather than rationalize. That grounded "why," refusing to invent intent, is the case ad-hoc exploration doesn't give you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows from /new-task</h2>
+        <p><span class="mono">/explain</span> adds a command surface, not new machinery — the same agents, tuned for the cheapest possible read. Read them once on the <a href="new-task.html">/new-task</a> page.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">◍</span>searcher (haiku/low)</h3><p>The cheapest agent, fanned out in parallel — the whole workhorse of the sweep. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">◎</span>researcher (external only)</h3><p>Joins only when the answer needs library behavior the codebase can't give. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⇧</span>Escalation ladder</h3><p>searcher → sonnet only on empty/off-target twice; keeps the run cheap by default. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped digests only, parallel fan-out, inline synthesis — the orchestrator stays cheap. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⌖</span>Classification-first</h3><p>Same "classify then act" shape as <a href="triage-issue.html" class="mono">/triage-issue</a>, here binding the output contract. </p></div>
+        <div class="panel"><h3><span class="ic">✓</span>Read-only discipline</h3><p>No worktree, no writes (bar <span class="mono">--save</span>), nothing posted — the lightest footprint in the suite.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/explain · the cheap read-only lane</span>
+    <div class="paths">
+      <span>commands/explain.md</span>
+      <span>commands/new-task.md</span>
+      <span>evals/tasks/10-explain-mechanism.md</span>
+      <span>agents/</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

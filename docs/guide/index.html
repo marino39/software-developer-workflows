@@ -17,6 +17,7 @@
       <a href="new-task.html">/new-task</a>
       <a href="iterate.html">/iterate</a>
       <a href="triage-issue.html">/triage-issue</a>
+      <a href="explain.html">/explain</a>
       <a href="review-pr.html">/review-pr</a>
     </div>
   </div>
@@ -113,6 +114,30 @@
             <span class="tag">read-only</span>
           </div>
           <span class="go" style="color:var(--pass)">Dive into /triage-issue <span class="ar">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the cheap read lane ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Just understand it</p>
+        <h2>The cheap read-only lane</h2>
+        <p>Not every question needs the lifecycle. <span class="mono">/explain</span> answers "how does X work / where is Y / <em>why</em> is Z this way" for the price of a few <span class="mono">haiku</span> searches — it classifies the question into one of seven cases and returns a grounded, cited answer in that case's fixed shape. No worktree, no gates, no writes.</p>
+      </div>
+      <div class="entries">
+        <a class="entry" href="explain.html" style="border-top-color:var(--explain)">
+          <span class="cmd-lg" style="color:var(--explain)">/explain</span>
+          <span class="role-lg">The cheap read-only lane</span>
+          <p>For understanding, not changing. Classifies into 7 cases (locate · mechanism · flow · architecture · impact · compare · why), sweeps with parallel <span class="mono">searcher</span>s on haiku/low effort, and synthesizes <strong>inline</strong> — no <span class="mono">architect</span>/opus. Every claim carries a <span class="mono">file:line</span>; anything absent is "not found," never invented.</p>
+          <div class="chips">
+            <span class="tag">Phases E0–E2</span>
+            <span class="tag">7 cases</span>
+            <span class="tag">haiku default</span>
+          </div>
+          <span class="go" style="color:var(--explain)">Dive into /explain <span class="ar">→</span></span>
         </a>
       </div>
     </div>
@@ -223,11 +248,12 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /triage-issue + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /explain + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
       <span>commands/triage-issue.md</span>
+      <span>commands/explain.md</span>
       <span>commands/review-pr.md</span>
       <span>commands/workflow-maintenance.md</span>
       <span>commands/workflow-eval.md</span>

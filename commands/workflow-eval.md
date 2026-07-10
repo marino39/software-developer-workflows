@@ -82,6 +82,14 @@ For each selected task, `--repeat` times:
      > (command + discriminating test + observed failure), the root-cause hypothesis
      > with file:line, the scope + handoff line, and `git status` (must be clean — the
      > fix must NOT be applied).
+   - **`/explain` tasks** — read-only, no gate; the question is the `## Command` line:
+     > You are running under the eval harness. Operate read-only on the copied fixture
+     > at `<path>`. Answer the `/explain` question following the command's classify →
+     > per-case output contract → grounding rules. Do NOT use `--save`, do NOT edit any
+     > file, and NEVER call AskUserQuestion. When finished, return: the resolved case
+     > (classification header), the answer in that case's fixed output shape (with every
+     > claim carrying a file:line), which agents/tiers you spawned (to show cost — no
+     > architect/opus, synthesis inline), and `git status` (must be clean — read-only).
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
