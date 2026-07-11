@@ -183,7 +183,27 @@ the work went), then run `new-task.md` **Phase 6.5** CI verification verbatim
 Per `commands/iterate.md`: every run appends a compact entry to the manifest's
 **iteration log** — threads addressed with their dispositions, escalations
 used, gate outcome — and updates the manifest's `HEAD_SHA`; carried Should-fix
-findings resolved or newly opened are updated in place. An unmanifested PR
+findings resolved or newly opened are updated in place.
+
+**Escaped-from-review marking (manifested baselines only).** Each `fix`
+disposition on a manifested baseline is additionally marked
+**`escaped-from-review`** in the iteration log, with the baseline's route/tier
+(from the manifest) and the defect's nature: the manifest attests that a full
+Phase 6 review passed this code, so a real defect a human reviewer caught is
+ground truth about a review blind spot — the highest-value learning signal the
+suite has. Unmanifested baselines get no marking (no workflow review is
+attested). `decline`/`answer`/`clarify`/`handoff` rows are never marked.
+
+At the batched Phase 7, every `escaped-from-review` entry gets a **review-gap
+analysis** in the retro: name which of the prior run's channels, lenses, or
+verification steps (their remits are in `new-task.md` Phase 6) should have
+caught the defect and why it didn't, then propose the corresponding GATE 4
+row, routed per Phase 7's preference — a **process-level gap** (a lens's
+remit, a verification step's coverage) becomes a targeted instruction-file
+edit with its modification-protocol status stated; a **subject-scoped
+heuristic** becomes a bullet tagged with the defect's subject signals plus
+`[review]`. An entry with no traceable gap records `gap: none traceable
+(<reason>)` — the analysis is never silently skipped. An unmanifested PR
 writes its fresh manifest here, in `new-task.md` Phase 6 step 10's format:
 `BASE_SHA` keeps its meaning everywhere else — the **merge-base with the
 default branch** — and the PR head this run ingested/reviewed from is recorded

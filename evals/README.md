@@ -74,12 +74,12 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 20 tasks / 2 fixtures covering the routing, bug-fix,
+- The first cut is 21 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
   (bug + feature), the `/new-task` triage warm-start seam, `/explain`
   (all 7 cases), the coder comment policy, `/address-review`
-  (manifested + unmanifested), and learnings retrieval (activity vs
-  subject tags) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+  (manifested + unmanifested + the review-gap loop), and learnings
+  retrieval (activity vs subject tags) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -129,6 +129,15 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   `baseline: unmanifested`, and — the path's product — write a **fresh run
   manifest** on completion so the next run starts warm. Same T1/T2 fix/refute
   controls as task 18.
+- Task 21 exercises `/address-review`'s **review-gap learnings loop** end to end
+  (`--finish`, so the batched Phase 7 actually fires): the seeded manifest
+  attests a full Phase 6 pass on the baseline, so the valid-defect thread's
+  `fix` is ground-truth escaped-from-review. Scores the iteration-log marking
+  (T1 marked with route/tier + defect nature; the refuted T2 NOT marked), the
+  retro's channel/step-level gap analysis ("review missed it" alone caps
+  Outcome at 50), and GATE 4's routing of the lesson per the promotion
+  preference (instruction-file edit vs subject-tagged bullet, reasoning
+  stated).
 - Task 20 exercises `/new-task` Phase 0's **two-class learnings retrieval**: its
   `## Learnings` block (supplied via the preamble — the live file is never read)
   plants one activity-tagged bullet that MUST apply (`[review]` — every route
