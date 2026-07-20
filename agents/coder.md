@@ -18,7 +18,7 @@ You implement the provided plan exactly. The plan is your contract.
 ## Input contract
 
 Required:
-- `plan_slice` — the plan step(s)/slice to implement, with their interface contracts and verification.
+- `plan_slice` — the plan step(s)/slice to implement, with their interface contracts and verification. Preferred form: the plan file's path + the step number(s) owned (Read the slice yourself — the file is authoritative); inline text only when no plan file exists.
 
 ## Output contract
 

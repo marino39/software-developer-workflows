@@ -4,7 +4,7 @@ description: Warm-start follow-up on a reviewed baseline — delta implement + d
 
 # Iterate: $ARGUMENTS
 
-You are the orchestrator (run this on Opus or Fable, at `xhigh` effort). `/iterate`
+You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token). `/iterate`
 is the follow-up entry point for a change a prior `/new-task` already carried
 through review: a **delta on a reviewed baseline**, not a cold task. It exists so
 that tweaking, extending, or correcting just-finished work does not re-pay the full
@@ -73,10 +73,12 @@ one there is nothing to delta against.
 
 ## Phase I1 — Delta implement
 
-1. **Plan-lite.** ONE `architect` writes the delta plan against the seeded baseline
-   — file-level steps, interface deltas, per-step verification. No design doc, no
-   brainstorm fan-out, no separate plan-review phase (the adversarial check is
-   Phase I2). Carried Should-fix findings relevant to this delta fold into the plan.
+1. **Plan-lite.** ONE `architect` writes the delta plan against the seeded baseline,
+   in artifact mode (`artifact_path` = the plan location; it returns path +
+   ≤200-word summary + step titles) — file-level steps, interface deltas, per-step
+   verification. No design doc, no brainstorm fan-out, no separate plan-review
+   phase (the adversarial check is Phase I2). Carried Should-fix findings relevant
+   to this delta fold into the plan.
 2. **Implement** per the `superpowers:subagent-driven-development` skill: each plan
    slice to a `coder`; independent slices in parallel
    (`superpowers:dispatching-parallel-agents`), dependent ones in order. Coders
@@ -151,5 +153,9 @@ whole reason `/iterate` exists.
 ## Token hygiene
 
 Same as `new-task.md`: never ingest raw subagent transcripts (capped structured
-summaries only); independent subagents in parallel in one message; test execution
-always through `test-runner`; failure digests are compact.
+summaries only); pass artifacts by path, never inlined (coders get plan path +
+step numbers; reviewers Read the plan themselves); never Read back a file you
+just wrote; independent subagents in parallel in one message; test execution
+always through `test-runner`; failure digests are compact; the manifest's
+iteration log keeps the binding state current, so history older than the last
+gate is compaction-safe; never switch your own model or effort mid-run.

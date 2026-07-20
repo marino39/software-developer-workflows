@@ -1,8 +1,12 @@
 # Research: orchestrator context compaction
 
-Date: 2026-07-20. Status: research only — nothing here is implemented. Stated
-ledger-style where a change would owe protocol cost (per `CLAUDE.md`), so a
-follow-up can pick an item and go straight to `/new-task`.
+Date: 2026-07-20. Status: **S1–S5 + S8 implemented** on this branch (S0 is
+user-side configuration, documented in README Design notes; S6/S7 remain
+research pending the Measure-first section). Owed per the modification
+protocol: a live `/workflow-eval` scorecard for the behavior-affecting edits
+and `--contracts --agent architect` for the dual-mode contract — the live eval
+cannot run in the authoring environment, so it rides the PR review. Stated
+ledger-style where a change owes protocol cost (per `CLAUDE.md`).
 
 ## Problem
 

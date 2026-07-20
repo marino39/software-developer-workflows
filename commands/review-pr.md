@@ -4,7 +4,7 @@ description: Review a pull request you did not author — the Phase 6 review eng
 
 # Review PR: $ARGUMENTS
 
-You are the orchestrator (run this on Opus or Fable, at `xhigh` effort). `/review-pr`
+You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token). `/review-pr`
 aims `new-task.md`'s **Phase 6 review engine** at a PR you did **not** author. It is
 **read-only**: it never edits files, never pushes to the PR branch, and never
 approves or merges. Its product is a review — a ranked findings report, optionally
