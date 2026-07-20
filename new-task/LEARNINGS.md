@@ -6,11 +6,14 @@ Workflow lessons that apply to every project. Repo-specific lessons live in `lea
 
 Each lesson bullet: `- YYYY-MM-DD [tag][tag] <lesson> — src: <retro slug or date>`
 
-- **Trigger tags** scope the lesson so Phase 0 applies only bullets matching the task's signals (language / area / task-type / repo). Vocabulary (reuse before inventing a new tag):
-  - language: `go` `rust` `ts`
-  - area: `git` `pr` `ci` `test` `review` `concurrency` `format-compat` `scope-gate` `subagents` `upstream-port` `verify`
-  - task-type: `bugfix` `dead-code` `port`
+- **Trigger tags** scope the lesson so Phase 0 applies only matching bullets. Two classes with different matching semantics (reuse before inventing a new tag):
+  - **Subject tags** — match what the task is *about*:
+    - language: `go` `rust` `ts`
+    - code-area: `concurrency` `format-compat` `upstream-port`
+    - task-type: `bugfix` `dead-code` `port`
+  - **Activity tags** — match the run's *planned activities*, not the task's subject: `git` `pr` `ci` `test` `review` `scope-gate` `subagents` `verify`. A `[review]` lesson is in force on every run that reviews (all of them); `[pr]`/`[ci]` on runs whose outcome is a PR; `[scope-gate]` on fast-path runs. Activity lessons are never skipped because the task isn't "about" that activity.
 - **src** links the retro that produced the lesson — provenance so an override of these instructions is auditable.
+- **Prefer promotion for process lessons:** a lesson about a workflow activity itself (how to review/verify/gate) belongs as a targeted instruction-file edit (command/agent/skill) at GATE 4 — instruction files are always in force, bullets ride retrieval. An activity-tagged bullet is the interim home until the edit is warranted.
 
 Rules — enforced at Phase 7 / GATE 4 (and lint Check 7):
 

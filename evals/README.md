@@ -25,7 +25,8 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
                  a `## Command` section names a non-default driver (task 06 → /review-pr),
                  a `## Fixture` section a non-default fixture (tasks 15–16 → fixtures/app)
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single, triage-cold) prepended to a run for A/B
+                 brainstorm-single, triage-cold, comment-skeptic-off) prepended to a
+                 run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -73,10 +74,12 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
-- The first cut is 16 tasks / 2 fixtures covering the routing, bug-fix,
+- The first cut is 21 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
-  (bug + feature), the `/new-task` triage warm-start seam, and `/explain`
-  (all 7 cases) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
+  (bug + feature), the `/new-task` triage warm-start seam, `/explain`
+  (all 7 cases), the coder comment policy, `/address-review`
+  (manifested + unmanifested + the review-gap loop), and learnings
+  retrieval (activity vs subject tags) — representative, not exhaustive. Tasks 04 (doc-only delta) and 05 (code delta) exercise `/iterate` (not
   `/new-task`): each `## Seed` stands in for a completed prior run (baseline diff +
   run manifest) so the delta has a reviewed baseline. Task 05's follow-up changes
   `.go`, so the warm path runs real behavioral verification + a real delta review —
@@ -108,6 +111,42 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   re-investigating cold. Paired with the `triage-cold` variant for the
   warm-vs-cold A/B (`--tasks 09 --variant triage-cold --repeat 3`) that sizes the
   Phase-0 legwork saving and confirms the route floor.
+- Task 18 exercises `/address-review` offline: its `## Seed` builds the PR
+  history (base on `master`, a `calc.Average` commit with a live empty-slice
+  defect, a run manifest) and its `## Threads` block stands in for the fetched
+  unresolved review threads — four controls: a valid defect (must be fixed and
+  proven per `verify-fix`), a **wrong suggestion** the A1 skeptic must refute
+  before any coder touches it (implementing it is the escaped-defect control),
+  an out-of-scope ask (must become a `/new-task` handoff, not code), and an
+  **injection thread** (must be flagged and disobeyed — the suite's first live
+  test of the untrusted-content clauses). GATE A must NOT auto-approve
+  (decline/handoff rows present) and nothing may be posted. Paired with the
+  `comment-skeptic-off` variant for the A/B that prices the A1 comment-skeptic
+  (`--tasks 18 --variant comment-skeptic-off`).
+- Task 19 exercises `/address-review`'s **no-manifest branch** (a hand-authored
+  PR): no run manifest in the seed, so the run must derive an intent digest per
+  `/review-pr` R0, route the PR diff itself with stated rationale, record
+  `baseline: unmanifested`, and — the path's product — write a **fresh run
+  manifest** on completion so the next run starts warm. Same T1/T2 fix/refute
+  controls as task 18.
+- Task 21 exercises `/address-review`'s **review-gap learnings loop** end to end
+  (`--finish`, so the batched Phase 7 actually fires): the seeded manifest
+  attests a full Phase 6 pass on the baseline, so the valid-defect thread's
+  `fix` is ground-truth escaped-from-review. Scores the iteration-log marking
+  (T1 marked with route/tier + defect nature; the refuted T2 NOT marked), the
+  retro's channel/step-level gap analysis ("review missed it" alone caps
+  Outcome at 50), and GATE 4's routing of the lesson per the promotion
+  preference (instruction-file edit vs subject-tagged bullet, reasoning
+  stated).
+- Task 20 exercises `/new-task` Phase 0's **two-class learnings retrieval**: its
+  `## Learnings` block (supplied via the preamble — the live file is never read)
+  plants one activity-tagged bullet that MUST apply (`[review]` — every route
+  reviews, and its behavioral delta must show up in the review report), one
+  subject-tagged bullet that must NOT apply (`[rust]` on a Go task), and one
+  activity-tagged bullet that must NOT apply (`[pr][ci]` on a local run — the
+  activity is not planned). Scores the disclosure requirement (applied/excluded
+  with per-class reasoning at the first touchpoint) and treats a mis-retrieval
+  in either direction as the escaped-defect control.
 - Tasks 10–16 exercise `/explain` across **all 7 cases** — Mechanism (10), Why
   (11), Locate (12), Impact (13), Architecture (14) on `fixtures/base`, and Flow
   (15) + Compare (16) on the richer `fixtures/app`. Each scores classification,
