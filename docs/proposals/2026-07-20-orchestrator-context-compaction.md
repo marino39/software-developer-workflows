@@ -302,6 +302,12 @@ work, instrument:
    or OTEL metrics), alongside the existing subagent-token counts. The
    Efficiency rubric dimension (15%) already scores "token/wall-clock in the
    expected band" — give it real per-phase numbers.
+   *Partially implemented 2026-07-20:* the eval's Collect step now records each
+   driver's usage trailer (total tokens / tool calls / wall-clock) and
+   scorecards carry an orchestrator-cost column — first datapoints in
+   `2026-07-20-context-compaction-scorecard.md`. This is total consumption, a
+   proxy; the per-gate `/context` attribution (item 2) remains open and is
+   still what gates S6/S7.
 2. **One instrumented live run** of a standard-route task, snapshotting
    `/context` at each gate, to attribute the 200k between fixed overhead
    (mechanism 1), artifact transits (2), fan-out (3), and turn accumulation

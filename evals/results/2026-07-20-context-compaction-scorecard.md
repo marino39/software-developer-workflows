@@ -17,14 +17,25 @@ orchestrator default. Companion contract report: `2026-07-20-contracts.md`
 
 ## Layer 2 — outcome-eval
 
-| Task | Route (expected → actual) | Routing | Outcome | No-escaped | Gate disc. | Efficiency | Escaped | Task score | Δ vs baseline |
-|---|---|---|---|---|---|---|---|---|---|
-| 01 doc-only | scoped → **scoped** ✓ (auto-approved GATE 3) | 100 | 100 | n/a¹ | 96 | 97 | none | **98.6** | +0.6 |
-| 02 bugfix | scoped → **scoped** ✓ (verify-fix proven) | 97 | 98 | 96 | 95 | 97 | none | **96.75** | −0.25 |
-| 03 route-correct | high-stakes → **high-stakes** ✓ (Phase 0 direct; full tier; presented GATE 3) | 100 | 100 | 100 | 100 | 100 | none | **100.0** | +5.0² |
+| Task | Route (expected → actual) | Routing | Outcome | No-escaped | Gate disc. | Efficiency | Escaped | Task score | Δ vs baseline | Orch. cost³ |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 01 doc-only | scoped → **scoped** ✓ (auto-approved GATE 3) | 100 | 100 | n/a¹ | 96 | 97 | none | **98.6** | +0.6 | 81.6k tok / 31 calls / 8.7 min |
+| 02 bugfix | scoped → **scoped** ✓ (verify-fix proven) | 97 | 98 | 96 | 95 | 97 | none | **96.75** | −0.25 | 88.7k tok / 27 calls / 11.1 min |
+| 03 route-correct | high-stakes → **high-stakes** ✓ (Phase 0 direct; full tier; presented GATE 3) | 100 | 100 | 100 | 100 | 100 | none | **100.0** | +5.0² | 110.4k tok / 47 calls / 18.2 min |
 
 ¹ Task 01 `expect` marks *No escaped defects* n/a and reweights (+10 Routing, +10 Gate discipline).
 ² Vs the corrected ~95; vs the as-scored 80 under the old `expect`, +20.
+³ **New column (first scorecard carrying it; backfilled from this run's usage
+trailers).** Driver-total tokens / tool calls / wall-clock per the Collect step's
+orchestrator-cost datapoint — a proxy for orchestrator context accumulation, NOT
+per-gate context size (that attribution remains the proposal's open live-run
+measurement). No baseline comparison exists: prior scorecards recorded subagent
+tokens only ad hoc (e.g. the `/iterate` A/B's warm 68k vs cold 53–116k). These
+three values are the baseline for future diffs. Note the shape they already
+show: the full high-stakes lifecycle cost ~1.3× a fast-path run in driver
+tokens (110k vs ~85k) for a 42-line diff — the eval preamble collapses human
+turns and carries no resident-skill overhead, so live-session contexts sit
+well above these floors.
 
 **Suite score = 98.5** (baseline corrected ~96.7, **+1.8**). **Escaped defects: 0.**
 

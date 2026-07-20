@@ -111,12 +111,20 @@ For each selected task, `--repeat` times:
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
-3. **Collect** only those structured artifacts (capped) — no raw transcript.
+3. **Collect** only those structured artifacts (capped) — no raw transcript. Also
+   record the dispatch's **usage trailer** (the Agent tool's returned token count,
+   tool-use count, and duration) as the run's **orchestrator-cost datapoint**: it
+   is the driver's total consumption — the closest available proxy for
+   orchestrator context accumulation. (It is NOT per-gate context size; per-gate
+   `/context` attribution stays a live-session measurement, per the 2026-07-20
+   context-compaction proposal.)
 4. **Score**: spawn a FRESH `reviewer` as judge, fed only the collected artifacts +
-   the task's `expect` block + `evals/rubric.md`. It returns the five per-dimension
-   scores (0–100, honoring `expect` overrides and `n/a` reweights), the list of any
-   escaped defects, and a one-line justification per dimension. Multiple repeats →
-   average the dimensions and note the min–max spread.
+   the usage trailer + the task's `expect` block + `evals/rubric.md`. It returns
+   the five per-dimension scores (0–100, honoring `expect` overrides and `n/a`
+   reweights), the list of any escaped defects, and a one-line justification per
+   dimension — the trailer is evidence for the Efficiency dimension's
+   "token/wall-clock in the expected band". Multiple repeats → average the
+   dimensions and note the min–max spread.
 
 ## Layer 3 — Agent contract test (`--contracts`)
 
@@ -157,7 +165,10 @@ Write `evals/results/YYYY-MM-DD-<label>-scorecard.md` (`<label>` = `baseline` or
 the variant name; date via `date +%F`). Include:
 
 - Per-task table: the five dimension scores, task score, escaped-defect count,
-  repeat spread.
+  repeat spread, and **orchestrator cost** (driver tokens / tool calls /
+  wall-clock, from the usage trailer). Cost is tracked, not scored against a
+  threshold — but a large cost jump on an unchanged task belongs in the
+  regression section's prose even when no dimension dropped.
 - Suite score (mean of task scores).
 - **Regression section** vs the baseline scorecard: every dimension that dropped
   > 10 points, and every new escaped defect — listed explicitly, never averaged
