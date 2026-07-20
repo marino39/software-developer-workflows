@@ -318,6 +318,21 @@ work, instrument:
    input rather than cache reads is a cold re-entry. Counting them prices the
    S0/S5/S6 win directly.
 
+*Items 2+3 automated 2026-07-20 — no manual snapshots.* `install.sh` now
+registers a Claude Code **Stop hook** (`hooks/context-metrics.py`) that samples
+the orchestrator's context size (`input + cache_read + cache_creation` from the
+last main-chain assistant turn; sidechains excluded) and a cold flag
+(`context > 20k ∧ cache_read < 1k`) once per turn into
+`~/.claude/metrics/context-metrics.jsonl`. Gates end turns, so gate boundaries
+are sampled by construction — per-turn context trajectory ≈ the per-gate
+attribution item 2 asked for, and cold samples after a session's first are
+exactly item 3's cold re-entries. `hooks/context-report.sh` aggregates
+deterministically, and `/workflow-maintenance` check 4 surfaces the report on
+schedule with the two decision thresholds (high-water > 250k; cold re-entries
+> 5 → the S6 signal). S0 is also automated: `install.sh` sets
+`ENABLE_PROMPT_CACHING_1H=1` in settings env and seeds the CLAUDE.md
+`## Compact Instructions` block when absent.
+
 ## Suggested order
 
 1. **S0** — cache TTL + model/effort stability. Pure configuration, no eval

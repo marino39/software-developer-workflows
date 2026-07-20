@@ -36,6 +36,66 @@ for f in "$REPO_DIR"/new-task/learnings/*.md; do
     seed "$f" "$CLAUDE_DIR/new-task/learnings/$(basename "$f")"
 done
 
+# Automated context measurement (2026-07-20 context-compaction proposal,
+# measurement items 2+3): a Claude Code Stop hook samples the orchestrator's
+# context size + cache state once per turn (gates end turns, so gate
+# boundaries are sampled by construction) into ~/.claude/metrics/. Also sets
+# the 1h prompt-cache TTL env (no-op on subscription billing; on API keys it
+# keeps gate waits under an hour cache-warm) and seeds a `## Compact
+# Instructions` block in ~/.claude/CLAUDE.md if none exists — all idempotent.
+mkdir -p "$CLAUDE_DIR/hooks" "$CLAUDE_DIR/metrics"
+cp "$REPO_DIR/hooks/context-metrics.py" "$CLAUDE_DIR/hooks/context-metrics.py"
+cp "$REPO_DIR/hooks/context-report.sh"  "$CLAUDE_DIR/hooks/context-report.sh"
+chmod +x "$CLAUDE_DIR/hooks/context-metrics.py" "$CLAUDE_DIR/hooks/context-report.sh"
+
+if command -v python3 >/dev/null 2>&1; then
+    python3 - "$CLAUDE_DIR" <<'PY' || echo "WARN: settings.json not updated (see above) — register the Stop hook manually"
+import json, os, sys
+claude_dir = sys.argv[1]
+path = os.path.join(claude_dir, "settings.json")
+settings = {}
+if os.path.isfile(path):
+    try:
+        settings = json.load(open(path))
+    except Exception:
+        sys.exit("settings.json is not valid JSON — refusing to touch it")
+cmd = os.path.join(claude_dir, "hooks", "context-metrics.py")
+changed = []
+stop = settings.setdefault("hooks", {}).setdefault("Stop", [])
+present = any(h.get("command") == cmd for m in stop for h in m.get("hooks", []))
+if not present:
+    stop.append({"hooks": [{"type": "command", "command": cmd}]})
+    changed.append("Stop hook (context-metrics)")
+env = settings.setdefault("env", {})
+if "ENABLE_PROMPT_CACHING_1H" not in env:
+    env["ENABLE_PROMPT_CACHING_1H"] = "1"
+    changed.append("env ENABLE_PROMPT_CACHING_1H=1")
+if changed:
+    json.dump(settings, open(path, "w"), indent=2)
+    print("registered: " + ", ".join(changed) + " -> " + path)
+else:
+    print("skipped: settings.json already configured (hook + env present)")
+PY
+else
+    echo "skipped: Stop-hook registration (python3 not found)"
+fi
+
+if ! grep -q '^## Compact Instructions' "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then
+    cat >> "$CLAUDE_DIR/CLAUDE.md" <<'EOF'
+
+## Compact Instructions
+
+When compacting, preserve: the run ledger/manifest path and its latest state,
+the final route and any escalations, artifact paths (design doc, plan, retro),
+the open Must-fix/Should-fix findings, and the current phase + iteration count.
+Drop file contents and superseded review reports — they are reconstructible
+from the artifacts.
+EOF
+    echo "seeded: Compact Instructions block -> $CLAUDE_DIR/CLAUDE.md"
+else
+    echo "skipped: Compact Instructions block exists in $CLAUDE_DIR/CLAUDE.md"
+fi
+
 # Install the repo's own pre-commit hook so a commit touching workflow files
 # runs the deterministic lint (evals/lint.sh). Only when run inside the repo's
 # git checkout; harmless to skip otherwise.

@@ -4,7 +4,7 @@ description: Recurring workflow maintenance — capture live self-improvements, 
 
 # Workflow Maintenance: $ARGUMENTS
 
-Run the three checks below in order. Each check reports; only check 1 may commit. `$ARGUMENTS` is an optional space-separated list of repo paths for check 3. End with the summary. Nothing here asks the human a question — this command must complete unattended.
+Run the four checks below in order. Each check reports; only check 1 may commit. `$ARGUMENTS` is an optional space-separated list of repo paths for check 3. End with the summary. Nothing here asks the human a question — this command must complete unattended.
 
 ## 1. Capture sync
 
@@ -27,6 +27,12 @@ For `~/.claude/new-task/LEARNINGS.md` and each `~/.claude/new-task/learnings/*.m
 
 For each repo path in `$ARGUMENTS` (none → skip): `gh run list --branch <default-branch> --limit 3 --json conclusion,name,url`. Any failing conclusion → list the repo, workflow name, and URL. Red trunk here means the next `/new-task` run inherits it — flag it before it's misread as a regression.
 
+## 4. Context metrics
+
+1. Run the deterministic aggregator: `sh <workflow-repo>/hooks/context-report.sh --top 10` (samples are written per turn by the `context-metrics` Stop hook `install.sh` registers; the report needs no LLM). It prints `context: no metrics` when the hook has produced nothing yet — report that line and stop this check.
+2. Surface the report table verbatim (top sessions by max context, mean, cold re-entries).
+3. Flag two thresholds from the 2026-07-20 context-compaction proposal: any session with high-water **> 250k** (auto-compaction territory — the disposal-rule/run-ledger machinery is load-bearing there), and total cold re-entries **> 5** since the last maintenance run (cache TTL bleeding at gates/CI wakes — the signal that would justify the proposal's S6 tail hand-off). Report-only; this check writes nothing.
+
 ## Summary
 
-Compact, four lines max per check: what was committed (check 1), proposed diff or `learnings: clean` (check 2), red trunks or `trunks: green` (check 3). No transcripts, no raw logs.
+Compact, four lines max per check: what was committed (check 1), proposed diff or `learnings: clean` (check 2), red trunks or `trunks: green` (check 3), context high-water + cold-re-entry line or `context: no metrics` (check 4). No transcripts, no raw logs.
