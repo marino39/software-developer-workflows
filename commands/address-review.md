@@ -22,8 +22,10 @@ fan out in parallel in a single message.
 ## Human contract
 
 - **Scoped writes only.** Commits/pushes go ONLY to the PR's existing head
-  branch; replies go ONLY into existing review threads (plus at most one
-  summary comment). Never `APPROVE`/`REQUEST_CHANGES`, never merge, never mark
+  branch, and commits carry product changes only — workflow artifacts
+  (`docs/superpowers/`) never enter a commit or the PR diff (artifact hygiene,
+  `new-task.md` Phase 0 step 2); replies go ONLY into existing review threads
+  (plus at most one summary comment). Never `APPROVE`/`REQUEST_CHANGES`, never merge, never mark
   ready-for-review, never label or close, and never **resolve** a thread — the
   reviewer opened it, the reviewer resolves it.
 - **Author guard.** The PR must be authored by you or a prior workflow run
@@ -89,7 +91,9 @@ Everything from Phase A1 on is identical.
    are the seeded context; the manifest's route is the **floor** (monotonic,
    per `new-task.md` Phase 0). Reuse its worktree if it still exists
    (`git worktree list`); otherwise recreate one from the PR head per the
-   `superpowers:using-git-worktrees` skill. **No manifest** (a hand-authored
+   `superpowers:using-git-worktrees` skill; either way apply the
+   artifact-hygiene rule (`new-task.md` Phase 0 step 2) on the worktree.
+   **No manifest** (a hand-authored
    PR): derive an intent digest per `commands/review-pr.md` Phase R0 step 2,
    route the PR diff per Phase 0 (that route is the floor), and record
    `baseline: unmanifested` — on completion, write a fresh run manifest so
@@ -172,7 +176,9 @@ replies awaiting approval. Auto-approve per the Human contract; any criterion
 missed → normal human gate. Rejection → back to Phase A1 with the human's
 correction. Approval covers the batch: push + replies land together.
 
-On approval: push to the PR head branch (`git push`, with the network retry
+On approval: run the artifact-hygiene check (`new-task.md` Phase 6 step 9) — no
+`docs/superpowers/` path tracked or in the outgoing commits — then push to the
+PR head branch (`git push`, with the network retry
 backoff), post ONLY the approved replies (in-thread `COMMENT` replies;
 `handoff` rows post their invocation as the reply so the thread records where
 the work went), then run `new-task.md` **Phase 6.5** CI verification verbatim
@@ -208,10 +214,12 @@ writes its fresh manifest here, in `new-task.md` Phase 6 step 10's format:
 `BASE_SHA` keeps its meaning everywhere else — the **merge-base with the
 default branch** — and the PR head this run ingested/reviewed from is recorded
 as a separate `ingest head` line, never overloaded onto `BASE_SHA`. The
-manifest (fresh or updated) is **committed on the PR head branch** — an
-untracked manifest is lost to any clone or `git clean`, killing the warm start
-it exists to provide; keeping workflow docs out of the PR diff is not a reason
-to leave it untracked. Run `new-task.md` **Phase 7 ONCE** at session
+manifest (fresh or updated) stays **untracked on the local worktree — never
+committed and never part of the PR diff** (artifact hygiene, `new-task.md`
+Phase 0 step 2; registered in the local `info/exclude`, which a plain
+`git clean -fd` leaves alone). The accepted trade-off: a fresh clone starts
+cold, and the unmanifested path (Phase A0 step 3) rebuilds the warm start
+from the PR itself. Run `new-task.md` **Phase 7 ONCE** at session
 end (the human signals done, or `--finish`) over the whole log — never a
 per-run retrospective.
 

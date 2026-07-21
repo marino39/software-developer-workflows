@@ -90,7 +90,9 @@ does not re-discover them.
    · the scope estimate · and a **ready-to-paste handoff** — the exact `/new-task` (or
    `/iterate`) invocation. Non-actionable issues: the recommended response instead.
 2. **Triage manifest** (real mode; skipped in `--local`): write to
-   `docs/superpowers/triage/YYYY-MM-DD-issue-<N>.md` — the classification, route floor,
+   `docs/superpowers/triage/YYYY-MM-DD-issue-<N>.md`, left **untracked** per
+   `new-task.md` Phase 0's artifact hygiene (a local warm-start file — never
+   committed, never in any PR) — the classification, route floor,
    the `searcher`/`researcher` digests, the repro (command + test) and root-cause, and
    the scope estimate. It is the warm-start artifact: `/new-task` can seed Phase 0 from
    it (route floor + investigation digests + scope) instead of re-running that legwork —

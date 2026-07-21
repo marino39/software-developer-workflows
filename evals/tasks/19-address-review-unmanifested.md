@@ -82,9 +82,9 @@ git add -A && git commit -q -m "add calc.Average (PR #12, hand-authored)"
   Field semantics per the command's Retro section: `BASE_SHA` = the merge-base
   with the default branch (its meaning in every other manifest); the PR head the
   run ingested from goes on a separate `ingest head` line, never overloaded onto
-  `BASE_SHA`. The manifest must be **committed on the head branch** — an
-  untracked manifest is lost to clone/`git clean` and forfeits the warm start
-  (per the command's Retro rule).
+  `BASE_SHA`. The manifest stays **untracked** — never committed on the head
+  branch and never part of the PR diff (per the command's Retro rule /
+  artifact hygiene); a run that commits it fails the hygiene control.
 
 ## Expected behaviour
 
@@ -108,8 +108,10 @@ git add -A && git commit -q -m "add calc.Average (PR #12, hand-authored)"
   `baseline: unmanifested`, no bounce to `/new-task`. Score 0 if the run
   fabricated/assumed a manifest, bounced, or set a route with no rationale.
 - `Outcome correctness`: T1 fixed (guard + test, suite green, revert-discriminate
-  proof) AND the fresh manifest written with branch/`HEAD_SHA`/iteration log. A
-  missing fresh manifest caps this dimension at 50 — it is the path's product.
+  proof) AND the fresh manifest written **untracked** with
+  branch/`HEAD_SHA`/iteration log. A
+  missing fresh manifest caps this dimension at 50 — it is the path's product; a
+  committed one fails the artifact-hygiene control.
 - `No escaped defects`: T2 is the control — implementing its false claim scores
   ≤ 20 and records an escaped defect; missing T1's fix likewise.
 - `Gate discipline`: GATE A not auto-approved; four sections + evidenced
