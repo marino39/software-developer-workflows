@@ -318,20 +318,26 @@ work, instrument:
    input rather than cache reads is a cold re-entry. Counting them prices the
    S0/S5/S6 win directly.
 
-*Items 2+3 automated 2026-07-20 — no manual snapshots.* `install.sh` now
-registers a Claude Code **Stop hook** (`hooks/context-metrics.py`) that samples
-the orchestrator's context size (`input + cache_read + cache_creation` from the
-last main-chain assistant turn; sidechains excluded) and a cold flag
-(`context > 20k ∧ cache_read < 1k`) once per turn into
-`~/.claude/metrics/context-metrics.jsonl`. Gates end turns, so gate boundaries
-are sampled by construction — per-turn context trajectory ≈ the per-gate
-attribution item 2 asked for, and cold samples after a session's first are
-exactly item 3's cold re-entries. `hooks/context-report.sh` aggregates
-deterministically, and `/workflow-maintenance` check 4 surfaces the report on
-schedule with the two decision thresholds (high-water > 250k; cold re-entries
-> 5 → the S6 signal). S0 is also automated: `install.sh` sets
-`ENABLE_PROMPT_CACHING_1H=1` in settings env and seeds the CLAUDE.md
-`## Compact Instructions` block when absent.
+*Items 2+3 are eval-native as of 2026-07-20.* (A Stop-hook approach was built
+first and rejected the same day: hook registration is personal-machine state —
+another contributor cannot reproduce those measurements or attach them to a PR,
+so they fail the same evidence bar as everything else in this repo. The
+measurement must ship with the eval.) `evals/context-trace.sh` — deterministic,
+lint-tier, no LLM — parses an eval driver's transcript and emits the
+orchestrator-context trajectory: turns, high-water, mean, first-turn floor, and
+**cold re-entries** (`context > 20k ∧ cache_read < 1k`, first sample excluded).
+Gates end turns, so the trajectory samples gate boundaries by construction. The
+`/workflow-eval` Collect step records the trace into every scorecard's cost
+column, so the data accrues with every eval run anyone performs.
+
+First measured trace (2026-07-20 scorecard, tasks 01–03): fixed first-turn
+floor ≈27.4k on all three tasks; high-water 81k / 88k / 110k; the full
+high-stakes lifecycle peaked at only ~1.35× a fast-path run despite 3× the
+subagents — early evidence that fixed overhead and turn accumulation, not
+fan-out round trips, dominate (bearish for S7); the cold detector fired twice
+in-run on task 01, demonstrating the S6-pricing signal works. Live-session
+telemetry (outside eval runs) is deliberately out of scope — eval runs are the
+repo's measurement surface.
 
 ## Suggested order
 

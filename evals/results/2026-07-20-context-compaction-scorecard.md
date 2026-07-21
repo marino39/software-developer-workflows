@@ -27,15 +27,28 @@ orchestrator default. Companion contract report: `2026-07-20-contracts.md`
 ² Vs the corrected ~95; vs the as-scored 80 under the old `expect`, +20.
 ³ **New column (first scorecard carrying it; backfilled from this run's usage
 trailers).** Driver-total tokens / tool calls / wall-clock per the Collect step's
-orchestrator-cost datapoint — a proxy for orchestrator context accumulation, NOT
-per-gate context size (that attribution remains the proposal's open live-run
-measurement). No baseline comparison exists: prior scorecards recorded subagent
-tokens only ad hoc (e.g. the `/iterate` A/B's warm 68k vs cold 53–116k). These
-three values are the baseline for future diffs. Note the shape they already
-show: the full high-stakes lifecycle cost ~1.3× a fast-path run in driver
-tokens (110k vs ~85k) for a 42-line diff — the eval preamble collapses human
+orchestrator-cost datapoint. No baseline comparison exists: prior scorecards
+recorded subagent tokens only ad hoc (e.g. the `/iterate` A/B's warm 68k vs
+cold 53–116k). These three values are the baseline for future diffs.
+
+**Context trace (backfilled via `evals/context-trace.sh` over the driver
+transcripts — the Collect step's second cost datapoint):**
+
+| Task | Turns | Ctx high-water | Ctx mean | First-turn floor | Cold re-entries |
+|---|---|---|---|---|---|
+| 01 doc-only | 71 | 81,251 | 57,329 | 27,368 | 2 |
+| 02 bugfix | 57 | 88,431 | 61,319 | 27,406 | 0 |
+| 03 route-correct | 95 | 109,888 | 73,729 | 27,370 | 0 |
+
+What the first trace already shows: **(a)** a fixed first-turn floor of ~27.4k
+on every task — the driver's constant overhead before any work; **(b)** the
+full high-stakes lifecycle peaks at only ~1.35× a fast-path run (110k vs 81–88k)
+despite 3× the subagents — early evidence that turn accumulation and fixed
+overhead, not fan-out round trips, dominate context growth (bearish for the
+proposal's S7); **(c)** the cold-re-entry detector fired twice in-run on task 01
+— the mechanism that will price S6 works. The eval preamble collapses human
 turns and carries no resident-skill overhead, so live-session contexts sit
-well above these floors.
+above these floors.
 
 **Suite score = 98.5** (baseline corrected ~96.7, **+1.8**). **Escaped defects: 0.**
 
