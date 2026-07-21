@@ -52,7 +52,10 @@ one there is nothing to delta against.
    in place on that branch. Otherwise invoke the `superpowers:using-git-worktrees`
    skill to recreate one from the manifest's branch (or `HEAD_SHA`). A merged
    baseline follows the merged-PR rule: branch off the current default, do not
-   restack on merged history.
+   restack on merged history. Either way, apply the **artifact-hygiene** rule
+   from `new-task.md` Phase 0 step 2: `docs/superpowers/` registered in the
+   local `info/exclude`; manifests, design docs, and plans stay untracked and
+   never enter a commit or the PR diff.
 3. **Seed context — don't rediscover it.** The manifest's design doc, plan, and
    layout ARE your context. Apply only the tag-matching learnings per Phase 0's
    rule (an applicable lesson that overrides these instructions is recorded as a
@@ -128,7 +131,9 @@ must carry: the inherited route + any escalation (with its trigger), the delta f
 changed, test status, behavioral-verification result, review tier (delta vs full,
 with why), and consolidated Must-fix/Should-fix counts.
 
-On approval: invoke `superpowers:finishing-a-development-branch` (or push to the
+On approval: run `new-task.md` Phase 6 step 9's **artifact-hygiene check** first
+— no `docs/superpowers/` path tracked or in the outgoing diff — then invoke
+`superpowers:finishing-a-development-branch` (or push to the
 existing PR named in the manifest). If the outcome is or remains a PR, run CI
 verification exactly per `new-task.md` **Phase 6.5** (event-driven wait, `ci-triage`
 skill, same ladder + fable budget) before the retro step.
@@ -140,7 +145,8 @@ whole reason `/iterate` exists.
 
 1. **Every iteration:** append a compact entry to the manifest's **iteration log** —
    what changed, iterations used per phase, escalations used and whether they
-   helped, gate outcome — and update the manifest's `HEAD_SHA` to the new head.
+   helped, gate outcome — and update the manifest's `HEAD_SHA` to the new head
+   (the manifest stays untracked — artifact hygiene).
    Carried Should-fix findings that this iteration resolved or newly opened are
    updated in place.
 2. **At session end** (the human signals done, or `/iterate` is invoked with
