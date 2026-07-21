@@ -12,6 +12,10 @@ Driven by the `/workflow-eval` command; this directory holds its inputs and outp
 ```
 rubric.md        shared scoring rubric (5 dimensions) — the contract for scoring
 lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
+context-trace.sh deterministic orchestrator-context trace over an eval driver's
+                 transcript (turns, high-water, mean, first-turn floor, cold
+                 re-entries) — the Layer-2 Collect step records it per run into
+                 the scorecard's orchestrator-cost column
 complexity-ledger.md  the complexity budget: each accreted construct → the failure it
                  prevents → source → status; `intuition — unverified` rows are the backlog
 fixtures/base/   the default Go module most tasks run against (calc + auth helper +

@@ -18,7 +18,7 @@ You review the current diff against the provided plan. Read-only — never fix a
 
 Required:
 - `diff_range` — the `BASE_SHA..HEAD` (or equivalent) diff to review.
-- `plan` — the plan (or requirements) the diff is reviewed against.
+- `plan` — the plan (or requirements) the diff is reviewed against. Preferred form: the plan file's path (Read it yourself); inline text only when no plan file exists.
 
 Optional:
 - `focus` — a specific lens (e.g. a single channel's remit) or the prior iteration's issue checklist.

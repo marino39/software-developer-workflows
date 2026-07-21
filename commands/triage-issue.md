@@ -4,7 +4,7 @@ description: Triage a GitHub issue into a scoped, ready-to-run plan — classify
 
 # Triage Issue: $ARGUMENTS
 
-You are the orchestrator (run this on Opus or Fable, at `xhigh` effort). `/triage-issue`
+You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token). `/triage-issue`
 turns a GitHub issue into a **triage artifact** — a classification, a proven repro (for
 bugs), a root-cause hypothesis, and a scoped plan sketch — and stops **before**
 implementation. Where `/new-task` assumes you already know what to build,

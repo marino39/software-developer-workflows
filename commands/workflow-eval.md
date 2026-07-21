@@ -111,12 +111,24 @@ For each selected task, `--repeat` times:
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
-3. **Collect** only those structured artifacts (capped) — no raw transcript.
+3. **Collect** only those structured artifacts (capped) — no raw transcript. Two
+   cost datapoints are also recorded per run:
+   - the dispatch's **usage trailer** (the Agent tool's returned token count,
+     tool-use count, and duration) — the driver's total consumption;
+   - the **context trace**: run `sh <repo>/evals/context-trace.sh <driver
+     transcript path>` (deterministic, no LLM — the script parses the
+     transcript; you never ingest it) and record its summary line: turns,
+     context high-water, mean, first-turn floor, and **cold re-entries**
+     (post-first-turn samples at full input price — the cache-bleed signal from
+     the 2026-07-20 context-compaction proposal). Gates end turns, so the
+     trajectory samples gate boundaries by construction.
 4. **Score**: spawn a FRESH `reviewer` as judge, fed only the collected artifacts +
-   the task's `expect` block + `evals/rubric.md`. It returns the five per-dimension
-   scores (0–100, honoring `expect` overrides and `n/a` reweights), the list of any
-   escaped defects, and a one-line justification per dimension. Multiple repeats →
-   average the dimensions and note the min–max spread.
+   the usage trailer + the task's `expect` block + `evals/rubric.md`. It returns
+   the five per-dimension scores (0–100, honoring `expect` overrides and `n/a`
+   reweights), the list of any escaped defects, and a one-line justification per
+   dimension — the trailer is evidence for the Efficiency dimension's
+   "token/wall-clock in the expected band". Multiple repeats → average the
+   dimensions and note the min–max spread.
 
 ## Layer 3 — Agent contract test (`--contracts`)
 
@@ -157,7 +169,11 @@ Write `evals/results/YYYY-MM-DD-<label>-scorecard.md` (`<label>` = `baseline` or
 the variant name; date via `date +%F`). Include:
 
 - Per-task table: the five dimension scores, task score, escaped-defect count,
-  repeat spread.
+  repeat spread, and **orchestrator cost** — driver tokens / tool calls /
+  wall-clock (usage trailer) plus context high-water / cold re-entries
+  (`evals/context-trace.sh` over the driver transcript). Cost is tracked, not
+  scored against a threshold — but a large cost jump on an unchanged task
+  belongs in the regression section's prose even when no dimension dropped.
 - Suite score (mean of task scores).
 - **Regression section** vs the baseline scorecard: every dimension that dropped
   > 10 points, and every new escaped defect — listed explicitly, never averaged
