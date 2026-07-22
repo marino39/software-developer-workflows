@@ -169,6 +169,20 @@ whole reason `/iterate` exists.
    (the manifest stays untracked — artifact hygiene).
    Carried Should-fix findings that this iteration resolved or newly opened are
    updated in place.
+   **Compaction suggestion (accumulation-aware).** At GATE I — human or
+   auto-approved — append the same `/compact preserve the run-ledger path, route +
+   escalations, artifact paths, open Must-fix/Should-fix, current phase + iteration`
+   suggestion to the gate's **Next** when *either* (a) this iteration was heavy on
+   its own (route escalated to high-stakes → full fan-out ran, or it is entering the
+   Phase 6.5 CI wait), *or* (b) the iteration log shows **≥3 rows since the last
+   `compact-suggested` marker** (tunable default). A single small delta is
+   suppressed by (a) exactly like a short `/new-task` run; (b) exists because
+   several short deltas accumulate context across a session even when no one delta
+   is heavy — the iteration log is the accumulator, since it is file-based and
+   outlives a compaction, so the count needs no measurement of your own context. On
+   surfacing, tag this iteration-log row `compact-suggested` so the count resets and
+   the next nudge waits ~3 more iterations (reset on suggestion, not on a confirmed
+   compact — whether the human ran it is unobservable).
 2. **At session end** (the human signals done, or `/iterate` is invoked with
    `--finish`, or a single iteration the human declares final): run `new-task.md`
    **Phase 7 ONCE** over the whole session — one retrospective covering all logged

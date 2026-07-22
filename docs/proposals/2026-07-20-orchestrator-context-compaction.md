@@ -1,8 +1,10 @@
 # Research: orchestrator context compaction
 
-Date: 2026-07-20. Status: **S1–S5 + S8 implemented** on this branch (S0 is
-user-side configuration, documented in README Design notes; S6/S7 remain
-research pending the Measure-first section). Owed per the modification
+Date: 2026-07-20 (updated 2026-07-22). Status: **S1–S5 + S8 implemented** on this
+branch (S0 is user-side configuration, documented in README Design notes); **S5
+extended and S6 landed guidance-first 2026-07-22** as orchestrator-driven
+compaction *suggestions* rather than the CLAUDE.md-steer route (see S5/S6). S7
+remains research pending the Measure-first section. Owed per the modification
 protocol: a live `/workflow-eval` scorecard for the behavior-affecting edits
 and `--contracts --agent architect` for the dual-mode contract — the live eval
 cannot run in the authoring environment, so it rides the PR review. Stated
@@ -240,6 +242,28 @@ file can say so in the gate's **Next** section for long runs. No mechanism lets
 the orchestrator compact itself mid-session; safety + opportunism is the
 achievable design.
 
+**Update 2026-07-22 — suggestion-first, and why the CLAUDE.md steer is
+optional.** Discussion on this branch surfaced a scoping problem with the
+`## Compact Instructions` half of S5: it only steers compaction through a
+CLAUDE.md that loads in the *target* repo's session — i.e. `~/.claude/CLAUDE.md`
+(user-global machine state) or the target repo's own committed `CLAUDE.md`. This
+repo's `CLAUDE.md` never loads during a `/new-task` run in another repo, and
+`install.sh` deliberately does not touch `~/.claude/CLAUDE.md` (session hygiene
+is a user-side recommendation). So the steer cannot ship through this repo; it
+stays a documented one-time user setup step (README). Crucially, correctness does
+**not** depend on it: the run-ledger invariant (S4) already makes an *unsteered*
+auto-compaction harmless, and the ledger is an untracked local file needing zero
+per-repo config. The steer only sharpens compaction *quality*, so it is deferred
+as pure optimization. What landed instead is the **orchestrator suggesting a
+manual `/compact` at safe boundaries** — a `new-task.md` Human-contract rule that,
+on structurally heavy runs (route ≥ standard AND {≥2 review iterations, the
+3-approach fan-out ran, or GATE 3 approving a PR}), appends the recommended focus
+string to the gate's **Next**, suppressed on scoped/fast/short runs. This ships
+through the command file, reaches every run with no CLAUDE.md dependency, and
+respects the minimal-human-effort contract by firing only when the accumulated
+context pays for the compaction. The orchestrator cannot measure its own context,
+so the trigger is structural, not a size threshold.
+
 **S6. Treat the post-GATE-3 tail as a separate, cheap context.** The 400k peaks
 and the coldest re-reads both live in Phase 6.5: each CI wake re-enters the full
 run history even though the loop needs only the manifest (PR #, branch,
@@ -254,6 +278,20 @@ ledger, not from live memory of Phases 1–5.
 - **Owes:** if implemented as a *separate command/session hand-off*, that is a
   new seam → ledger row + eval task. If implemented as "compact after GATE 3"
   guidance only, it rides S5.
+
+**Landed 2026-07-22 — guidance form.** S6 shipped as the guidance-only variant,
+folded into the S5 suggestion rule: GATE 3 approving a PR is one of the
+structural triggers that makes `new-task.md` append the `/compact` suggestion to
+**Next**, precisely because the Phase 6.5 CI wait is where the coldest re-reads
+live. The heavier "hand the CI babysit to a fresh session" seam is **not** built —
+it stays research, promoted only if cold-re-entry telemetry shows CI wakes
+dominate. A `/iterate`-specific extension also landed: because a session can hold
+many short `/iterate` deltas that each individually escape per-run suppression,
+the end-of-iteration rule (`iterate.md` Retro step 1) surfaces the same suggestion
+on **accumulation** — ≥3 iteration-log rows since the last `compact-suggested`
+marker — using the file-based iteration log as the accumulator so no context
+measurement is needed. Both carry one complexity-ledger row (candidate;
+suggestion-only, not ablation-gated) and owe the live scorecard.
 
 ### Tier 3 — structural, ablation-gated (real ledger rows)
 
