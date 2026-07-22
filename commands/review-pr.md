@@ -16,6 +16,10 @@ conventions**, the **Escalation ladder**, the **effort defaults**, the reduced/f
 that file for those sections; this command defines only the foreign-PR seam (how
 intent is derived without a plan, and how findings are delivered). All substantive
 work goes to subagents; independent subagents fan out in parallel in a single message.
+The **Delegation floor** (`commands/iterate.md`) applies: a small PR trims the
+review tier (reduced), never whether the work is dispatched — you never review the
+diff yourself, and R0's setup keeps source and doc content out of your context
+(paths and capped digests only).
 
 ## Human contract
 
@@ -65,7 +69,10 @@ identical to the PR path.
    check against). Build a short **intent digest** — what the PR claims to do — from,
    in priority order: a linked design doc/RFC → the linked issue(s) → the PR body →
    the PR title. The intent digest is fed to the review channels in place of
-   `PLAN_OR_REQUIREMENTS`.
+   `PLAN_OR_REQUIREMENTS`. Composing the digest is yours; **bulk-reading its
+   sources is not** — the PR body/title come from the step-1 fetch, but a linked
+   design doc, RFC, or long issue thread is digested by a `researcher` (external
+   links) or `searcher` (in-repo docs) into a capped summary you compose from.
 3. **Fetch the PR head into a read-only worktree** — invoke the
    `superpowers:using-git-worktrees` skill on the fetched PR ref (e.g.
    `git fetch origin pull/<N>/head` then a detached checkout) so the lens reviewers
@@ -77,7 +84,9 @@ identical to the PR path.
    the diff touches no high-stakes category (auth, payments, migrations, data
    deletion) → **reduced** tier; otherwise **full** tier with the high-stakes
    escalations of Phase 6 step 7. State the tier and its rationale in the report.
-6. Read the CLAUDE.md files covering the changed dirs (for the compliance lens).
+6. **Locate** (don't read) the CLAUDE.md files covering the changed dirs and pass
+   their paths to the compliance lens — C3 Reads them itself (path-passing, per
+   `new-task.md` Token hygiene); their content never transits your context.
 
 ## Phase R1 — Review fan-out
 
@@ -132,5 +141,6 @@ reasons) — plus `ci: <state>` and the advisory assessment.
 
 Same as `new-task.md`: never ingest raw subagent transcripts (capped structured
 summaries only); run independent subagents in parallel in one message; route codex
-output >~100 lines through `test-runner` for a digest; failure/finding digests are
+output >~100 lines through `test-runner` for a digest; review judgment never done
+inline (the Delegation floor — small PRs included); failure/finding digests are
 compact.

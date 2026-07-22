@@ -69,12 +69,15 @@ does not re-discover them.
 
 ## Phase T2 — Root-cause + scope
 
-- **Bug:** produce a **proven failing repro** per the `verify-fix` skill in an isolated
-  scratch worktree — the CI-exact command, and a repro test that **discriminates** (an
-  existing failing test that pinpoints the bug qualifies; otherwise write one and prove
-  it fails for the right reason). Then a **root-cause hypothesis with evidence**
-  (`file:line`). A stubborn root cause escalates to `debugger` per the Escalation ladder
-  — triage still stops at the hypothesis, it does not fix.
+- **Bug:** a `coder` produces the **proven failing repro** per the `verify-fix` skill
+  in an isolated scratch worktree — never the orchestrator (the Delegation floor,
+  `commands/iterate.md`): the CI-exact command, and a repro test that
+  **discriminates** (an existing failing test that pinpoints the bug qualifies;
+  otherwise it writes one and proves it fails for the right reason), execution
+  through `test-runner`. The same `coder`, seeded with T1's digests, reports the
+  **root-cause hypothesis with evidence** (`file:line`). A stubborn root cause
+  escalates to `debugger` per the Escalation ladder — triage still stops at the
+  hypothesis, it does not fix.
 - **Feature:** a **light** approach sketch — ONE `architect` proposes a recommended
   approach + scope. Do NOT run the full Phase 1 three-lens brainstorm; that is deferred
   to `/new-task` Phase 1, so triage does not pay for design twice.
@@ -108,4 +111,5 @@ does not re-discover them.
 
 Same as `new-task.md`: never ingest raw subagent transcripts (capped structured
 summaries only); run independent subagents in parallel in one message; test/repro
-execution goes through `test-runner`; failure/repro digests are compact.
+execution goes through `test-runner`; substantive work never done inline (the
+Delegation floor — repro building included); failure/repro digests are compact.
