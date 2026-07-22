@@ -28,7 +28,7 @@
   <div class="wrap head-grid">
     <span class="kicker" style="color:var(--explain);background:var(--explain-soft);border-color:color-mix(in srgb,var(--explain) 30%,transparent);"><span class="dot" style="background:var(--explain)"></span>The cheap read-only lane · Opus / Fable · xhigh effort</span>
     <h1><span class="cmd" style="color:var(--explain)">/explain</span> — classify, sweep cheap, ground every claim</h1>
-    <p class="lede">The suite's lightest lane: no worktree, no lifecycle, no gates, no writes. <span class="mono">/explain</span> answers "how does X work / where is Y / how is Z wired / <em>why</em> is W this way" by <strong>classifying</strong> the question into one of seven cases and returning a grounded answer in that case's <strong>fixed output shape</strong>. Built to be cheap: the workhorse is <span class="mono">searcher</span> on <strong>haiku / low effort</strong>, fanned out in parallel, and the orchestrator synthesizes <strong>inline</strong> — no synthesis subagent, no <span class="mono">architect</span>/opus.</p>
+    <p class="lede">The suite's lightest lane: no worktree, no lifecycle, no gates, no writes. <span class="mono">/explain</span> answers "how does X work / where is Y / how is Z wired / <em>why</em> is W this way" by <strong>classifying</strong> the question into one of seven cases and returning a grounded answer in that case's <strong>fixed output shape</strong>. Built to be cheap: the workhorse is <span class="mono">searcher</span> on <strong>haiku / low effort</strong>, fanned out in parallel, and the orchestrator synthesizes <strong>inline</strong> — no synthesis subagent, no <span class="mono">architect</span>/opus. Inline means synthesis only: the sweep itself is always dispatched — even a one-angle question goes to a <span class="mono">searcher</span> (the Delegation floor), because raw file content in the Opus context is exactly the cost this lane exists to avoid.</p>
     <div class="stat-row">
       <div class="stat"><div class="n">7</div><div class="l">Cases</div></div>
       <div class="stat"><div class="n">0</div><div class="l">Gates / writes</div></div>
@@ -77,7 +77,7 @@
       <div class="grid cols-2" style="margin-top:20px;">
         <div class="panel" style="border-left:3px solid var(--explain);">
           <h3><span class="ic" style="background:var(--explain-soft);color:var(--explain);">$</span>Cheap by construction</h3>
-          <p><span class="mono">searcher</span> (haiku/low) is the only default tier — no <span class="mono">architect</span>/opus, an explanation doesn't need the deep-reasoning tier. Synthesis is inline, so there's no extra subagent round-trip. Shallow by default; <span class="mono">--deep</span> is the one knob that widens the sweep.</p>
+          <p><span class="mono">searcher</span> (haiku/low) is the only default tier — no <span class="mono">architect</span>/opus, an explanation doesn't need the deep-reasoning tier. Synthesis is inline, so there's no extra subagent round-trip — but the sweep never is: the orchestrator doesn't Grep/Read the codebase itself. Shallow by default; <span class="mono">--deep</span> is the one knob that widens the sweep.</p>
         </div>
         <div class="panel" style="border-left:3px solid var(--pass);">
           <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">✓</span>Grounding contract</h3>
@@ -128,7 +128,7 @@
         <div class="panel"><h3><span class="ic">◍</span>searcher (haiku/low)</h3><p>The cheapest agent, fanned out in parallel — the whole workhorse of the sweep. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">◎</span>researcher (external only)</h3><p>Joins only when the answer needs library behavior the codebase can't give. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">⇧</span>Escalation ladder</h3><p>searcher → sonnet only on empty/off-target twice; keeps the run cheap by default. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
-        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped digests only, parallel fan-out, inline synthesis — the orchestrator stays cheap. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped digests only, parallel fan-out, inline synthesis, the sweep always dispatched — the orchestrator stays cheap. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">⌖</span>Classification-first</h3><p>Same "classify then act" shape as <a href="triage-issue.html" class="mono">/triage-issue</a>, here binding the output contract. </p></div>
         <div class="panel"><h3><span class="ic">✓</span>Read-only discipline</h3><p>No worktree, no writes (bar <span class="mono">--save</span>), nothing posted — the lightest footprint in the suite.</p></div>
       </div>

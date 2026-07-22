@@ -28,7 +28,7 @@
   <div class="wrap head-grid">
     <span class="kicker" style="color:var(--gate);background:var(--gate-soft);border-color:color-mix(in srgb,var(--gate) 30%,transparent);"><span class="dot" style="background:var(--gate)"></span>Follow-up entry point · Opus / Fable · xhigh effort</span>
     <h1><span class="cmd" style="color:var(--gate)">/iterate</span> — the warm-start fast lane</h1>
-    <p class="lede">When a change has already been carried through <a href="new-task.html" class="mono">/new-task</a>'s review, tweaking or extending it shouldn't re-pay the full lifecycle. <span class="mono">/iterate</span> treats the follow-up as a <strong>delta on a reviewed baseline</strong>: no brainstorm, no plan-review, no from-scratch review fan-out, and no per-tweak retrospective.</p>
+    <p class="lede">When a change has already been carried through <a href="new-task.html" class="mono">/new-task</a>'s review, tweaking or extending it shouldn't re-pay the full lifecycle. <span class="mono">/iterate</span> treats the follow-up as a <strong>delta on a reviewed baseline</strong>: no brainstorm, no plan-review, no from-scratch review fan-out, and no per-tweak retrospective. The cuts are to <em>how many</em> subagents run — never to <em>whether</em> work is delegated: the <strong>Delegation floor</strong> holds even for a one-line delta (source edits to <span class="mono">coder</span>, tests to <span class="mono">test-runner</span>, review judgment to <span class="mono">reviewer</span>), because inline work rides the most expensive context in the workflow and serializes what subagents run in parallel.</p>
     <div class="stat-row">
       <div class="stat"><div class="n">3</div><div class="l">Phases (I0–I2)</div></div>
       <div class="stat"><div class="n">1</div><div class="l">Gate (GATE I)</div></div>
@@ -53,7 +53,7 @@
           <div class="itr-tag">Phase I0</div>
           <div class="itr-body">
             <div class="itr-t">Warm setup</div>
-            <p>Load the prior run's <strong>manifest</strong> — route, SHAs, design/plan/retro paths, outcome, and carried open Should-fix. Reuse the worktree warm if it still exists. Seed context from the manifest instead of re-running searcher / researcher. Inherit the route as a floor (monotonic — escalate only).</p>
+            <p>Load the prior run's <strong>manifest</strong> — route, SHAs, design/plan/retro paths, outcome, and carried open Should-fix. Reuse the worktree warm if it still exists. Seed context from the manifest instead of re-running searcher / researcher — but a genuine gap the delta opens is still <strong>dispatched</strong>, never Grep/Read-explored inline. Inherit the route as a floor (monotonic — escalate only).</p>
           </div>
         </div>
         <div class="itr-arrow" aria-hidden="true">→</div>
@@ -128,7 +128,7 @@
         <div class="panel"><h3><span class="ic">⌖</span>Route model</h3><p>scoped · standard · high-stakes, monotonic, re-checked against the real diff. <a href="new-task.html#routes" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">▤</span>Gate format</h3><p>Four decidable sections, plain-text, turn-ending; auto-approve on green. <a href="new-task.html#gates" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">⚑</span>Full fan-out (on escalation)</h3><p>High-stakes deltas run the full Phase 6 tier + skeptic pass. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
-        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries, parallel fan-out, tests via test-runner. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Token hygiene</h3><p>Capped summaries, parallel fan-out, tests via test-runner, substantive work never inline (the Delegation floor). <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
       </div>
     </div>
   </section>
