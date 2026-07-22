@@ -6,7 +6,9 @@
 # For each transcript, walks the tool_use blocks of the transcript's OWN chain
 # (scoped by the first assistant entry's agentId, exactly like
 # context-trace.sh) and classifies them:
-#   spawns      Agent-tool dispatches (subagent_type listed)
+#   spawns      subagent dispatches: Agent-tool calls (attempts count — a
+#               rejected call still shows intent) plus headless-CLI fallback
+#               dispatches (`claude -p ...` run via Bash)
 #   self-edit   Edit/Write/NotebookEdit performed by the orchestrator itself
 #               (workflow artifacts under docs/superpowers/ are excluded —
 #               manifests/retros are orchestration mechanics, not delegated work)
@@ -33,6 +35,7 @@ detail = os.environ.get("DETAIL") == "1"
 TEST_RE = re.compile(
     r"\bgo\s+(test|build|vet|run)\b|\bmake\s+(test|check)\b|\bnpm\s+(test|run)\b"
     r"|\bpytest\b|\bcargo\s+(test|build)\b")
+CLI_SPAWN_RE = re.compile(r"\bclaude\s+(-p|--print)\b")
 ARTIFACT_RE = re.compile(r"docs/superpowers/")
 fmt = "{:<28} {:>6} {:>9} {:>9} {:>10}"
 print(fmt.format("transcript", "spawns", "self-edit", "self-test", "bash-other"))
@@ -69,7 +72,9 @@ for path in sys.argv[1:]:
                             edits.append(p)
                     elif name == "Bash":
                         cmd = (inp.get("command") or "").strip()
-                        if TEST_RE.search(cmd):
+                        if CLI_SPAWN_RE.search(cmd):
+                            spawns.append("cli-fallback")
+                        elif TEST_RE.search(cmd):
                             tests.append(cmd[:120])
                         else:
                             other += 1
