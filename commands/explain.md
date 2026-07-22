@@ -16,6 +16,10 @@ agent), fanned out in parallel; the orchestrator synthesizes the answer **inline
 their capped digests (no separate synthesis subagent). `researcher` joins ONLY when the
 answer needs external library behavior. No `architect`/opus by default — an explanation
 does not need the deep-reasoning tier. Reuses existing agents; **no new agents**.
+Inline means synthesis over capped digests ONLY — the sweep itself is never inline:
+even a one-angle Locate question dispatches a `searcher` rather than Grep/Reading the
+codebase yourself (the Delegation floor, `commands/iterate.md`), because raw file
+content in the Opus context is exactly the cost this lane exists to avoid.
 
 ## Human contract
 
@@ -82,6 +86,8 @@ cost stays targeted.
 
 - `searcher` is the default tier (haiku/low); do not reach for `architect`/opus.
 - Synthesis is inline — never spawn a synthesis subagent.
+- The sweep is never inline — every angle, however small, is a dispatched `searcher`;
+  the orchestrator does not Grep/Read the codebase itself (the Delegation floor).
 - Independent searchers run in parallel in one message; never ingest raw transcripts —
   only their capped digests.
 - Shallow by default; `--deep` is the only thing that widens the sweep.

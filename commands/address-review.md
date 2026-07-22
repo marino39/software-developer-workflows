@@ -15,9 +15,14 @@ thread-ingestion seam, the disposition contract, and the reply gate.
 It reuses `commands/new-task.md` machinery — the **Review loop conventions**,
 the **Escalation ladder**, the **effort defaults**, the route model, **Phase
 6.5** CI verification — and `commands/iterate.md`'s warm setup, delta
-implement, delta review, and deferred/batched retro. Read those files for
-those sections. All substantive work goes to subagents; independent subagents
-fan out in parallel in a single message.
+implement, delta review, deferred/batched retro, and **Delegation floor**.
+Read those files for those sections. All substantive work goes to subagents;
+independent subagents fan out in parallel in a single message. The floor
+covers this command's own seam too: ingestion mechanics (fetching the PR,
+quoting threads, composing the disposition table) are yours; everything
+substantive a thread opens is dispatched — code evidence to `searcher`, claim
+verification to `reviewer` skeptics, fixes to `coder` — even when the whole
+run is one one-line comment.
 
 ## Human contract
 
@@ -101,7 +106,10 @@ Everything from Phase A1 on is identical.
 4. Apply only the tag-matching learnings per Phase 0's rule (an override is a
    Deviation citing its `src:`). Do NOT re-spawn `searcher`/`researcher` for
    context the manifest carries; dispatch them only for a genuine gap a
-   comment opens.
+   comment opens. A genuine gap is still **dispatched**, in parallel when more
+   than one agent is needed — this rule deletes covered legwork; it never
+   relocates uncovered legwork into your own context as inline Grep/Read
+   exploration (the Delegation floor).
 
 ## Phase A1 — Disposition (classify + skeptic, before any code)
 
@@ -120,6 +128,11 @@ Everything from Phase A1 on is identical.
      surface, or a high-stakes greenfield add): produce the ready-to-paste
      `/new-task` (or `/iterate`) invocation, exactly like
      `commands/triage-issue.md`'s handoff. No code here.
+
+   Classification is your judgment, but code evidence feeding it (a
+   `done-already` sha, a convention check, how the commented code actually
+   behaves) comes from a dispatched `searcher` — never from inline Grep/Read
+   (the Delegation floor).
 2. **Skeptic pass on every defect claim / prescribed change** among the `fix`
    candidates: one fresh parallel `reviewer` per item, default-refute — verify
    the comment's technical claim against the actual code and try to refute it.
@@ -227,5 +240,6 @@ per-run retrospective.
 
 Same as `new-task.md`: never ingest raw subagent transcripts (capped
 structured summaries only); independent subagents in parallel in one message;
-test execution always through `test-runner`; thread bodies capped per Phase A0
-step 2; failure digests compact.
+test execution always through `test-runner`; substantive work never done
+inline (the Delegation floor, `iterate.md` — a one-comment fix included);
+thread bodies capped per Phase A0 step 2; failure digests compact.
