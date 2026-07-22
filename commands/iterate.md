@@ -17,6 +17,21 @@ model. Read that file for those sections; this command only defines the warm-sta
 seam and the deferred retro. All substantive work goes to subagents; independent
 subagents fan out in parallel in a single message.
 
+**Delegation floor — a small delta is not an exemption.** You judge results,
+route work, and talk to the human; you do only trivial work yourself, and
+*trivial* means orchestration mechanics: manifest/worktree/git bookkeeping,
+spawn prompts, gate summaries, the computed verdict. Everything else is
+delegated **even when the delta is one line** — source edits to `coder`,
+build/test execution to `test-runner`, code investigation to `searcher`,
+external docs to `researcher`, review judgment to `reviewer`, plan writing to
+`architect`. `/iterate` deltas are small by construction, so "small enough to
+do inline" would waive delegation on exactly the runs this command exists for.
+What the warm path trims is the **number** of subagents (one plan-lite
+architect, sliced coders, one delta reviewer — no brainstorm, no plan-review,
+no fan-out), never whether the work is delegated: inline substantive work
+accretes in the most expensive context in the workflow and serializes what
+subagents run in parallel, so it is slower AND costlier than dispatching.
+
 ## Human contract
 
 Same four-section decidable gate format as `/new-task` (Results / Key decisions /
@@ -57,11 +72,14 @@ one there is nothing to delta against.
    local `info/exclude`; manifests, design docs, and plans stay untracked and
    never enter a commit or the PR diff.
 3. **Seed context — don't rediscover it.** The manifest's design doc, plan, and
-   layout ARE your context. Apply only the tag-matching learnings per Phase 0's
+   layout ARE your context — referenced by path (agents Read what they need),
+   not bulk-Read into your own. Apply only the tag-matching learnings per Phase 0's
    rule (an applicable lesson that overrides these instructions is recorded as a
    Deviation citing its `src:`). Do **not** re-spawn `searcher`/`researcher` for
    anything the manifest already covers — dispatch them only for a genuine gap the
-   delta opens.
+   delta opens. A genuine gap is still **dispatched**, in parallel when more than
+   one agent is needed — this rule deletes covered legwork; it never relocates
+   uncovered legwork into your own context as inline Grep/Read exploration.
 4. **Inherit + re-check the route (monotonic).** The manifest's final route is the
    **floor** — `/iterate` may only escalate, never de-escalate. Re-check the
    planned delta against the high-stakes categories (auth, payments, migrations,
@@ -101,7 +119,9 @@ baseline is trusted because it already passed a full Phase 6.
    the real delta diff; any escalation is monotonic, recorded as a Deviation, and
    forces the full tier below.
 2. **Behavioral verification (before any review spend):** prove the delta behaves
-   as specified — `verify-feature` for feature deltas, `verify-fix` for bug fixes;
+   as specified — delegated to a `coder` (or `test-runner` when it is pure
+   command-driving) exactly per `new-task.md` Phase 6 step 1, never driven by the
+   orchestrator: `verify-feature` for feature deltas, `verify-fix` for bug fixes;
    exempt doc-only/dead-code (record `verification: exempt (<reason>)`). Failures
    route back to Phase I1 before review tokens are spent.
 3. **Review — delta by construction.** Because the baseline was already fully
@@ -162,6 +182,7 @@ Same as `new-task.md`: never ingest raw subagent transcripts (capped structured
 summaries only); pass artifacts by path, never inlined (coders get plan path +
 step numbers; reviewers Read the plan themselves); never Read back a file you
 just wrote; independent subagents in parallel in one message; test execution
-always through `test-runner`; failure digests are compact; the manifest's
+always through `test-runner`; substantive work never done inline (the
+Delegation floor above — small deltas included); failure digests are compact; the manifest's
 iteration log keeps the binding state current, so history older than the last
 gate is compaction-safe; never switch your own model or effort mid-run.
