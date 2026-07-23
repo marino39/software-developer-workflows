@@ -1,8 +1,9 @@
 #!/bin/sh
 # Install workflow files from this repo into the live ~/.claude locations.
-# Learnings files (LEARNINGS.md + learnings/*.md) are runtime state owned by
-# /new-task runs: seeded only if missing, never overwritten. Use capture.sh
-# to bring live changes back here.
+# Learnings files (LEARNINGS.md + learnings/*.md) are local runtime state owned
+# by /new-task runs: seeded from the clean repo seed only if missing, never
+# overwritten. They stay per-machine and are never captured back into the repo
+# (everyone starts from a clean slate) — see capture.sh / README.md.
 set -eu
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -26,7 +27,7 @@ seed() {
         cp "$src" "$dest"
         echo "seeded: $dest"
     else
-        echo "skipped: $dest exists (runtime state; use capture.sh to version it)"
+        echo "skipped: $dest exists (local runtime state; not versioned)"
     fi
 }
 

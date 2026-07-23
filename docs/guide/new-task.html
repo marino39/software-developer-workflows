@@ -194,7 +194,7 @@
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">7</span></div></div>
           <div class="card">
             <h3>Retrospective &amp; self-improvement</h3>
-            <p>Write a retro, distill durable lessons, and propose a self-update to the learnings memory, command file, agents, or skills. <strong>GATE 4</strong> shows the update as a diff — only approved edits are applied, then versioned via <span class="mono">capture.sh</span>.</p>
+            <p>Write a retro, distill durable lessons, and propose a self-update to the learnings memory, command file, agents, or skills. <strong>GATE 4</strong> shows the update as a diff — only approved edits are applied. Command/agent/skill edits are versioned via <span class="mono">capture.sh</span>; learnings edits stay local and are never versioned (everyone starts from a clean seed).</p>
             <div class="detail"><span class="tag loop">GATE 4</span><span class="tag">LEARNINGS.md</span><span class="tag">capture.sh</span></div>
           </div>
         </div>
@@ -383,13 +383,13 @@
       <div class="sec-head">
         <p class="eyebrow">Memory &amp; self-improvement</p>
         <h2>The workflow improves itself, under review</h2>
-        <p>Phase 0 loads only the learnings whose trigger tags match the task; phase 7 writes new ones back. Every self-edit passes GATE 4 and is versioned in git — hand edits and run-time self-improvements share the same source of truth.</p>
+        <p>Phase 0 loads only the learnings whose trigger tags match the task; phase 7 writes new ones back to the live copy. Every self-edit passes GATE 4. Command/agent/skill edits are versioned in git; learnings stay local per machine — everyone starts from a clean seed and their lessons never leave their <span class="mono">~/.claude</span>.</p>
       </div>
       <div class="cycle">
         <div class="cyc"><div class="n">load</div><div class="t">Tag-matched recall</div><div class="d">Phase 0 applies only bullets whose language / area / task-type / repo tags match this run.</div></div>
         <div class="cyc"><div class="n">apply</div><div class="t">Lesson overrides rule</div><div class="d">A conflicting lesson wins (it's newer) and is recorded as an auditable deviation citing its <code>src:</code>.</div></div>
         <div class="cyc"><div class="n">distill</div><div class="t">Phase 7 retro</div><div class="d">Durable lessons become dated one-line bullets; multi-step procedures graduate into skills.</div></div>
-        <div class="cyc"><div class="n">version</div><div class="t">GATE 4 → capture</div><div class="d">Approved edits only, then <code>capture.sh</code> pulls live changes back into the repo for review.</div></div>
+        <div class="cyc"><div class="n">version</div><div class="t">GATE 4 → capture</div><div class="d">Approved command/agent/skill edits only, then <code>capture.sh</code> pulls those back into the repo for review. Learnings are local — never captured.</div></div>
       </div>
     </div>
   </section>

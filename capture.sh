@@ -1,7 +1,11 @@
 #!/bin/sh
 # Capture the live ~/.claude workflow state back into this repo, so
-# self-improvement edits (GATE 4) and appended learnings can be reviewed
+# self-improvement edits (GATE 4) to agents/commands/skills can be reviewed
 # and committed. Review `git diff` after running; nothing is committed for you.
+#
+# Learnings are intentionally NOT captured: they are local runtime state that
+# stays per-machine (everyone starts from the clean seed new-task/LEARNINGS.md).
+# See install.sh and README.md.
 set -eu
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -20,12 +24,8 @@ for f in "$REPO_DIR"/skills/*/*.md; do
         cp "$live" "$f"
     fi
 done
-cp "$CLAUDE_DIR/new-task/LEARNINGS.md" "$REPO_DIR/new-task/LEARNINGS.md"
-mkdir -p "$REPO_DIR/new-task/learnings"
-for f in "$CLAUDE_DIR"/new-task/learnings/*.md; do
-    [ -e "$f" ] || continue
-    cp "$f" "$REPO_DIR/new-task/learnings/$(basename "$f")"
-done
+# Learnings (LEARNINGS.md + learnings/*.md) are deliberately not copied back:
+# they are local, per-machine runtime state and must never enter the repo.
 
 cd "$REPO_DIR"
 git status --short

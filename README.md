@@ -40,22 +40,24 @@ skills/              procedural skills promoted from learnings:
                      verify-fix, verify-feature, convention-scan, ci-triage
 evals/               /workflow-eval inputs & outputs: rubric, one Go fixture,
                      frozen tasks, ablation variants, dated result scorecards
-new-task/LEARNINGS.md  general lessons memory (live file is runtime state)
-new-task/learnings/<repo>.md  per-repo lessons (live files are runtime state)
+new-task/LEARNINGS.md  general lessons SEED (ships empty; live copy is
+                     local runtime state, never versioned)
+new-task/learnings/<repo>.md  per-repo lessons (local-only, gitignored)
 install.sh           repo -> ~/.claude  (learnings seeded only if missing)
-capture.sh           ~/.claude -> repo  (pull live self-improvements, then
-                     review `git diff` and commit)
+capture.sh           ~/.claude -> repo  (pull live agent/command/skill
+                     self-improvements — NOT learnings — then review
+                     `git diff` and commit)
 ```
 
 ## Flow
 
 - **Improve in repo:** edit files here → `./install.sh` → use.
-- **Improve via runs:** `/new-task` GATE 4 edits live files → `./capture.sh` → `git diff` → commit what you keep.
-- **Maintain on a schedule:** run `/workflow-maintenance` periodically — local cron (`claude -p "/workflow-maintenance"`) or a remote routine. It commits faithful capture diffs, proposes (never applies) learnings prunes, and reports red trunks.
+- **Improve via runs:** `/new-task` GATE 4 edits live files. Agent/command/skill edits → `./capture.sh` → `git diff` → commit what you keep. Learnings edits stay local — they are never captured or committed.
+- **Maintain on a schedule:** run `/workflow-maintenance` periodically — local cron (`claude -p "/workflow-maintenance"`) or a remote routine. It commits faithful capture diffs of agent/command/skill drift (never learnings), proposes (never applies) local learnings prunes, and reports red trunks.
 - **Measure before adding/cutting complexity:** run `/workflow-eval` to score the workflow. `--lint-only` runs the deterministic `evals/lint.sh` consistency check over the instruction files (run any time); a full run scores `/new-task` against the `evals/` fixture tasks and writes a dated scorecard, `--variant <name>` ablates a layer (e.g. the skeptic pass) for an A/B verdict on whether it earns its cost, and `--contracts` tests that each agent honors its declared Input/Output contract (agents are treated as tools with contracts; see `agents/*.md` and `evals/contracts/`). The live layers are expensive and opt-in — never auto-scheduled. See `evals/README.md`.
 - **Enforced on every change:** `install.sh` installs a **pre-commit hook** that runs `evals/lint.sh` whenever a commit touches `commands/`, `agents/`, `skills/`, or `new-task/` (the learnings files), blocking on failure. The full modification protocol — lint always, live scorecard for behavior-affecting changes, ablation for adding/cutting a layer — is in `CLAUDE.md`.
 
-`install.sh` never overwrites the live learnings files — they are curated runtime state owned by `/new-task` runs (general lessons in `LEARNINGS.md`, per-repo lessons in `learnings/<repo-key>.md`; each a dated bullet in the v2 format `- YYYY-MM-DD [tag][tag] lesson — src: <retro>` with lesson text ≤300 chars, rewritten in place at GATE 4, soft cap 30 per file). Phase 0 applies only the bullets whose **trigger tags** match the task (tag-scoped retrieval), and a lesson that overrides an instruction must cite its `src:` — lint Check 7 enforces the tag + `src:` on every bullet. `capture.sh` is how they get versioned. Consequence: bullets pruned here (e.g. after promotion into a skill) do NOT propagate to `~/.claude` — that drift is expected, and `/workflow-maintenance` check 2 flags live bullets duplicating a skill so the next GATE 4 can delete them.
+**Learnings are local, not versioned — everyone starts from a clean slate.** The repo ships an empty seed (`LEARNINGS.md` with format + rules but no lessons; no per-repo files). `install.sh` seeds it into `~/.claude/new-task/` only if missing and never overwrites it; from then on lessons accumulate **only** in that live copy and stay on that machine. `capture.sh` does not copy learnings back, `/workflow-maintenance` never commits them, and `.gitignore` excludes `new-task/learnings/` — so learnings can't reach the repo. They are curated runtime state owned by `/new-task` runs (general lessons in `LEARNINGS.md`, per-repo lessons in `learnings/<repo-key>.md`; each a dated bullet in the v2 format `- YYYY-MM-DD [tag][tag] lesson — src: <retro>` with lesson text ≤300 chars, rewritten in place at GATE 4, soft cap 30 per file). Phase 0 applies only the bullets whose **trigger tags** match the task (tag-scoped retrieval), and a lesson that overrides an instruction must cite its `src:` — lint Check 7 enforces the tag + `src:` on every bullet in the seed.
 
 Skills, agents, and commands are source-of-truth files: `install.sh` always overwrites the live copies.
 

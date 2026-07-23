@@ -1,0 +1,5 @@
+# Local learnings are per-machine runtime state — never versioned.
+# Everyone starts from the clean seed in new-task/LEARNINGS.md; live lessons
+# accumulate under ~/.claude (and, if captured, in new-task/learnings/) and
+# stay on that machine. See install.sh / capture.sh and README.md.
+/new-task/learnings/

@@ -138,9 +138,9 @@ When reached as the **batched retro for an `/iterate` session** (`commands/itera
    - **Item** — the proposed bullet/edit as a one-line diff.
    - **Evidence** — the specific finding from THIS run's retro (step 1) that produced it — the failure/iteration it generalizes, not just the `src:` slug. A lesson with no in-run evidence is not durable; drop it.
    - **Behavioral delta** — what the NEXT run does differently if this is applied (the whole justification for a durable lesson, per step 2). If you can't state the delta, the lesson isn't one.
-   - **Protocol status** — for rows editing `~/.claude/commands/`, `~/.claude/agents/`, or `~/.claude/skills/`, the CLAUDE.md modification-protocol state: does `evals/lint.sh` pass; is a live `/workflow-eval` scorecard still owed (behavior-affecting); does it add/remove a complexity layer (→ ablation A/B + a `complexity-ledger.md` row owed). Learnings-file rows: `n/a (curated runtime state)`.
+   - **Protocol status** — for rows editing `~/.claude/commands/`, `~/.claude/agents/`, or `~/.claude/skills/`, the CLAUDE.md modification-protocol state: does `evals/lint.sh` pass; is a live `/workflow-eval` scorecard still owed (behavior-affecting); does it add/remove a complexity layer (→ ablation A/B + a `complexity-ledger.md` row owed). Learnings-file rows: `n/a (local runtime state, not versioned)`.
    Deviations vs the retro/self-update rules above. **Approval is per-row** — apply ONLY the rows the human approves; a rejected row writes nothing. No approval on any row → write nothing outside the project retro.
-4. After any approved self-update (including learnings edits), version it: run `~/Prywatne/software-developer-workflows/capture.sh`, then commit the resulting diff in that repo with a one-line message describing the lesson. If the repo is missing, skip silently.
+4. Approved learnings-file edits are written to the live `~/.claude/new-task/` files and stay there — they are local, per-machine runtime state and are **never** captured or committed to the workflow repo (everyone starts from a clean seed). Only approved edits to command/agent/skill files get versioned: run `~/Prywatne/software-developer-workflows/capture.sh` (which copies those, not learnings), then commit the resulting diff in that repo with a one-line message. If the repo is missing, skip silently.
 
 ## Review loop conventions
 
