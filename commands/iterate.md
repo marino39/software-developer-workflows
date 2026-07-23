@@ -170,9 +170,13 @@ whole reason `/iterate` exists.
    Carried Should-fix findings that this iteration resolved or newly opened are
    updated in place.
    **Compaction suggestion (accumulation-aware).** At GATE I — human or
-   auto-approved — append the same `/compact preserve the run-ledger path, route +
-   escalations, artifact paths, open Must-fix/Should-fix, current phase + iteration`
-   suggestion to the gate's **Next** when *either* (a) this iteration was heavy on
+   auto-approved — surface the same suggestion as the `new-task.md` callout: its
+   own visually distinct blockquote at the very end of the gate's **Next**, led by
+   a bold label so it is the last thing the human sees and cannot be skimmed past —
+   never folded into the Next prose:
+   > **💡 Compaction available** — after approving, run `/compact preserve the run-ledger path, route + escalations, artifact paths, open Must-fix/Should-fix, current phase + iteration` to drop the history later phases never reread.
+
+   Surface it when *either* (a) this iteration was heavy on
    its own (route escalated to high-stakes → full fan-out ran, or it is entering the
    Phase 6.5 CI wait), *or* (b) the iteration log shows **≥3 rows since the last
    `compact-suggested` marker** (tunable default). A single small delta is
