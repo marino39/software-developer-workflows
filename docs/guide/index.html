@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator and many lanes: /new-task + /iterate to author, /triage-issue to turn an issue into a plan, /explain to understand code cheaply, /review-pr to review a teammate's PR, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
+<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator and many lanes: /new-task + /iterate to author, /triage-issue to turn an issue into a plan, /explain to understand code cheaply, /review-pr to review a teammate's PR, /address-review to act on inbound review comments, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
 <title>Workflow reference — overview</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -28,9 +28,9 @@
   <div class="wrap head-grid">
     <span class="kicker"><span class="dot"></span>Multi-agent workflow · orchestrator on Opus / Fable · xhigh effort</span>
     <h1>One orchestrator, many lanes</h1>
-    <p class="lede">A Claude Code workflow that drives work through its whole lifecycle with a fleet of specialized subagents. The orchestrator judges results, routes work, and talks to the human — every substantive step is delegated, and every human touchpoint is a fixed-format gate. Author with <span class="cmd" style="font-size:.92em">/new-task</span> + <span class="cmd" style="font-size:.92em">/iterate</span>, turn an issue into a plan with <span class="cmd" style="font-size:.92em">/triage-issue</span>, understand code cheaply with <span class="cmd" style="font-size:.92em">/explain</span>, and review a teammate's PR with <span class="cmd" style="font-size:.92em">/review-pr</span> — all on the same fleet.</p>
+    <p class="lede">A Claude Code workflow that drives work through its whole lifecycle with a fleet of specialized subagents. The orchestrator judges results, routes work, and talks to the human — every substantive step is delegated, and every human touchpoint is a fixed-format gate. Author with <span class="cmd" style="font-size:.92em">/new-task</span> + <span class="cmd" style="font-size:.92em">/iterate</span>, turn an issue into a plan with <span class="cmd" style="font-size:.92em">/triage-issue</span>, understand code cheaply with <span class="cmd" style="font-size:.92em">/explain</span>, review a teammate's PR with <span class="cmd" style="font-size:.92em">/review-pr</span>, and act on inbound review comments with <span class="cmd" style="font-size:.92em">/address-review</span> — all on the same fleet.</p>
     <div class="stat-row">
-      <div class="stat"><div class="n">7</div><div class="l">Commands</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">Commands</div></div>
       <div class="stat"><div class="n">7</div><div class="l">Subagents</div></div>
       <div class="stat"><div class="n">4</div><div class="l">Model tiers</div></div>
       <div class="stat"><div class="n">3</div><div class="l">Routes</div></div>
@@ -220,7 +220,7 @@
       <div class="sec-head">
         <p class="eyebrow">Shared foundations</p>
         <h2>What every command is built on</h2>
-        <p>These are defined once — in <span class="mono">/new-task</span> — and reused by every other command (<span class="mono">/iterate</span>, <span class="mono">/triage-issue</span>, <span class="mono">/explain</span>, <span class="mono">/review-pr</span>). Follow the links to the detail.</p>
+        <p>These are defined once — in <span class="mono">/new-task</span> — and reused by every other command (<span class="mono">/iterate</span>, <span class="mono">/triage-issue</span>, <span class="mono">/explain</span>, <span class="mono">/review-pr</span>, <span class="mono">/address-review</span>). Follow the links to the detail.</p>
       </div>
       <div class="found">
         <div class="fcard">
@@ -260,13 +260,14 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /triage-issue + /explain + /review-pr + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /explain + /review-pr + /address-review + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
       <span>commands/triage-issue.md</span>
       <span>commands/explain.md</span>
       <span>commands/review-pr.md</span>
+      <span>commands/address-review.md</span>
       <span>commands/workflow-maintenance.md</span>
       <span>commands/workflow-eval.md</span>
       <span>agents/</span>
