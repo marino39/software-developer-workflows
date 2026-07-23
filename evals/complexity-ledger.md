@@ -25,7 +25,7 @@ completeness is a review discipline (see `CLAUDE.md`).
 | Skeptic pass, default-refute (Phase 6.4) | plausible-but-wrong Must-fix reaching coders | learning 2026-07-03 (promoted) | ablation-queued | skeptic-off |
 | Reduced/full tier interlock (Phase 6.2) | over-reviewing tiny low-risk diffs | design-note cost/quality 2026-07; intuition — unverified | candidate | — (needs variant) |
 | 3-lens Channel C reviewers, C1/C2/C3 (Phase 6.3) | single-lens blind spots (bug / history / compliance) | design-note 2026-07; intuition — unverified | ablation-queued | single-lens-review |
-| Codex external channel B (Phase 6.3) | missing an out-of-model review perspective | design-note cost/quality 2026-07 | keep | — (degrades free) |
+| Codex external channel B + `codex-review` skill (Phase 6.3; skills/codex-review) | missing an out-of-model review perspective — including losing it to an *avoidable* invocation failure (a stdin hang, or a too-short timeout clipping a review that would have finished) rather than a genuine absence | design-note cost/quality 2026-07; user report 2026-07-23 (codex review failing on short timeout / stdin) | keep | — (degrades free; the skill's stdin-closed + diff-scaled-timeout invocation makes the skips genuine, not self-inflicted) |
 | Consolidation confidence scoring 0–100 (Phase 6.4) | review noise / false positives reaching the gate | design-note 2026-07 | keep | — |
 | Fable budget accounting "2 slots + 1" (Escalation ladder) | runaway fable cost per run | design-note cost/quality 2026-07; intuition — unverified | ablation-queued | fable-budget-flat |
 | Route re-check, two checkpoints (Phase 0 / 3.5 / 6.0) | a mis-routed scoped task shipping under-reviewed | Prop #4 plan 2026-07 | keep | — |
