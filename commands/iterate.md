@@ -191,8 +191,9 @@ whole reason `/iterate` exists.
    `--finish`, or a single iteration the human declares final): run `new-task.md`
    **Phase 7 ONCE** over the whole session — one retrospective covering all logged
    iterations, distilled durable lessons, the GATE 4 per-item decision table, and
-   `capture.sh` versioning. Lessons are keyed to the batch, not to each tweak, so a
-   five-tweak session produces one curated GATE 4, not five.
+   the Phase 7 step-4 versioning (command/agent/skill edits via `capture.sh`;
+   learnings written locally, never versioned). Lessons are keyed to the batch, not
+   to each tweak, so a five-tweak session produces one curated GATE 4, not five.
 
 ## Token hygiene
 
