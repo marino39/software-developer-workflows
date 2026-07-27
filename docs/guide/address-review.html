@@ -53,7 +53,7 @@
           <div class="itr-tag" style="color:var(--flow)">Phase A0</div>
           <div class="itr-body">
             <div class="itr-t">Setup &amp; ingest</div>
-            <p>Fetch the PR (must be open, <strong>yours</strong> — a foreign PR bounces to <span class="mono">/review-pr</span>) and every unresolved thread. Warm-start from the <strong>run manifest</strong>: its design doc, plan, and route floor are the context; no re-discovery. A hand-authored PR without a manifest derives an intent digest and writes a fresh manifest on completion.</p>
+            <p>Fetch the PR (must be open, <strong>yours</strong> — a foreign PR bounces to <span class="mono">/review-pr</span>) and every unresolved thread. Warm-start from the <strong>run manifest</strong>: its design doc, plan, and route floor are the context; no re-discovery. A hand-authored PR without a manifest derives an intent digest and writes a fresh manifest on completion. The environment is inherited, so it is <strong>verified, not assumed</strong>: the worktree must be on the PR's head branch and at or ahead of <span class="mono">origin/&lt;head&gt;</span> (behind → fast-forward; diverged or dirty → stop and surface at the gate) before any agent touches it.</p>
           </div>
         </div>
         <div class="itr-arrow" aria-hidden="true">→</div>

@@ -103,7 +103,35 @@ Everything from Phase A1 on is identical.
    route the PR diff per Phase 0 (that route is the floor), and record
    `baseline: unmanifested` — on completion, write a fresh run manifest so
    later runs are warm.
-4. Apply only the tag-matching learnings per Phase 0's rule (an override is a
+4. **Verify the worktree is the PR head — before any agent touches it.**
+   `/address-review` always runs on an environment someone else set up (a warm
+   worktree from a prior run, or wherever the session was left), so its state is
+   an assumption to check, never a given. Against the head branch and head SHA
+   from step 1:
+   - `git -C $WORKTREE rev-parse --abbrev-ref HEAD` must equal the PR's **head
+     branch**. A detached HEAD or a different branch → check the head branch out
+     (`git -C $WORKTREE checkout <head-branch>`) and re-verify; never proceed on
+     it. Fixes committed on the wrong branch never reach the PR, and A2's push
+     either fails or lands where it was never meant to.
+   - `git -C $WORKTREE fetch origin <head-branch>`, then the branch must be at or
+     ahead of `origin/<head-branch>` — a reviewer's suggestion-commit or a
+     co-author's push lands on the remote, and fixing on a stale tip re-does work
+     already done and makes `done-already` cite a sha that no longer describes the
+     head. Behind only → fast-forward (`git -C $WORKTREE merge --ff-only
+     origin/<head-branch>`). **Diverged** (each side has commits the other lacks)
+     → STOP before dispatching any fix work and surface it at GATE A;
+     reconciling someone else's history is a human call, not a guess.
+   - `git -C $WORKTREE status --porcelain` must show no modified tracked files.
+     Leftover uncommitted work from a prior run is reported at the gate — never
+     silently swept into a fix commit, never discarded.
+   - Record `HEAD_SHA = git -C $WORKTREE rev-parse HEAD` and compare it to step
+     1's head SHA. Thread anchors were written against that sha; a mismatch you
+     did not just fast-forward to means `file:line` may have moved, and every
+     affected item is re-resolved by the agent working it rather than trusted.
+
+   (`--local`: the head branch is the current checkout and there is no remote to
+   compare — verify cleanliness and record `HEAD_SHA`, skip the rest.)
+5. Apply only the tag-matching learnings per Phase 0's rule (an override is a
    Deviation citing its `src:`). Do NOT re-spawn `searcher`/`researcher` for
    context the manifest carries; dispatch them only for a genuine gap a
    comment opens. A genuine gap is still **dispatched**, in parallel when more
