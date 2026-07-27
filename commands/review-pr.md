@@ -73,13 +73,27 @@ identical to the PR path.
    sources is not** — the PR body/title come from the step-1 fetch, but a linked
    design doc, RFC, or long issue thread is digested by a `researcher` (external
    links) or `searcher` (in-repo docs) into a capped summary you compose from.
-3. **Fetch the PR head into a read-only worktree** — invoke the
-   `superpowers:using-git-worktrees` skill on the fetched PR ref (e.g.
-   `git fetch origin pull/<N>/head` then a detached checkout) so the lens reviewers
-   can run `git diff`, `git blame`/history, and read surrounding code. The worktree
-   is for reading only and is cleaned up on exit.
-4. Compute `BASE_SHA = git merge-base HEAD <pr-base>`, `HEAD_SHA = git rev-parse HEAD`,
-   `DIFF_LINES` = insertions + deletions from `git diff --shortstat $BASE_SHA..HEAD`.
+3. **Check the PR head out on a named branch in a read-only worktree.** Fetch both
+   ends — `git fetch origin pull/<N>/head:<pr-branch>` (name it after the PR, e.g.
+   `pr-<N>`) and `git fetch origin <pr-base>` — then invoke the
+   `superpowers:using-git-worktrees` skill to create the worktree **checked out on
+   `<pr-branch>`**, so the lens reviewers can run `git diff`, `git blame`/history,
+   and read surrounding code. Do **not** leave it on a detached HEAD: the channels,
+   `codex`, and every `file:line` in the report resolve refs by name, and a detached
+   checkout leaves them with no branch to resolve — or silently resolving against
+   your own checkout. Fetching the base is part of setup, not an assumption:
+   `merge-base` against an unfetched `<pr-base>` fails. The worktree is for reading
+   only — no commits, no pushes — and is cleaned up on exit.
+4. **Every git command runs from the worktree** (`git -C $WORKTREE …`), and
+   `$WORKTREE` + `<pr-branch>` go to every subagent that touches the diff — a bare
+   `HEAD` in your own cwd is the branch you are reviewing *from*, not the PR.
+   Compute `BASE_SHA = git -C $WORKTREE merge-base <pr-branch> origin/<pr-base>`,
+   `HEAD_SHA = git -C $WORKTREE rev-parse <pr-branch>`, `DIFF_LINES` = insertions +
+   deletions from `git -C $WORKTREE diff --shortstat $BASE_SHA..$HEAD_SHA`. Check
+   `HEAD_SHA` against the head SHA from step 1 before going on — a mismatch means the
+   worktree is on the wrong ref and the whole review would be aimed at the wrong tree.
+   (`--local` mode has no worktree: `$WORKTREE` is the current checkout and the
+   supplied diff range replaces `BASE_SHA..HEAD_SHA`.)
 5. **Pick the tier** exactly per `new-task.md` Phase 6 step 2: `DIFF_LINES < 200` AND
    the diff touches no high-stakes category (auth, payments, migrations, data
    deletion) → **reduced** tier; otherwise **full** tier with the high-stakes
@@ -91,9 +105,15 @@ identical to the PR path.
 ## Phase R1 — Review fan-out
 
 Run `new-task.md` **Phase 6 step 3** verbatim — launch the tier's channels in
-parallel in a single message — with two substitutions:
+parallel in a single message — with three substitutions:
 
 - `PLAN_OR_REQUIREMENTS` → the R0 **intent digest** (there is no plan file).
+- **The worktree is the review surface.** Every channel gets `$WORKTREE`,
+  `<pr-branch>`, and `$BASE_SHA..$HEAD_SHA` from R0 and works there — not in your
+  checkout. "The worktree diff" in Phase 6 means
+  `git -C $WORKTREE diff $BASE_SHA..$HEAD_SHA`; `file:line` anchors and
+  `git blame`/history are resolved against `<pr-branch>` so they line up with the PR
+  head when the report (or an inline comment) cites them.
 - **No local test execution.** CI status was read in R0 (`ci: <state>`); there is no
   behavioral-verification step and no plan Verification section to drive.
 
