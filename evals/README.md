@@ -16,6 +16,12 @@ context-trace.sh deterministic orchestrator-context trace over an eval driver's
                  transcript (turns, high-water, mean, first-turn floor, cold
                  re-entries) — the Layer-2 Collect step records it per run into
                  the scorecard's orchestrator-cost column
+dispatch-trace.sh deterministic dispatch trace over the same transcript: per
+                 agent type, the 1-shot rate (units returning without a
+                 re-dispatch), separating by-design parallel fan-out from
+                 sequential roundtrips by turn boundary — also recorded per run
+                 into the orchestrator-cost column. Same quantity live cost
+                 dashboards report as "1-shot"
 complexity-ledger.md  the complexity budget: each accreted construct → the failure it
                  prevents → source → status; `intuition — unverified` rows are the backlog
 fixtures/base/   the default Go module most tasks run against (calc + auth helper +
