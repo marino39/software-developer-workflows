@@ -7,12 +7,19 @@ evidence apparatus authored alongside them — eval task 23 (thin plan step) and
 three ablation variants (`ambiguity-policy-off`, `dispatch-brief-off`,
 `dispatch-readiness-off`), deliberately separable so the agent half, the caller
 half, and the upstream check can be attributed independently. **S5 remains
-unimplemented** (and unscoped). Owed per the modification protocol: a live
-`/workflow-eval` scorecard for the behavior-affecting edits,
-`--contracts --agent coder` for the changed Output contract, and the three A/Bs
-at `--repeat ≥ 3`. The live eval cannot run in the authoring environment, so it
-rides the PR review. Stated ledger-style where a change owes protocol cost (per
-`CLAUDE.md`).
+unimplemented** (and unscoped).
+
+**S1 is MEASURED** (2026-07-29, contract tier, n=3/arm × 2 stimuli — scorecard
+`evals/results/2026-07-29-ambiguity-policy-ab-scorecard.md`): its roundtrip claim
+did **not** reproduce at single-dispatch scope, and it is re-sourced as a
+silent-resolution guard. See **Measurement** below — the section supersedes the
+cost framing in S1's own description. S2–S4 remain unmeasured.
+
+Still owed per the modification protocol: a Layer-2 `/new-task` lifecycle
+scorecard for the behavior-affecting edits (needs a local CLI with a real Agent
+tool — subagents in this harness cannot dispatch, so the lifecycle layer is not
+runnable here), and the `dispatch-brief-off` / `dispatch-readiness-off` A/Bs.
+Stated ledger-style where a change owes protocol cost (per `CLAUDE.md`).
 
 ## Problem
 
@@ -145,7 +152,7 @@ wrong diagnosis — this is input quality, not capability.
 
 Ordered by leverage against the telemetry above.
 
-### S1 — coder assume-and-proceed + batched questions (implemented)
+### S1 — coder assume-and-proceed + batched questions (implemented; MEASURED — see Measurement)
 
 Replace `coder`'s blanket STOP with a two-class rule:
 
@@ -227,6 +234,53 @@ re-dispatches at current volume.
 Establish whether the `general-purpose` (326) and `Explore` (261) calls are the
 workflow falling back when no defined agent fits. If so, that is a missing agent
 — and it is invisible to lint, which only checks the seven that exist.
+
+## Measurement (2026-07-29, contract tier)
+
+S1 has been measured; S2–S4 have not. Full result:
+`evals/results/2026-07-29-ambiguity-policy-ab-scorecard.md`. Summary:
+
+**The roundtrip claim did not reproduce.** n=3/arm × 2 stimuli, file-level
+ablation of `agents/coder.md`: **0 bounces in every arm**. The pre-change rule
+("STOP if the plan is wrong or blocked") does not fire on a merely *thin* slice —
+an unpinned detail is neither wrong nor blocked — so at single-dispatch scope
+there was no bounce for S1 to remove.
+
+**Disclosure is what moved.** With the policy, the tie-break is flagged as
+unpinned 3/3 vs 1/3 without (the other 2 state the rule as bare fact, indis-
+tinguishable from a plan requirement being reported back); the empty-slice choice
+is named 2/3 vs 0/3, in both the report and the durable doc comment. Outcomes
+identical across all 12 runs — green, 0 escaped defects, no behavior delta.
+
+So S1 is justified as a **silent-resolution guard**, not a cost lever. That is the
+safety half of the argument rather than the one it was sold on: assume-and-proceed
+is only defensible if review can still adjudicate the assumption, and 0/3
+disclosure of the empty-slice choice in the ablated arm is precisely the failure
+mode this proposal warned about in S3's confound note.
+
+**This does not refute the telemetry.** The 53.8% one-shot rate is over real
+multi-dispatch sessions — a coder holding a plan slice, a review loop, an
+orchestrator to bounce to. A single hand-written dispatch cannot reproduce that
+coupling. The result **bounds S1's effect at single-dispatch scope**; the
+lifecycle-level claim is unmeasured, not disproven. Measuring it needs a local CLI
+with a real Agent tool, since subagents in this harness cannot dispatch.
+
+Two corrections the measurement forced, both applied:
+
+- The `Product` contract stimulus elicited nothing from either arm (its empty-slice
+  case is resolved incidentally by `product := 1`, so no coder perceives a
+  decision). The expected-fields spec written for it — "`assumptions` names the
+  empty-slice choice, not `none`" — **failed 3/3 in the baseline**. It was authored
+  from intuition and was wrong. Stimulus switched to `Mode`.
+- Task 23's primary control (`redisp 0` / 1-shot 100%) is satisfied by **both**
+  arms, so it cannot justify S1. Primary and secondary controls were swapped:
+  disclosure leads, the roundtrip becomes a regression guard.
+
+A harness defect is recorded in the scorecard: Layer 3 isolates the fixture *copy*
+but not the agent's *reach*, and an ambiguous module name ("the `evalfixture`
+module", no path) sent 2 of 3 coders into the repo's own fixture to edit it. That
+attempt was discarded, the fixture reverted, and `evals/contract-ab.sh` now pins
+each run to its directory and asserts repo cleanliness after every dispatch.
 
 ## Measure-first / owed evidence
 

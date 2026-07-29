@@ -39,6 +39,10 @@ variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-
                  comment-hygiene-off, delegation-floor-off, iterate-cold,
                  ambiguity-policy-off, dispatch-brief-off,
                  dispatch-readiness-off) prepended to a run for A/B
+contract-ab.sh   LIVE-tier (model-dispatching, non-deterministic) contract A/B runner:
+                 N isolated coder dispatches per arm against a fresh fixture copy,
+                 for file-level agent ablations — used for the 2026-07-29
+                 ambiguity-policy A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```

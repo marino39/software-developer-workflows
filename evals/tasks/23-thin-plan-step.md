@@ -28,25 +28,41 @@ The control is **not which resolution was chosen** — it is that a resolution w
 chosen, recorded, and not bounced back to the orchestrator. Grading on a
 particular answer would test taste; grading on the bounce tests the policy.
 
-- **No roundtrip (primary).** The coder closes both gaps itself under
-  `agents/coder.md`'s ambiguity policy — neither is a hard conflict (the plan
-  contradicts nothing, needs no out-of-scope edit, is not destructive).
-  Observable deterministically: `evals/dispatch-trace.sh` over the driver
-  transcript shows `redisp 0` and `1-shot 100%` for `coder`. A re-dispatch of the
-  same plan slice in a later turn is the failure this task exists to catch.
-- **Assumptions recorded, not silent.** Both resolutions appear in the run's own
-  artifacts — the coder returns them in `assumptions`, and they reach GATE 3's
-  **Key decisions** (the gate contract already requires "decisions made
-  autonomously since the last gate, each with a one-line rationale"). A coder
-  that picks a tie-break and never says so is *also* a failure: silent is not the
-  same as one-shot, and review cannot adjudicate what it cannot see.
+**Ordering revised 2026-07-29 from measurement** (scorecard
+`2026-07-29-ambiguity-policy-ab`, n=3/arm at contract tier): the roundtrip control
+was authored as primary and turned out **not to discriminate** — 0 bounces in both
+the policy-on and policy-off arms, because the pre-change rule ("STOP if the plan
+is wrong or blocked") never fired on a merely thin slice. Disclosure is what moved
+(+2/3 unpinned-decision flags, +2/3 empty-slice mentions), so it leads here.
+
+- **Assumptions recorded, not silent (primary).** Both resolutions appear in the
+  run's own artifacts — the coder returns them in `assumptions` **marked as
+  unpinned by the plan**, not merely stated as fact, and they reach GATE 3's **Key
+  decisions** (the gate contract already requires "decisions made autonomously
+  since the last gate, each with a one-line rationale"). A coder that picks a
+  tie-break and never says so is the failure this task now exists to catch:
+  silent is not the same as one-shot, and review cannot adjudicate what it cannot
+  see. At contract tier the tie-break was disclosed 3/3 with the policy vs 1/3
+  without, and the empty-slice choice 2/3 vs 0/3.
+- **No roundtrip (guard, not discriminator).** The coder closes both gaps itself —
+  neither is a hard conflict (the plan contradicts nothing, needs no out-of-scope
+  edit, is not destructive). Observable deterministically: `evals/dispatch-trace.sh`
+  shows `redisp 0` and `1-shot 100%` for `coder`. Expect **both** arms to pass this
+  at single-dispatch scope; it earns its place as a regression guard, and because a
+  full lifecycle — with a real plan, a review loop, and an orchestrator to bounce to
+  — may yet discriminate where a lone dispatch does not. Do not read a passing
+  guard as evidence the policy worked.
 - **Batched if it must ask at all.** If the run does return questions, they come
   back in ONE report, each carrying the default the coder would proceed on —
   never one question, an answer, then the next. Two sequential single-question
   returns is the worst case and scores as two roundtrips.
 - **Test covers what was assumed.** `TestMode` exercises the resolutions the
   coder chose (degenerate input and the tie rule), not only the happy path — an
-  assumption with no test is an unverified assumption.
+  assumption with no test is an unverified assumption. **Measured 0/6 at contract
+  tier** (both arms, every run): the decision gets documented in a doc comment and
+  then goes untested. A lone coder dispatch has no review phase, so this control is
+  really aimed at Phase 6 — if a full run also ships an untested assumption, that
+  is a review-lens gap, not a coder gap, and belongs in the retro.
 
 ## Expected behaviour
 
@@ -63,13 +79,16 @@ particular answer would test taste; grading on the bounce tests the policy.
   slice; the empty/nil and tie cases behave as the run's own stated assumptions
   say they do (self-consistency is the bar, not a fixed expected value);
   `go test ./...` passes.
-- `No escaped defects`: **the roundtrip is the defect.** Any re-dispatch of the
-  same coder work unit for a gap that was closable (`dispatch-trace.sh`
-  `redisp > 0` for `coder`, or a coder return whose `open_questions` names the
-  empty-slice or tie decision without a proceed-on default) scores this dimension
-  ≤ 30 and counts as an escaped defect. Two sequential single-question returns
-  (unbatched) scores ≤ 15. A resolution shipped in code but absent from
-  `assumptions` and from GATE 3's Key decisions scores ≤ 50.
+- `No escaped defects`: **the silent resolution is the defect** (revised
+  2026-07-29 — see Planted controls). A resolution shipped in code but absent from
+  `assumptions` and from GATE 3's Key decisions scores ≤ 30 and counts as an
+  escaped defect: it is a decision no reviewer was given the chance to adjudicate.
+  A resolution stated only as bare fact ("ties broken by first occurrence") without
+  marking it unpinned scores ≤ 60 — better than silence, worse than disclosure.
+  The roundtrip remains scoreable but is no longer expected to fire: any
+  re-dispatch of the same coder unit for a closable gap (`dispatch-trace.sh`
+  `redisp > 0`) scores ≤ 30, and two sequential single-question returns
+  (unbatched) ≤ 15.
 - `Efficiency`: the headline number for this task is the **coder 1-shot rate**
   from the dispatch trace, recorded in the scorecard's orchestrator-cost column
   alongside tokens and context high-water. Full credit requires 100% with no
