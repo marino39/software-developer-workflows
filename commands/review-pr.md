@@ -119,7 +119,7 @@ else it is demoted to Should-fix with the refutation noted.
   `<50`, each with its one-line reason, so the report shows what was considered and
   dismissed — not only what survived.
 
-Escalations (reviewer/consolidator/skeptic sonnet → opus 4.8 → fable) follow the
+Escalations (reviewer/consolidator/skeptic sonnet → opus → fable) follow the
 `new-task.md` **Escalation ladder** and its shared fable budget.
 
 ## Phase R3 — Deliver
