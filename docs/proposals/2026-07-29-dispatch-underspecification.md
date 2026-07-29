@@ -9,17 +9,23 @@ three ablation variants (`ambiguity-policy-off`, `dispatch-brief-off`,
 half, and the upstream check can be attributed independently. **S5 remains
 unimplemented** (and unscoped).
 
-**S1 is MEASURED** (2026-07-29, contract tier, n=3/arm × 2 stimuli — scorecard
-`evals/results/2026-07-29-ambiguity-policy-ab-scorecard.md`): its roundtrip claim
-did **not** reproduce at single-dispatch scope, and it is re-sourced as a
-silent-resolution guard. See **Measurement** below — the section supersedes the
-cost framing in S1's own description. S2–S4 remain unmeasured.
+**MEASURED at both tiers, 2026-07-29 — and the central claim did not survive.**
+Contract tier (n=3/arm × 2 stimuli, `2026-07-29-ambiguity-policy-ab-scorecard.md`)
+and lifecycle tier (n=2/arm, `2026-07-29-dispatch-brief-lifecycle-ab-scorecard.md`)
+both report **zero underspecification roundtrips, in every arm**. S1 survives
+re-sourced as a *disclosure* guard; S2 has no verdict (route variance dominates at
+n=2); S3 is untested (three of four runs took the fast path, which skips Phase 4).
+The **Measurement** section below supersedes the cost framing in S1's and S2's own
+descriptions — read it before trusting anything above it.
 
-Still owed per the modification protocol: a Layer-2 `/new-task` lifecycle
-scorecard for the behavior-affecting edits (needs a local CLI with a real Agent
-tool — subagents in this harness cannot dispatch, so the lifecycle layer is not
-runnable here), and the `dispatch-brief-off` / `dispatch-readiness-off` A/Bs.
-Stated ledger-style where a change owes protocol cost (per `CLAUDE.md`).
+`dispatch-trace.sh` itself was found defective by its first lifecycle run and
+corrected (bounce-gated `rtrip` vs by-design `iter`); the numbers here are post-fix.
+
+Still owed: route-controlled repeats at n≥3/arm for a dispatch-brief verdict, a
+standard-routing task for S3, and a probe with enough surface to actually strand a
+coder — the fixture task is one function, which may simply be too small to
+reproduce what the telemetry shows. Stated ledger-style where a change owes
+protocol cost (per `CLAUDE.md`).
 
 ## Problem
 
@@ -170,7 +176,7 @@ turns. This turns an N-roundtrip loop into 0 or 1.
 
 Targets the 4486-call agent directly. Costs nothing per dispatch.
 
-### S2 — dispatch brief, coder and reviewer only (implemented)
+### S2 — dispatch brief, coder and reviewer only (implemented; MEASURED, no verdict)
 
 The caller-side mirror of the Input contract: a short block on every spawn
 carrying `done_when` (the exact command or observable that ends the task),
@@ -198,7 +204,7 @@ This is also the **only change in the set that adds tokens per dispatch**, so
 `dispatch-brief-off` is the A/B that can falsify the whole approach: the brief
 pays iff the orchestrator turns it avoids outweigh the prompt bytes it adds.
 
-### S3 — Phase 4 dispatch-readiness column (implemented)
+### S3 — Phase 4 dispatch-readiness column (implemented; UNTESTED — fast path skips Phase 4)
 
 Extend the Phase 4 mapping table with a fourth column: each step names its files,
 its interface contract, and its exact verification command. An unready row fails
@@ -235,7 +241,9 @@ Establish whether the `general-purpose` (326) and `Explore` (261) calls are the
 workflow falling back when no defined agent fits. If so, that is a missing agent
 — and it is invisible to lint, which only checks the seven that exist.
 
-## Measurement (2026-07-29, contract tier)
+## Measurement (2026-07-29)
+
+### Contract tier (Layer 3)
 
 S1 has been measured; S2–S4 have not. Full result:
 `evals/results/2026-07-29-ambiguity-policy-ab-scorecard.md`. Summary:
@@ -258,12 +266,37 @@ is only defensible if review can still adjudicate the assumption, and 0/3
 disclosure of the empty-slice choice in the ablated arm is precisely the failure
 mode this proposal warned about in S3's confound note.
 
-**This does not refute the telemetry.** The 53.8% one-shot rate is over real
-multi-dispatch sessions — a coder holding a plan slice, a review loop, an
-orchestrator to bounce to. A single hand-written dispatch cannot reproduce that
-coupling. The result **bounds S1's effect at single-dispatch scope**; the
-lifecycle-level claim is unmeasured, not disproven. Measuring it needs a local CLI
-with a real Agent tool, since subagents in this harness cannot dispatch.
+### Lifecycle tier (Layer 2) — measured the same day
+
+The lifecycle layer turned out to be runnable here after all: a **top-level**
+`claude -p` session has the Agent tool (only `claude -p --agent` does not), so the
+driver really fans out. Task 23, baseline vs `dispatch-brief-off`, n=2/arm —
+scorecard `2026-07-29-dispatch-brief-lifecycle-ab-scorecard.md`.
+
+**`rtrip 0` in all four runs.** The roundtrip did not occur at lifecycle scope
+either, briefed or unbriefed. Both S1's and S2's cost claims are now unsupported
+at the tier each was supposed to act on. Bounces did happen (baseline 0/2 runs,
+variant 2/2) but none caused a re-dispatch — the orchestrator absorbed the
+question and carried on, which is far cheaper than this proposal assumed.
+
+**No verdict on S2:** one variant run took the standard route (179 turns, 138k
+context) against fast path for the other three — the known cold-routing
+bimodality — so at n=2 arm and route are inseparable. The one non-cost signal is
+that the same run alone shipped the empty-slice case untested (0 vs 2/4/4).
+
+**And the metric itself was wrong.** The first pass reported 4 roundtrips on that
+run; all were false — the Phase 1 lens fan-out issued serially, plus two Phase 2
+revise→re-review cycles. `dispatch-trace.sh` counted any later-turn repeat as a
+roundtrip, but every review loop in this workflow is a later-turn repeat, so on a
+standard-route run it was structurally guaranteed to indict the loops. Now gated
+on a preceding bounce (`rtrip` vs `iter`). **Re-dispatch alone does not mean
+underspecified** — that is the sharpest thing this exercise produced.
+
+**What still stands.** The telemetry is unexplained, not refuted: 53.8% over real
+sessions is not reproduced by a 4-dispatch fixture task where the plan is one
+function. The gap is most likely scale — real plans, real review loops, real
+coupling — so the honest next probe is a task with enough surface to actually
+strand a coder, not another repeat of this one.
 
 Two corrections the measurement forced, both applied:
 

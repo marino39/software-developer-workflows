@@ -124,11 +124,13 @@ For each selected task, `--repeat` times:
      trajectory samples gate boundaries by construction.
    - the **dispatch trace**: run `sh <repo>/evals/dispatch-trace.sh <driver
      transcript path>` (same deterministic tier) and record its TOTAL row plus
-     the per-agent **1-shot** column — the share of dispatched work units that
+     the per-agent **rt-free** column — the share of dispatched work units that
      returned without the orchestrator re-dispatching the same unit. A
      re-dispatch is a roundtrip charged at orchestrator rates; the script
-     separates it from by-design parallel fan-out by turn boundary, so
-     `redisp`/`bounce` are the underspecification signal from the
+     separates it both from by-design parallel fan-out (same turn) and from
+     by-design revise->re-review iteration (`iter`, a later-turn repeat with no
+     preceding bounce) — only a re-dispatch FOLLOWING a bounce counts, so
+     `rtrip` (bounce-gated re-dispatch) and `bounce` are the underspecification signal from the
      2026-07-29 dispatch-underspecification proposal. This is deliberately the
      same quantity live cost dashboards report as "1-shot", so the number is
      comparable outside the harness.
@@ -181,11 +183,11 @@ the variant name; date via `date +%F`). Include:
 - Per-task table: the five dimension scores, task score, escaped-defect count,
   repeat spread, and **orchestrator cost** — driver tokens / tool calls /
   wall-clock (usage trailer), context high-water / cold re-entries
-  (`evals/context-trace.sh`), and the **1-shot rate + re-dispatch count**
+  (`evals/context-trace.sh`), and the **rt-free rate + rtrip count**
   (`evals/dispatch-trace.sh`), both over the driver transcript. Cost is tracked,
   not scored against a threshold — but a large cost jump on an unchanged task
   belongs in the regression section's prose even when no dimension dropped, and
-  so does a 1-shot drop: no rubric dimension sees a roundtrip inside an
+  so does an rt-free drop: no rubric dimension sees a roundtrip inside an
   otherwise-passing run, so the dispatch trace is the only place it shows.
 - Suite score (mean of task scores).
 - **Regression section** vs the baseline scorecard: every dimension that dropped

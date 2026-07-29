@@ -31,12 +31,12 @@ ablating both at once moves the rate without attributing the movement.
 
 The policy's claim is about WHETHER A DISPATCH COMES BACK, so read the
 deterministic trace first — `evals/dispatch-trace.sh` over each driver
-transcript (units / disp / fanout / redisp / bounce / 1-shot), alongside
+transcript (units / disp / fanout / iter / rtrip / bounce / rt-free), alongside
 `evals/context-trace.sh`:
 
-- **coder 1-shot rate** — the headline, and the number the live cost dashboard
-  reports. Baseline should hold 100% on task 23 (both gaps closable); the
-  variant is expected to bounce at least one and show `redisp ≥ 1`. `bounce`
+- **coder rt-free rate** — the headline, and the nearest in-harness analogue of
+  the live dashboard's 1-shot. Baseline should hold 100% on task 23 (both gaps closable); the
+  variant is expected to bounce at least one and show `rtrip ≥ 1`. `bounce`
   (returns whose `open_questions` is non-empty) is the agent-side view of the
   same event and should move with it.
 - **Orchestrator turns and context** — the cost the roundtrip actually buys:
@@ -51,8 +51,8 @@ transcript (units / disp / fanout / redisp / bounce / 1-shot), alongside
 - **Gate discipline** — secondary: with no `assumptions` field, do the
   autonomous resolutions still reach the gate at all, or do they go silent?
 
-Verdict shape: `ambiguity-policy-off: <Δ escaped defects>, <Δ coder 1-shot /
-redisp>, <Δ orchestrator turns> → <the ambiguity policy is justified | not
+Verdict shape: `ambiguity-policy-off: <Δ escaped defects>, <Δ coder rt-free /
+rtrip>, <Δ orchestrator turns> → <the ambiguity policy is justified | not
 justified> on this suite`. Single-run variance applies — a roundtrip is a
 discrete event, so n=1 proves only direction; raise `--repeat` before trusting
 a magnitude.

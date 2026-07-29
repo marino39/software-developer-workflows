@@ -27,13 +27,13 @@ same thinness rediscovered once per coder, so read where the cost lands:
 - **Phase 4 vs Phase 5 cost split** — the headline: the variant should exit
   Phase 4 in fewer iterations (a weaker exit condition is easier to satisfy) and
   pay for it downstream in `coder` roundtrips. Read `evals/dispatch-trace.sh`
-  coder `redisp` alongside the Phase 4 iteration count. If the variant is
+  coder `rtrip` alongside the Phase 4 iteration count. If the variant is
   cheaper on BOTH, the check is not earning its cost.
 - **Interaction with the coder ambiguity policy** — the confound to watch. With
   the policy in force, a thin step no longer bounces: the coder assumes and
   proceeds. So this variant may show its cost as *assumption volume* rather than
   roundtrips — more decisions made at the cheapest tier with the least context.
-  Count `assumptions` entries per run, not only `redisp`. If readiness mainly
+  Count `assumptions` entries per run, not only `rtrip`. If readiness mainly
   moves decisions from coder to architect without changing outcomes, say so
   plainly in the verdict — that is a quality argument, not a cost one, and the
   ledger row should be re-sourced accordingly.
@@ -43,6 +43,6 @@ same thinness rediscovered once per coder, so read where the cost lands:
   equal across arms, the check is buying predictability, not correctness.
 
 Verdict shape: `dispatch-readiness-off: <Δ escaped defects>, <Δ Phase 4
-iterations>, <Δ coder redisp and assumption volume> → <dispatch-readiness is
+iterations>, <Δ coder rtrip and assumption volume> → <dispatch-readiness is
 justified | not justified> on this suite`. Single-run variance applies — raise
 `--repeat` before trusting a magnitude.

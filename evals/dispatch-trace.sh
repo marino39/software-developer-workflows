@@ -19,13 +19,25 @@
 #   fanout   dispatches of an already-seen unit in the SAME assistant turn —
 #            by-design parallel multiplicity (Phase 6's C1/C2/C3 lens reviewers,
 #            per-finding skeptics), NOT a roundtrip
-#   redisp   dispatches of a unit already dispatched in an EARLIER turn — the
-#            roundtrip signal: the orchestrator absorbed a return, re-decided,
-#            and sent the same unit back out
+#   iter     re-dispatches of a unit in a LATER turn whose previous return did
+#            NOT bounce — BY-DESIGN iteration, not a roundtrip: the Phase 2/4/6
+#            revise->re-review loops, and fan-outs issued serially instead of in
+#            one message. Counted, never charged.
+#   rtrip    re-dispatches in a later turn FOLLOWING a bounce on that unit — the
+#            underspecification signal: the agent handed the unit back, the
+#            orchestrator absorbed it, re-decided, and sent it out again.
 #   bounce   returns whose text carries a bounce signature (non-empty
 #            open_questions, blocked, cannot proceed, needs clarification) —
 #            the agent-side view of the same failure
-#   1-shot   units never re-dispatched / units
+#   rt-free  units with zero rtrip / units  <- THE HEADLINE
+#   1-shot   units dispatched exactly once / units (coarse; any repeat counts
+#            against it, including by-design iteration)
+#
+# The iter/rtrip split exists because it was got wrong: the first version counted
+# every later-turn repeat as a roundtrip, and the first lifecycle A/B (2026-07-29)
+# duly reported 4 "roundtrips" that were all Phase 1 lens fan-out issued serially
+# plus Phase 2 revise->re-review. Re-dispatch alone does not mean underspecified —
+# gating on a preceding bounce is what makes the number mean what it claims.
 #
 # Work-unit identity is the agent type plus the file paths and step numbers
 # named in the spawn prompt (a re-dispatch restates the same target even though
@@ -97,21 +109,23 @@ def text_of(content):
     return "\n".join(out)
 
 
-fmt = "{:<26} {:<14} {:>5} {:>5} {:>6} {:>6} {:>6} {:>7}"
-print(fmt.format("transcript", "agent", "units", "disp", "fanout", "redisp",
-                 "bounce", "1-shot"))
+fmt = "{:<24} {:<12} {:>5} {:>5} {:>6} {:>5} {:>5} {:>6} {:>7} {:>6}"
+print(fmt.format("transcript", "agent", "units", "disp", "fanout", "iter",
+                 "rtrip", "bounce", "rt-free", "1-shot"))
 
 for path in sys.argv[1:]:
     turn = 0
     chain = None
-    per_agent = {}        # agent -> {"disp","fanout","redisp","bounce"}
+    per_agent = {}        # agent -> {"disp","fanout","iter","rtrip","bounce"}
     unit_turns = {}       # unit key -> [turn, ...]
     unit_agent = {}       # unit key -> agent
-    pending = {}          # tool_use_id -> agent (to attribute a bounce)
+    unit_rtrip = {}       # unit key -> roundtrip count
+    bounced = set()       # unit keys whose most recent return handed work back
+    pending = {}          # tool_use_id -> (agent, unit key)
 
     def slot(agent):
         return per_agent.setdefault(
-            agent, {"disp": 0, "fanout": 0, "redisp": 0, "bounce": 0})
+            agent, {"disp": 0, "fanout": 0, "iter": 0, "rtrip": 0, "bounce": 0})
 
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
@@ -154,54 +168,69 @@ for path in sys.argv[1:]:
                         s = slot(agent)
                         s["disp"] += 1
                         if seen:
-                            # already dispatched: same turn = by-design fan-out,
-                            # earlier turn = roundtrip
-                            s["fanout" if seen[-1] == turn else "redisp"] += 1
+                            if seen[-1] == turn:
+                                s["fanout"] += 1          # by-design parallelism
+                            elif key in bounced:
+                                s["rtrip"] += 1           # bounce-driven roundtrip
+                                unit_rtrip[key] = unit_rtrip.get(key, 0) + 1
+                                bounced.discard(key)
+                            else:
+                                s["iter"] += 1            # by-design iteration
                         seen.append(turn)
                         if blk.get("id"):
-                            pending[blk["id"]] = agent
+                            pending[blk["id"]] = (agent, key)
                 else:  # user entry — carries the tool_results
                     if chain is not None and e.get("agentId") not in (None, chain):
                         continue
                     for blk in ((e.get("message") or {}).get("content") or []):
                         if not isinstance(blk, dict) or blk.get("type") != "tool_result":
                             continue
-                        agent = pending.pop(blk.get("tool_use_id"), None)
-                        if agent and is_bounce(text_of(blk.get("content"))):
+                        got = pending.pop(blk.get("tool_use_id"), None)
+                        if got and is_bounce(text_of(blk.get("content"))):
+                            agent, key = got
                             slot(agent)["bounce"] += 1
+                            bounced.add(key)
     except OSError as ex:
         print("{:<26} ERROR: {}".format(os.path.basename(path)[:26], ex))
         continue
 
-    # a unit is one-shot iff it was never dispatched again in a later turn
+    # rt-free: units never re-dispatched after a bounce (the headline)
+    # 1-shot:  units dispatched exactly once (coarse — by-design iteration counts)
     per_agent_units = {}
     for key, turns in unit_turns.items():
         a = unit_agent[key]
-        u = per_agent_units.setdefault(a, {"units": 0, "clean": 0})
+        u = per_agent_units.setdefault(a, {"units": 0, "rtfree": 0, "once": 0})
         u["units"] += 1
-        if len(set(turns)) == 1:
-            u["clean"] += 1
+        if not unit_rtrip.get(key):
+            u["rtfree"] += 1
+        if len(turns) == 1:
+            u["once"] += 1
 
-    base = os.path.basename(path)[:26]
-    tot = {"units": 0, "clean": 0, "disp": 0, "fanout": 0, "redisp": 0, "bounce": 0}
+    def pct(n, d):
+        return "{:.0%}".format(n / d) if d else "-"
+
+    base = os.path.basename(path)[:24]
+    tot = {"units": 0, "rtfree": 0, "once": 0,
+           "disp": 0, "fanout": 0, "iter": 0, "rtrip": 0, "bounce": 0}
     for agent in sorted(per_agent):
         s = per_agent[agent]
-        u = per_agent_units.get(agent, {"units": 0, "clean": 0})
-        rate = ("{:.0%}".format(u["clean"] / u["units"]) if u["units"] else "-")
-        print(fmt.format(base, agent[:14], u["units"], s["disp"], s["fanout"],
-                         s["redisp"], s["bounce"], rate))
+        u = per_agent_units.get(agent, {"units": 0, "rtfree": 0, "once": 0})
+        print(fmt.format(base, agent[:12], u["units"], s["disp"], s["fanout"],
+                         s["iter"], s["rtrip"], s["bounce"],
+                         pct(u["rtfree"], u["units"]), pct(u["once"], u["units"])))
         base = ""
-        for k in ("disp", "fanout", "redisp", "bounce"):
+        for k in ("disp", "fanout", "iter", "rtrip", "bounce"):
             tot[k] += s[k]
-        tot["units"] += u["units"]
-        tot["clean"] += u["clean"]
-    rate = ("{:.0%}".format(tot["clean"] / tot["units"]) if tot["units"] else "-")
+        for k in ("units", "rtfree", "once"):
+            tot[k] += u[k]
     print(fmt.format(base or "", "TOTAL", tot["units"], tot["disp"], tot["fanout"],
-                     tot["redisp"], tot["bounce"], rate))
+                     tot["iter"], tot["rtrip"], tot["bounce"],
+                     pct(tot["rtfree"], tot["units"]), pct(tot["once"], tot["units"])))
 
     if detail:
         for key, turns in sorted(unit_turns.items()):
-            if len(set(turns)) > 1:
-                print("    redispatched: {} @ turns {}".format(
-                    key, ",".join(str(t) for t in turns)))
+            if len(turns) > len(set([turns[0]])) and len(set(turns)) > 1:
+                kind = "ROUNDTRIP" if unit_rtrip.get(key) else "iteration"
+                print("    {}: {} @ turns {}".format(
+                    kind, key, ",".join(str(t) for t in turns)))
 PY

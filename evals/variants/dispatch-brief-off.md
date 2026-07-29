@@ -26,11 +26,11 @@ the rate and the other does not. Ablating both at once cannot distinguish them.
 ## What to read from the A/B
 
 Read the deterministic traces first — `evals/dispatch-trace.sh` (units / disp /
-fanout / redisp / bounce / 1-shot) and `evals/context-trace.sh`:
+fanout / iter / rtrip / bounce / rt-free) and `evals/context-trace.sh`:
 
-- **coder + reviewer 1-shot rate** — the headline. The brief's claim is that a
+- **coder + reviewer rt-free rate** — the headline (`rtrip` is bounce-gated, so by-design Phase 2/4/6 iteration does not count against it). The brief's claim is that a
   dispatch carrying `done_when` and bounds does not come back; without it,
-  expect `redisp`/`bounce` to rise on the tasks whose plans leave a gap.
+  expect `rtrip`/`bounce` to rise on the tasks whose plans leave a gap.
 - **Cost, both directions** — the brief is the one change here that *adds*
   tokens per dispatch, so this A/B is the one that can falsify it. Compare
   driver tokens and orchestrator turns: the brief pays iff the turns it avoids
@@ -42,7 +42,7 @@ fanout / redisp / bounce / 1-shot) and `evals/context-trace.sh`:
   show up as a coder flagging out-of-scope work it should simply have done.
 - **Gate discipline** — secondary: unchanged, the brief touches no gate.
 
-Verdict shape: `dispatch-brief-off: <Δ escaped defects>, <Δ 1-shot / redisp>,
+Verdict shape: `dispatch-brief-off: <Δ escaped defects>, <Δ rt-free / rtrip>,
 <Δ driver tokens and orchestrator turns> → <the Dispatch brief is justified |
 not justified> on this suite`. Single-run variance applies — a roundtrip is a
 discrete event, so raise `--repeat` before trusting a magnitude.

@@ -47,7 +47,7 @@ is wrong or blocked") never fired on a merely thin slice. Disclosure is what mov
 - **No roundtrip (guard, not discriminator).** The coder closes both gaps itself —
   neither is a hard conflict (the plan contradicts nothing, needs no out-of-scope
   edit, is not destructive). Observable deterministically: `evals/dispatch-trace.sh`
-  shows `redisp 0` and `1-shot 100%` for `coder`. Expect **both** arms to pass this
+  shows `rtrip 0` and `rt-free 100%` for `coder`. Expect **both** arms to pass this
   at single-dispatch scope; it earns its place as a regression guard, and because a
   full lifecycle — with a real plan, a review loop, and an orchestrator to bounce to
   — may yet discriminate where a lone dispatch does not. Do not read a passing
@@ -87,9 +87,9 @@ is wrong or blocked") never fired on a merely thin slice. Disclosure is what mov
   marking it unpinned scores ≤ 60 — better than silence, worse than disclosure.
   The roundtrip remains scoreable but is no longer expected to fire: any
   re-dispatch of the same coder unit for a closable gap (`dispatch-trace.sh`
-  `redisp > 0`) scores ≤ 30, and two sequential single-question returns
+  `rtrip > 0`) scores ≤ 30, and two sequential single-question returns
   (unbatched) ≤ 15.
-- `Efficiency`: the headline number for this task is the **coder 1-shot rate**
+- `Efficiency`: the headline number for this task is the **coder rt-free rate**
   from the dispatch trace, recorded in the scorecard's orchestrator-cost column
   alongside tokens and context high-water. Full credit requires 100% with no
   needless escalation; this is the task whose rate an ablation of the ambiguity

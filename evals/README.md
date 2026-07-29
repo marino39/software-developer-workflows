@@ -16,12 +16,13 @@ context-trace.sh deterministic orchestrator-context trace over an eval driver's
                  transcript (turns, high-water, mean, first-turn floor, cold
                  re-entries) — the Layer-2 Collect step records it per run into
                  the scorecard's orchestrator-cost column
-dispatch-trace.sh deterministic dispatch trace over the same transcript: per
-                 agent type, the 1-shot rate (units returning without a
-                 re-dispatch), separating by-design parallel fan-out from
-                 sequential roundtrips by turn boundary — also recorded per run
-                 into the orchestrator-cost column. Same quantity live cost
-                 dashboards report as "1-shot"
+dispatch-trace.sh deterministic dispatch trace over the same transcript: per agent
+                 type, the rt-free rate — units never re-dispatched AFTER A BOUNCE.
+                 Splits repeats three ways: same-turn fan-out (by design), later-turn
+                 `iter` with no preceding bounce (also by design — the Phase 2/4/6
+                 revise->re-review loops), and `rtrip`, a re-dispatch following a
+                 bounce (the underspecification signal). Recorded per run into the
+                 orchestrator-cost column
 complexity-ledger.md  the complexity budget: each accreted construct → the failure it
                  prevents → source → status; `intuition — unverified` rows are the backlog
 fixtures/base/   the default Go module most tasks run against (calc + auth helper +
@@ -39,6 +40,10 @@ variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-
                  comment-hygiene-off, delegation-floor-off, iterate-cold,
                  ambiguity-policy-off, dispatch-brief-off,
                  dispatch-readiness-off) prepended to a run for A/B
+lifecycle-ab.sh  LIVE-tier Layer-2 A/B runner: one headless /new-task lifecycle per
+                 invocation via top-level `claude -p` (which HAS the Agent tool,
+                 unlike `claude -p --agent`), on an isolated git-init'd fixture
+                 copy — used for the 2026-07-29 dispatch-brief lifecycle A/B
 contract-ab.sh   LIVE-tier (model-dispatching, non-deterministic) contract A/B runner:
                  N isolated coder dispatches per arm against a fresh fixture copy,
                  for file-level agent ablations — used for the 2026-07-29
