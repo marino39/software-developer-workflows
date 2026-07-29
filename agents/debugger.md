@@ -2,7 +2,7 @@
 name: debugger
 description: Escalation-only — root-causes stubborn failures and fixes them directly. Use when coder/reviewer loop is stuck (same failure twice).
 tools: Read, Write, Edit, Grep, Glob, Bash, Agent
-model: opus
+model: claude-opus-4-8
 effort: xhigh
 ---
 

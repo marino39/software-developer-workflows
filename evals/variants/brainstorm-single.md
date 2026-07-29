@@ -6,7 +6,7 @@ architect, to measure whether multi-lens brainstorming earns its cost on real ta
 
 ## Delta (prepended to the dispatched /new-task)
 
-> VARIANT brainstorm-single: In Phase 1, dispatch **one** `architect` (opus) that
+> VARIANT brainstorm-single: In Phase 1, dispatch **one** `architect` (opus 4.8) that
 > proposes a single recommended approach with its trade-offs, and skip the separate
 > fable synthesizer. The design doc records that one approach plus any alternatives
 > it explicitly rejected. Phases 2+ are unchanged.
