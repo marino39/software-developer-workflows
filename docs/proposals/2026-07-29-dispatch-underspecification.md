@@ -2,13 +2,15 @@
 
 Date: 2026-07-29. Status: **S1 + S4 implemented** on this branch (coder
 ambiguity policy; `evals/dispatch-trace.sh` + its wiring into the
-`/workflow-eval` Collect step and the scorecard). S2, S3, S5 are specified here
-and **not yet implemented**. Owed per the modification protocol: a live
+`/workflow-eval` Collect step and the scorecard), with the evidence apparatus
+authored alongside them — eval task 23 (thin plan step) and the
+`ambiguity-policy-off` ablation variant. S2, S3, S5 are specified here and
+**not yet implemented**. Owed per the modification protocol: a live
 `/workflow-eval` scorecard for the behavior-affecting coder edit,
-`--contracts --agent coder` for the changed Output contract, and an ablation
-A/B once the `dispatch-brief-off` variant exists. The live eval cannot run in
-the authoring environment, so it rides the PR review. Stated ledger-style where
-a change owes protocol cost (per `CLAUDE.md`).
+`--contracts --agent coder` for the changed Output contract, and the task-23
+A/B at `--repeat ≥ 3`. The live eval cannot run in the authoring environment,
+so it rides the PR review. Stated ledger-style where a change owes protocol
+cost (per `CLAUDE.md`).
 
 ## Problem
 
@@ -213,15 +215,27 @@ Per `CLAUDE.md`, in tiers:
 - **Contract test** — `--contracts --agent coder` is owed for S1: the Output
   contract gained `assumptions` and redefined `open_questions`, and
   `evals/contracts/coder.md` was updated in the same change per the protocol.
-- **Ablation** — S2 owes a `dispatch-brief-off` variant and an A/B before its
-  ledger row can move off `candidate`. S1's ablation is the same variant with
-  the ambiguity policy reverted; both should be measured with `dispatch-trace.sh`
-  on the one-shot rate, not only on the five rubric dimensions, because the
-  rubric has no dimension that sees a roundtrip (Efficiency sees cost, but a
-  roundtrip inside a passing run does not move a dimension).
-- **Eval task** — an eval task with a deliberately thin plan step (underspecified
-  by construction) is owed, so the suite has a case where the one-shot rate can
-  actually be moved. Without it the A/B measures nothing.
+- **Ablation** — S1's variant is `ambiguity-policy-off` (authored; A/B not yet
+  run), which restores the pre-change coder rule by subtraction. S2 will owe a
+  `dispatch-brief-off` variant of its own. Both must be measured with
+  `dispatch-trace.sh` on the one-shot rate, not only on the five rubric
+  dimensions, because the rubric has no dimension that sees a roundtrip
+  (Efficiency sees cost, but a roundtrip inside a passing run does not move a
+  dimension). A roundtrip is a discrete event, so n=1 proves direction only —
+  run at `--repeat ≥ 3`.
+- **Eval task** — task 23 (`evals/tasks/23-thin-plan-step.md`) is the case where
+  the rate can actually move: `calc.Mode` with the empty-slice result and the
+  tie-break deliberately unpinned, both closable from the package's own
+  conventions and both below plan granularity, so the thinness survives Phase 3
+  planning and reaches the coder. Its control is the roundtrip, not the
+  resolution chosen — grading a particular answer would test taste; grading the
+  bounce tests the policy.
+
+  The task also guards the policy's **own** failure mode: an assumption that
+  ships silently is not a win. Both resolutions must reach `assumptions` and
+  GATE 3's Key decisions, and be covered by `TestMode` — review cannot
+  adjudicate what it cannot see, and the whole safety argument for
+  assume-and-proceed is that review still adjudicates.
 
 The single sharpest number to re-check after these land is the one at the top:
 **Sonnet 5's one-shot rate.** If it has not moved, S1–S3 did not work.

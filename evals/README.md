@@ -35,8 +35,9 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
                  a `## Command` section names a non-default driver (task 06 → /review-pr),
                  a `## Fixture` section a non-default fixture (tasks 15–16 → fixtures/app)
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single, triage-cold, comment-skeptic-off) prepended to a
-                 run for A/B
+                 brainstorm-single, triage-cold, comment-skeptic-off,
+                 comment-hygiene-off, delegation-floor-off, iterate-cold,
+                 ambiguity-policy-off) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
