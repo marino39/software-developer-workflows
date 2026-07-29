@@ -23,6 +23,10 @@ This reproduces the pre-change agent file by subtraction (the policy was purely
 additive apart from the one replaced sentence, restored verbatim above), so
 baseline-vs-variant ≈ post-vs-pre on the same harness.
 
+This variant leaves the caller-side **Dispatch brief** in force; it ablates only
+the agent half. Run it against `dispatch-brief-off` to tell the two apart —
+ablating both at once moves the rate without attributing the movement.
+
 ## What to read from the A/B
 
 The policy's claim is about WHETHER A DISPATCH COMES BACK, so read the

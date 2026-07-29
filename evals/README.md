@@ -37,7 +37,8 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
 variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
                  brainstorm-single, triage-cold, comment-skeptic-off,
                  comment-hygiene-off, delegation-floor-off, iterate-cold,
-                 ambiguity-policy-off) prepended to a run for A/B
+                 ambiguity-policy-off, dispatch-brief-off,
+                 dispatch-readiness-off) prepended to a run for A/B
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```

@@ -12,8 +12,9 @@ lifecycle — no brainstorm, no plan-review, no from-scratch review fan-out, and
 per-tweak retrospective.
 
 It reuses `commands/new-task.md` machinery verbatim — the **Review loop
-conventions**, the **Escalation ladder**, the **effort defaults**, and the route
-model. Read that file for those sections; this command only defines the warm-start
+conventions**, the **Dispatch brief** (every `coder`/`reviewer` spawn here fills
+it too — a delta is small, its dispatch is not thereby self-explanatory), the
+**Escalation ladder**, the **effort defaults**, and the route model. Read that file for those sections; this command only defines the warm-start
 seam and the deferred retro. All substantive work goes to subagents; independent
 subagents fan out in parallel in a single message.
 

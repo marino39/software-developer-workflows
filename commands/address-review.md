@@ -13,8 +13,10 @@ and review run Phase I1/I2 verbatim; this command defines only the
 thread-ingestion seam, the disposition contract, and the reply gate.
 
 It reuses `commands/new-task.md` machinery — the **Review loop conventions**,
-the **Escalation ladder**, the **effort defaults**, the route model, **Phase
-6.5** CI verification — and `commands/iterate.md`'s warm setup, delta
+the **Dispatch brief** (a thread's ask is not a `plan_slice`: a `fix` row is
+dispatched with the thread's claim, `done_when`, and bounds, never as a bare
+quote), the **Escalation ladder**, the **effort defaults**, the route model,
+**Phase 6.5** CI verification — and `commands/iterate.md`'s warm setup, delta
 implement, delta review, deferred/batched retro, and **Delegation floor**.
 Read those files for those sections. All substantive work goes to subagents;
 independent subagents fan out in parallel in a single message. The floor

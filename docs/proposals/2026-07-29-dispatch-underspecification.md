@@ -1,16 +1,18 @@
 # Research: dispatch underspecification and the sonnet one-shot rate
 
-Date: 2026-07-29. Status: **S1 + S4 implemented** on this branch (coder
-ambiguity policy; `evals/dispatch-trace.sh` + its wiring into the
-`/workflow-eval` Collect step and the scorecard), with the evidence apparatus
-authored alongside them — eval task 23 (thin plan step) and the
-`ambiguity-policy-off` ablation variant. S2, S3, S5 are specified here and
-**not yet implemented**. Owed per the modification protocol: a live
-`/workflow-eval` scorecard for the behavior-affecting coder edit,
-`--contracts --agent coder` for the changed Output contract, and the task-23
-A/B at `--repeat ≥ 3`. The live eval cannot run in the authoring environment,
-so it rides the PR review. Stated ledger-style where a change owes protocol
-cost (per `CLAUDE.md`).
+Date: 2026-07-29. Status: **S1–S4 implemented** on this branch (coder ambiguity
+policy; Dispatch brief; Phase 4 dispatch-readiness; `evals/dispatch-trace.sh` +
+its wiring into the `/workflow-eval` Collect step and the scorecard), with the
+evidence apparatus authored alongside them — eval task 23 (thin plan step) and
+three ablation variants (`ambiguity-policy-off`, `dispatch-brief-off`,
+`dispatch-readiness-off`), deliberately separable so the agent half, the caller
+half, and the upstream check can be attributed independently. **S5 remains
+unimplemented** (and unscoped). Owed per the modification protocol: a live
+`/workflow-eval` scorecard for the behavior-affecting edits,
+`--contracts --agent coder` for the changed Output contract, and the three A/Bs
+at `--repeat ≥ 3`. The live eval cannot run in the authoring environment, so it
+rides the PR review. Stated ledger-style where a change owes protocol cost (per
+`CLAUDE.md`).
 
 ## Problem
 
@@ -161,7 +163,7 @@ turns. This turns an N-roundtrip loop into 0 or 1.
 
 Targets the 4486-call agent directly. Costs nothing per dispatch.
 
-### S2 — dispatch brief, coder and reviewer only (not implemented)
+### S2 — dispatch brief, coder and reviewer only (implemented)
 
 The caller-side mirror of the Input contract: a short block on every spawn
 carrying `done_when` (the exact command or observable that ends the task),
@@ -176,13 +178,34 @@ it: a sonnet call averages $0.029, a delegation turn $1.37. Scoped to `coder`
 (4486 calls) and `reviewer` (1620); `researcher` at 80 calls and $1.53 is noise
 and stays out.
 
-### S3 — Phase 4 dispatch-readiness column (not implemented)
+Implementing it surfaced a live instance of seam 1: **Phase 4 dispatches a
+`reviewer` against a plan, with no diff in existence**, while `agents/reviewer.md`
+declared `diff_range` Required. A required field that is unfillable by design at
+one of its own call sites is exactly the asymmetry this section is about — the
+contract was never checked from the caller's side, so the mismatch sat there
+undetected. The Input contract is now mode-based (`diff_range` for diff review,
+`artifact_paths` for artifact review), which makes Phase 4's dispatch legal and
+the "fill every Required field" rule satisfiable everywhere it is asked for.
 
-Extend the Phase 4 mapping table with a third column: each step names its files,
+This is also the **only change in the set that adds tokens per dispatch**, so
+`dispatch-brief-off` is the A/B that can falsify the whole approach: the brief
+pays iff the orchestrator turns it avoids outweigh the prompt bytes it adds.
+
+### S3 — Phase 4 dispatch-readiness column (implemented)
+
+Extend the Phase 4 mapping table with a fourth column: each step names its files,
 its interface contract, and its exact verification command. An unready row fails
 the phase exactly as an unmapped row does. Zero new machinery — same reviewer,
 same pass — and it is where the fix compounds: one architect revision beats N
-coder roundtrips.
+coder roundtrips. A decision the plan *deliberately* leaves to the coder is ready
+iff it says so; delegating a decision is fine, leaving it silently open is not.
+
+**Confound to watch in its A/B:** with S1 in force a thin step no longer bounces
+— the coder assumes and proceeds. So S3's value may show up as reduced
+*assumption volume* (decisions made by an architect holding the design doc rather
+than a coder holding one slice) rather than as fewer roundtrips. If escaped
+defects come out equal across arms, S3 is buying predictability, not correctness,
+and its ledger row must be re-sourced to say so.
 
 ### S4 — measure it: `evals/dispatch-trace.sh` (implemented)
 
@@ -215,9 +238,12 @@ Per `CLAUDE.md`, in tiers:
 - **Contract test** — `--contracts --agent coder` is owed for S1: the Output
   contract gained `assumptions` and redefined `open_questions`, and
   `evals/contracts/coder.md` was updated in the same change per the protocol.
-- **Ablation** — S1's variant is `ambiguity-policy-off` (authored; A/B not yet
-  run), which restores the pre-change coder rule by subtraction. S2 will owe a
-  `dispatch-brief-off` variant of its own. Both must be measured with
+- **Ablation** — three variants are authored, none yet run: `ambiguity-policy-off`
+  (S1, restores the pre-change coder rule by subtraction), `dispatch-brief-off`
+  (S2), `dispatch-readiness-off` (S3). They are deliberately **separable** — the
+  agent half, the caller half, and the upstream check each ablate alone, because
+  ablating them together would move the rate without attributing the movement.
+  All must be measured with
   `dispatch-trace.sh` on the one-shot rate, not only on the five rubric
   dimensions, because the rubric has no dimension that sees a roundtrip
   (Efficiency sees cost, but a roundtrip inside a passing run does not move a
