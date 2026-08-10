@@ -30,6 +30,10 @@ fixtures/base/   the default Go module most tasks run against (calc + auth helpe
 fixtures/app/    a richer Go module (cart: a call chain + a comparable discount pair),
                  opted into via a task's `## Fixture` section — e.g. the `/explain`
                  Flow/Compare cases; also green
+fixtures/svc/    three packages with cross-slice coupling (api -> store + validate),
+                 for tasks where one plan step's correctness depends on a contract
+                 another step defines — the only fixture where a coder can be
+                 stranded by a gap it cannot close locally (task 24); also green
 tasks/           frozen task specs: statement + expected behaviour + score overrides;
                  a task/contract needing a failing baseline carries a `## Seed` step
                  (command/patch) applied to its fixture copy after copy, before dispatch;
@@ -46,8 +50,9 @@ lifecycle-ab.sh  LIVE-tier Layer-2 A/B runner: one headless /new-task lifecycle 
                  copy — used for the 2026-07-29 dispatch-brief lifecycle A/B
 contract-ab.sh   LIVE-tier (model-dispatching, non-deterministic) contract A/B runner:
                  N isolated coder dispatches per arm against a fresh fixture copy,
-                 for file-level agent ablations — used for the 2026-07-29
-                 ambiguity-policy A/B
+                 for file-level agent ablations. Stimuli: product/mode (fixtures/base)
+                 and strand-briefed/strand-bare (fixtures/svc, the cross-slice probe).
+                 Used for the 2026-07-29 ambiguity-policy and strand-probe A/Bs
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -95,6 +100,12 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
+- Task 24 exercises **cross-slice coupling** on `fixtures/svc`: three packages
+  where `api` must match on error values `store`/`validate` define. It is the
+  suite's only task whose gap a coder cannot close locally, and the only one that
+  routes **standard** reliably enough to reach Phase 4 (the fast path skips it).
+  Built after tasks 17/20/23 all failed to strand a coder — see the 2026-07-29
+  strand-probe scorecard.
 - The first cut is 21 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
   (bug + feature), the `/new-task` triage warm-start seam, `/explain`

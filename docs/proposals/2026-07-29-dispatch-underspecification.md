@@ -176,7 +176,7 @@ turns. This turns an N-roundtrip loop into 0 or 1.
 
 Targets the 4486-call agent directly. Costs nothing per dispatch.
 
-### S2 — dispatch brief, coder and reviewer only (implemented; MEASURED, no verdict)
+### S2 — dispatch brief, coder and reviewer only (implemented; MEASURED — no support at any tier, recommend hold/revert)
 
 The caller-side mirror of the Input contract: a short block on every spawn
 carrying `done_when` (the exact command or observable that ends the task),
@@ -204,7 +204,7 @@ This is also the **only change in the set that adds tokens per dispatch**, so
 `dispatch-brief-off` is the A/B that can falsify the whole approach: the brief
 pays iff the orchestrator turns it avoids outweigh the prompt bytes it adds.
 
-### S3 — Phase 4 dispatch-readiness column (implemented; UNTESTED — fast path skips Phase 4)
+### S3 — Phase 4 dispatch-readiness column (implemented; first indirect support from the strand probe; lifecycle test owed via task 24)
 
 Extend the Phase 4 mapping table with a fourth column: each step names its files,
 its interface contract, and its exact verification command. An unready row fails
@@ -292,11 +292,45 @@ standard-route run it was structurally guaranteed to indict the loops. Now gated
 on a preceding bounce (`rtrip` vs `iter`). **Re-dispatch alone does not mean
 underspecified** — that is the sharpest thing this exercise produced.
 
-**What still stands.** The telemetry is unexplained, not refuted: 53.8% over real
-sessions is not reproduced by a 4-dispatch fixture task where the plan is one
-function. The gap is most likely scale — real plans, real review loops, real
-coupling — so the honest next probe is a task with enough surface to actually
-strand a coder, not another repeat of this one.
+### Stranding probe (Layer 3, purpose-built)
+
+That probe was built and run: `evals/fixtures/svc` (api → store + validate) and a
+thin 3-step plan whose middle step must match on error values the *other two steps
+define*, with those slices stated to be in flight. The gap is provably non-local —
+nothing on disk settles it. n=3/arm, briefed vs bare
+(`2026-07-29-strand-probe-scorecard.md`).
+
+**The probe works and the coders are genuinely stranded** — they say so
+themselves ("if step 1's author names it differently, `api/api.go` line 21 is the
+one-line fix"). Three findings:
+
+1. **Still zero bounces (0/6).** Cumulative: **22 runs, three tiers, no
+   underspecification roundtrip** — now including conditions engineered to force
+   one. The proposal's central mechanism does not reproduce.
+2. **The real failure mode is contract divergence, not orchestrator turns.** All
+   6 shipped code unverifiable until siblings land: 4/6 guessed a sentinel that
+   may not exist, 2/6 declined to guess and *silently dropped the plan's 500
+   requirement*. The cost lands at integration, not in a turn.
+3. **The brief changes nothing, and structurally cannot.** Briefed and bare are
+   identical on every axis (2/3 vs 2/3, 1/3 vs 1/3, 0 vs 0). The brief transmits
+   what the orchestrator knows; a missing cross-slice contract is not known to the
+   orchestrator either unless the plan pinned it.
+
+**Where that leaves the proposal.** The diagnosis in *Where the underspecification
+comes from* is partly vindicated and partly wrong. Seam 4 (Phase 4 checks coverage,
+not sufficiency) is real and is where the only fixable version of this failure
+lives — S3's territory. Seams 2 and 3, and the S1/S2 remedies built on them, aimed
+at a roundtrip that does not occur at this workload. S1 survives on disclosure;
+**S2 has no supporting measurement at any tier and is the one change that adds
+tokens to every dispatch.**
+
+The telemetry remains unexplained rather than refuted. What these 22 runs rule out
+is the mechanism as stated — a coder handing work back for want of a detail. What
+they cannot rule out is a different mechanism behind the same 53.8%: review-loop
+iteration, multi-turn refinement, or work far larger than any fixture here. The
+next honest step is to look at what a non-1-shot sonnet call in the real telemetry
+actually *is*, rather than to keep engineering probes for a mechanism that has
+declined to appear three times.
 
 Two corrections the measurement forced, both applied:
 

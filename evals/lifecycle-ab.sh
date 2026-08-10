@@ -19,8 +19,9 @@
 #   route or raise n — see the 2026-07-29 lifecycle scorecard.
 set -u
 ARM="$1"; IDX="$2"; VARIANT="${3:-}"
-SCRATCH="$(cd "$(dirname "$0")" && pwd)"
-REPO=/home/user/software-developer-workflows
+SCRATCH="${EVAL_SCRATCH:-/tmp/workflow-eval}"
+mkdir -p "$SCRATCH"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
 FIXTURE="$REPO/evals/fixtures/base"
 OUT="$SCRATCH/lc-out/$ARM"; mkdir -p "$OUT"
 d="$SCRATCH/lc-work/$ARM-$IDX"
@@ -72,6 +73,6 @@ T=$(ls -t "$pdir"/*.jsonl 2>/dev/null | head -1)
     echo "testmode-defined: $(grep -rc 'func TestMode' "$d"/calc/calc_test.go 2>/dev/null)"
     echo "doc-comment: $(grep -B5 'func Mode' "$d"/calc/calc.go 2>/dev/null | grep '^//' | tr '\n' ' ')"
     echo "empty-tested: $(grep -cE 'Mode\((nil|\[\]int\{\})\)' "$d"/calc/calc_test.go 2>/dev/null)"
-    echo "CONTAMINATION: $(git -C "$REPO" status --porcelain | wc -l) repo files dirty"
+    echo "CONTAMINATION: $(git -C "$REPO" status --porcelain --untracked-files=no | wc -l) tracked repo files dirty"
 } >> "$OUT/run-$IDX.txt"
 echo "done: $ARM-$IDX"

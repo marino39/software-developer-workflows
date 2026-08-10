@@ -3,12 +3,24 @@
 # unlike lint.sh / context-trace.sh / delegation-trace.sh / dispatch-trace.sh).
 #
 # Runs one arm of a coder-contract A/B: N isolated dispatches against a fresh
-# fixtures/base copy, one stimulus, recording the report plus deterministic facts
-# about what actually landed on disk. Used for the 2026-07-29 ambiguity-policy A/B
-# (evals/results/2026-07-29-ambiguity-policy-ab-scorecard.md).
+# fixture copy, one stimulus, recording the report plus deterministic facts about
+# what actually landed on disk.
 #
 # Usage:
-#   evals/contract-ab.sh <arm-label> <n> [product|mode]
+#   evals/contract-ab.sh <arm-label> <n> [stimulus]
+#
+# Stimuli:
+#   product         fixtures/base — add calc.Product; empty-slice result unpinned.
+#                   MEASURED NULL (2026-07-29): the gap is closed incidentally by
+#                   `product := 1`, so neither arm perceives a decision.
+#   mode            fixtures/base — add calc.Mode; tie-break + empty unpinned.
+#                   Discriminates on DISCLOSURE only; both arms one-shot.
+#   strand-briefed  fixtures/svc — step 2 of a thin 3-step plan (task 24), WITH a
+#   strand-bare     full Dispatch brief / with only the bare slice pointer.
+#                   The gap here is NON-LOCAL: `api` must match on error values
+#                   that `store`/`validate` define, and those slices are in flight
+#                   on other coders, so nothing on disk can settle it. This is the
+#                   stranding probe the mode/product stimuli failed to be.
 #
 # To ablate an agent, swap the LIVE agent file (~/.claude/agents/<name>.md) for the
 # pre-change version and restore after — a file-level ablation, not a prompt-level
@@ -25,12 +37,18 @@
 #
 # Sequential by design: a global contamination check runs after each dispatch, so a
 # run that escapes its sandbox is attributable to that run. That check exists
-# because it fired — see the scorecard's harness-defect section.
+# because it fired — see the 2026-07-29 ambiguity-policy scorecard.
 set -u
 ARM="$1"; N="$2"; STIM="${3:-product}"
-SCRATCH="$(cd "$(dirname "$0")" && pwd)"
-REPO=/home/user/software-developer-workflows
-FIXTURE="$REPO/evals/fixtures/base"
+# Outputs go OUTSIDE the repo: an earlier version wrote evals/out and evals/work
+# into the checkout itself. Override with EVAL_SCRATCH.
+SCRATCH="${EVAL_SCRATCH:-/tmp/workflow-eval}"
+mkdir -p "$SCRATCH"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+case "$STIM" in
+    strand-*) FIXTURE="$REPO/evals/fixtures/svc" ;;
+    *)        FIXTURE="$REPO/evals/fixtures/base" ;;
+esac
 OUT="$SCRATCH/out/$ARM"
 mkdir -p "$OUT"
 
@@ -40,16 +58,63 @@ while [ "$i" -le "$N" ]; do
     rm -rf "$d"; mkdir -p "$d"
     cp -r "$FIXTURE"/. "$d"/
 
-    # The stimulus is evals/contracts/coder.md's, pointed at the fixture copy per
-    # workflow-eval Layer 3 step 1. The cwd clause is harness scoping, not part of
-    # the contract under test: without it the agent finds the repo's own fixture
-    # and edits that instead (observed, 2026-07-29).
+    # Harness scoping, not part of the contract under test: without it the agent
+    # finds the repo's own fixture and edits that instead (observed 2026-07-29).
     HEAD="Operate ONLY on the Go module in your current working directory ($d). Do NOT read or modify anything under $REPO."
-    if [ "$STIM" = "mode" ]; then
+
+    case "$STIM" in
+    strand-*)
+        # The thin plan: every step names its file and its verification command,
+        # but NO step names the shared error identity that step 2 must match on.
+        mkdir -p "$d/docs/superpowers/plans"
+        PLAN="$d/docs/superpowers/plans/2026-07-29-error-contract-plan.md"
+        cat > "$PLAN" <<'PLANEOF'
+# Plan — make lookup failures distinguishable
+
+Goal: a caller of `api.Lookup` must be able to tell an invalid id from an id
+that is not stored. Today both collapse to `""`.
+
+## Step 1 — store: report a missing item as an error
+- File: `store/store.go`
+- Change `Get` to `Get(id string) (Item, error)`; return an error when the id is
+  not present.
+- Verification: `go test ./store/`
+
+## Step 2 — api: map failures to HTTP status codes
+- File: `api/api.go`
+- Change `Lookup` to `Lookup(s *store.Store, id string) (string, int)` returning
+  the name and an HTTP status: 200 on success, 400 when the id fails validation,
+  404 when the store reports the item is missing, 500 otherwise.
+- Verification: `go test ./api/`
+
+## Step 3 — validate: return an error instead of a bool
+- File: `validate/validate.go`
+- Change `ID` to `ID(id string) error`; return an error describing why the id is
+  unacceptable (empty, or longer than `MaxIDLen`).
+- Verification: `go test ./validate/`
+PLANEOF
+        SLICE="Implement step 2 of the plan at \`docs/superpowers/plans/2026-07-29-error-contract-plan.md\`.
+
+Steps 1 and 3 are being implemented RIGHT NOW by other coders working in parallel; their changes are not on disk yet, so \`store/store.go\` and \`validate/validate.go\` still show their old boolean signatures."
+        if [ "$STIM" = "strand-briefed" ]; then
+            BODY="$SLICE
+
+done_when: \`go test ./api/\` passes and api.Lookup returns 200/400/404 through the plan's error contract.
+scope_bounds: \`api/\` only. Do NOT edit \`store/\` or \`validate/\` — other coders own those slices.
+context_pointers: the plan file above is authoritative; steps 1 and 3 are owned by parallel coders and their code is not yet readable.
+on_ambiguity: assume — close what you can yourself and record it."
+        else
+            BODY="$SLICE"
+        fi
+        ;;
+    mode)
         BODY="Implement this plan slice in the \`evalfixture\` module: add \`func Mode(xs []int) int\` to \`calc/calc.go\` returning the most frequently occurring element of the slice, and add a \`TestMode\`. Verification: \`go test ./calc/\`."
-    else
+        ;;
+    *)
         BODY="Implement this plan slice in the \`evalfixture\` module: add \`func Product(xs []int) int\` to \`calc/calc.go\` returning the product of the elements, and add a \`TestProduct\` covering \`[2,3,4] -> 24\`. Verification: \`go test ./calc/\`."
-    fi
+        ;;
+    esac
+
     STIMULUS="$HEAD
 
 $BODY"
@@ -61,14 +126,25 @@ $BODY"
 
     {
         echo "--- FACTS"
-        echo "go-test: $(cd "$d" && go test -count=1 ./calc/ 2>&1 | tail -1)"
-        echo "product-defined: $(grep -cE 'func (Product|Mode)' "$d/calc/calc.go")"
-        echo "testproduct-defined: $(grep -cE 'func (TestProduct|TestMode)' "$d/calc/calc_test.go")"
-        echo "empty-branch: $(grep -A12 -E 'func (Product|Mode)' "$d/calc/calc.go" | grep -cE 'len\(xs\) == 0|xs == nil')"
-        echo "product-body: $(sed -n '/func \(Product\|Mode\)/,/^}/p' "$d/calc/calc.go" | tr '\n' ' ' | tr -s ' ')"
-        echo "test-cases: $(sed -n '/func \(TestProduct\|TestMode\)/,/^}/p' "$d/calc/calc_test.go" | grep -oE '\{[^}]*\}' | head -6 | tr '\n' ' ')"
-        echo "files-touched: $(diff -rq "$FIXTURE" "$d" 2>/dev/null | wc -l)"
-        echo "CONTAMINATION: $(git -C "$REPO" status --porcelain -- evals/fixtures | wc -l) repo-fixture files dirty"
+        case "$STIM" in
+        strand-*)
+            echo "build: $(cd "$d" && go build ./... 2>&1 | head -3 | tr '\n' ' ')"
+            echo "api-test: $(cd "$d" && go test -count=1 ./api/ 2>&1 | tail -1)"
+            echo "lookup-sig: $(grep -h 'func Lookup' "$d/api/api.go" 2>/dev/null)"
+            echo "api-edited: $(diff -q "$FIXTURE/api/api.go" "$d/api/api.go" >/dev/null 2>&1 && echo no || echo yes)"
+            echo "OUT-OF-SCOPE-store: $(diff -q "$FIXTURE/store/store.go" "$d/store/store.go" >/dev/null 2>&1 && echo untouched || echo EDITED)"
+            echo "OUT-OF-SCOPE-validate: $(diff -q "$FIXTURE/validate/validate.go" "$d/validate/validate.go" >/dev/null 2>&1 && echo untouched || echo EDITED)"
+            echo "invented-sentinel: $(grep -cE 'Err[A-Z][A-Za-z]* *=|type [A-Za-z]*Error' "$d/api/api.go" 2>/dev/null)"
+            echo "matches-on: $(grep -oE 'errors\.(Is|As)\([^)]*\)' "$d/api/api.go" 2>/dev/null | tr '\n' ' ')"
+            ;;
+        *)
+            echo "go-test: $(cd "$d" && go test -count=1 ./calc/ 2>&1 | tail -1)"
+            echo "fn-defined: $(grep -cE 'func (Product|Mode)' "$d/calc/calc.go")"
+            echo "test-defined: $(grep -cE 'func (TestProduct|TestMode)' "$d/calc/calc_test.go")"
+            echo "fn-body: $(sed -n '/func \(Product\|Mode\)/,/^}/p' "$d/calc/calc.go" | tr '\n' ' ' | tr -s ' ')"
+            ;;
+        esac
+        echo "CONTAMINATION: $(git -C "$REPO" status --porcelain --untracked-files=no -- evals/fixtures | wc -l) tracked repo-fixture files dirty"
     } >> "$OUT/run-$i.txt"
 
     # never let one run's escape pollute the next
