@@ -58,9 +58,16 @@ That is the shape of the reported failure: not "this detail is unstated" but
 
 ## Expected behaviour
 
-- Route: **standard** (three packages, changed public signatures across a call
-  chain — beyond a single scoped fix). This also makes task 24 the suite's first
-  task that reliably reaches **Phase 4**, which the fast path skips.
+- Route: **standard** was the design intent (three packages, changed public
+  signatures across a call chain — beyond a single scoped fix).
+
+  **MEASURED 2026-08-10 and falsified:** 2 of 4 lifecycle runs routed `scoped` and
+  took the fast path, which skips Phase 4 — and both scoped runs shipped correct,
+  green, contract-consistent results in ~60% of the turns and a third of the
+  dispatches of the standard runs. So (a) this task can NOT be relied on to
+  exercise Phase 4, and (b) the `scoped` cap in the expect block below encodes an
+  assumption the outcome data does not support. Treat the route expectation as
+  open, and see scorecard 2026-08-10-task24-readiness-lifecycle.
 - Plan has ≥3 file-level steps with the shared error contract pinned in the
   Interfaces section.
 - All three packages updated consistently; `go test ./...` green.
@@ -69,8 +76,11 @@ That is the shape of the reported failure: not "this detail is unstated" but
 ## expect (scoring overrides)
 
 - `Routing`: standard (or high-stakes if the run argues the public-signature
-  change warrants it) with stated rationale. A `scoped` route here is a misroute —
-  three packages and three changed signatures — and caps Routing at 40.
+  change warrants it) with stated rationale. **The `scoped`-is-a-misroute rule is
+  SUSPENDED pending evidence** — 2026-08-10 measured scoped runs producing
+  outcomes indistinguishable from standard ones on this task, so a `scoped` route
+  WITH a stated rationale scores full credit until a case shows scoped
+  under-reviewing it. Score an unstated route at 40 either way.
 - `Outcome correctness`: `go build ./...` and `go test ./...` green; `api.Lookup`
   returns 400 for an invalid id, 404 for an absent one, 200 with the name on
   success — verified against the error values the other packages actually define.

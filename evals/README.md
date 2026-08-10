@@ -39,7 +39,12 @@ tasks/           frozen task specs: statement + expected behaviour + score overr
                  (command/patch) applied to its fixture copy after copy, before dispatch;
                  a `## Command` section names a non-default driver (task 06 → /review-pr),
                  a `## Fixture` section a non-default fixture (tasks 15–16 → fixtures/app)
-variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
+variants/        ablation deltas — write each Delta as a TERSE SUBTRACTION, never as
+                 an explanation of the machinery it removes: a delta that discusses
+                 a phase can prime the run toward a route that reaches that phase,
+                 which is how the 2026-08-10 dispatch-readiness A/B confounded
+                 itself (both primed runs went standard, both unprimed went scoped).
+                 Deltas: (skeptic-off, single-lens-review, fable-budget-flat,
                  brainstorm-single, triage-cold, comment-skeptic-off,
                  comment-hygiene-off, delegation-floor-off, iterate-cold,
                  ambiguity-policy-off, dispatch-brief-off,
@@ -102,10 +107,11 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
   noise. Raise `--repeat` before trusting an ablation verdict.
 - Task 24 exercises **cross-slice coupling** on `fixtures/svc`: three packages
   where `api` must match on error values `store`/`validate` define. It is the
-  suite's only task whose gap a coder cannot close locally, and the only one that
-  routes **standard** reliably enough to reach Phase 4 (the fast path skips it).
-  Built after tasks 17/20/23 all failed to strand a coder — see the 2026-07-29
-  strand-probe scorecard.
+  suite's only task whose gap a coder cannot close locally. Built after tasks
+  17/20/23 all failed to strand a coder (2026-07-29 strand-probe scorecard).
+  **It does NOT reliably reach Phase 4** — 2 of 4 lifecycle runs routed `scoped`
+  and took the fast path, which skips it (2026-08-10 scorecard), so it cannot
+  currently serve as the S3 test it was built to be.
 - The first cut is 21 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
   (bug + feature), the `/new-task` triage warm-start seam, `/explain`

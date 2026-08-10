@@ -18,11 +18,14 @@
 # - Route varies run to run on the same task (scoped vs standard). Compare within
 #   route or raise n — see the 2026-07-29 lifecycle scorecard.
 set -u
-ARM="$1"; IDX="$2"; VARIANT="${3:-}"
+ARM="$1"; IDX="$2"; VARIANT="${3:-}"; TASKID="${4:-23}"
 SCRATCH="${EVAL_SCRATCH:-/tmp/workflow-eval}"
 mkdir -p "$SCRATCH"
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-FIXTURE="$REPO/evals/fixtures/base"
+case "$TASKID" in
+    24) FIXTURE="$REPO/evals/fixtures/svc" ;;
+    *)  FIXTURE="$REPO/evals/fixtures/base" ;;
+esac
 OUT="$SCRATCH/lc-out/$ARM"; mkdir -p "$OUT"
 d="$SCRATCH/lc-work/$ARM-$IDX"
 rm -rf "$d"; mkdir -p "$d"
@@ -33,7 +36,12 @@ cp -r "$FIXTURE"/. "$d"/
 ( cd "$d" && git init -q -b main && git add -A \
   && git -c user.email=eval@local -c user.name=eval commit -qm "base fixture" )
 
-TASK='In the `evalfixture` module'"'"'s `calc` package, add a public function `Mode(xs []int) int` that returns the most frequently occurring element of the slice. Add a `TestMode`.'
+if [ "$TASKID" = "24" ]; then
+    # task 24 — cross-slice contract; routes standard, so it reaches Phase 4
+    TASK='In the `evalsvc` module, make failures distinguishable to callers of `api.Lookup`: a caller must be able to tell an invalid id from an id that simply is not stored. Today both collapse to "". Change `store.Get` and `validate.ID` to report failures as errors, and have `api.Lookup` return the name plus an HTTP status - 200, 400 for an invalid id, 404 for a missing item, 500 otherwise.'
+else
+    TASK='In the `evalfixture` module'"'"'s `calc` package, add a public function `Mode(xs []int) int` that returns the most frequently occurring element of the slice. Add a `TestMode`.'
+fi
 
 DELTA=""
 if [ -n "$VARIANT" ]; then
@@ -68,11 +76,24 @@ T=$(ls -t "$pdir"/*.jsonl 2>/dev/null | head -1)
     [ -n "$T" ] && sh "$REPO/evals/context-trace.sh" "$T"
     [ -n "$T" ] && sh "$REPO/evals/dispatch-trace.sh" --detail "$T"
     echo "--- FACTS"
-    echo "go-test: $(cd "$d" && go test -count=1 ./... 2>&1 | tail -2 | tr '\n' ' ')"
-    echo "mode-defined: $(grep -rc 'func Mode' "$d"/calc/calc.go 2>/dev/null)"
-    echo "testmode-defined: $(grep -rc 'func TestMode' "$d"/calc/calc_test.go 2>/dev/null)"
-    echo "doc-comment: $(grep -B5 'func Mode' "$d"/calc/calc.go 2>/dev/null | grep '^//' | tr '\n' ' ')"
-    echo "empty-tested: $(grep -cE 'Mode\((nil|\[\]int\{\})\)' "$d"/calc/calc_test.go 2>/dev/null)"
+    echo "build: $(cd "$d" && go build ./... 2>&1 | head -2 | tr '\n' ' ')"
+    echo "go-test: $(cd "$d" && go test -count=1 ./... 2>&1 | tail -3 | tr '\n' ' ')"
+    if [ "$TASKID" = "24" ]; then
+        # S3's question: did the PLAN pin the cross-slice error contract before dispatch?
+        echo "plan-pins-contract: $(grep -rilE 'ErrNotFound|errors\.Is|sentinel' "$d"/docs 2>/dev/null | tr '\n' ' ')"
+        echo "lookup-sig: $(grep -h 'func Lookup' "$d"/api/api.go 2>/dev/null)"
+        echo "store-sig: $(grep -h 'func (s \*Store) Get' "$d"/store/store.go 2>/dev/null)"
+        echo "validate-sig: $(grep -h 'func ID' "$d"/validate/validate.go 2>/dev/null)"
+        echo "api-matches-on: $(grep -oE 'errors\.(Is|As)\([^)]*\)' "$d"/api/api.go 2>/dev/null | tr '\n' ' ')"
+        echo "store-exports-err: $(grep -oE '(Err[A-Z][A-Za-z]*|type [A-Za-z]*Error)' "$d"/store/store.go 2>/dev/null | sort -u | tr '\n' ' ')"
+        echo "validate-exports-err: $(grep -oE '(Err[A-Z][A-Za-z]*|type [A-Za-z]*Error)' "$d"/validate/validate.go 2>/dev/null | sort -u | tr '\n' ' ')"
+        # match named constants too — a literal-only grep false-negatived 3 of 4
+        # runs on 2026-08-10, which use http.StatusBadRequest rather than 400
+        echo "statuses-tested: $(grep -oE 'http\.Status[A-Za-z]+|\b(200|400|404|500)\b' "$d"/api/api_test.go 2>/dev/null | sort -u | tr '\n' ' ')"
+    else
+        echo "mode-defined: $(grep -rc 'func Mode' "$d"/calc/calc.go 2>/dev/null)"
+        echo "empty-tested: $(grep -cE 'Mode\((nil|\[\]int\{\})\)' "$d"/calc/calc_test.go 2>/dev/null)"
+    fi
     echo "CONTAMINATION: $(git -C "$REPO" status --porcelain --untracked-files=no | wc -l) tracked repo files dirty"
 } >> "$OUT/run-$IDX.txt"
 echo "done: $ARM-$IDX"
