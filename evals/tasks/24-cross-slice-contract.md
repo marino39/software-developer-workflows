@@ -67,7 +67,11 @@ That is the shape of the reported failure: not "this detail is unstated" but
   dispatches of the standard runs. So (a) this task can NOT be relied on to
   exercise Phase 4, and (b) the `scoped` cap in the expect block below encodes an
   assumption the outcome data does not support. Treat the route expectation as
-  open, and see scorecard 2026-08-10-task24-readiness-lifecycle.
+  open, and see scorecard 2026-08-10-task24-readiness-lifecycle. **Route-controlled
+  runs pin the floor instead** (`ROUTE_FLOOR=standard` in `evals/lifecycle-ab.sh`,
+  both arms) — validated 4/4 on 2026-08-11; with the floor pinned, all runs reach
+  Phase 4 and the architect pins the error contract unprompted (see the
+  2026-08-11 readiness scorecard's null).
 - Plan has ≥3 file-level steps with the shared error contract pinned in the
   Interfaces section.
 - All three packages updated consistently; `go test ./...` green.

@@ -15,18 +15,17 @@ readiness A/B — report **zero underspecification roundtrips across 26 runs, in
 every arm**. Final disposition: **S1 kept** (re-sourced as a disclosure guard,
 measured 3/3 vs 1/3); **S2 CUT 2026-08-10** (no support at any tier, the one
 change that added tokens per dispatch — reverted per CLAUDE.md rule 3, keeping
-only the reviewer dual-mode contract fix it surfaced); **S3 kept,
-ablation-queued** (its A/B was confounded, not negative, and the strand probe's
-contract-divergence failures are exactly its remit); **S4 kept** (corrected
-twice, baseline established). The **Measurement** section below supersedes the
+only the reviewer dual-mode contract fix it surfaced); **S3 kept as a
+zero-cost backstop, NULL at its binding site** (route-controlled A/B 2026-08-11:
+4/4 plans pinned the contract in both arms — the architect's Interfaces section
+plus the Phase 2 review already deliver its guarantee, so the column never bound;
+cut is on the table); **S4 kept** (corrected twice, baseline established). The **Measurement** section below supersedes the
 framing in the sections above it.
 
 `dispatch-trace.sh` itself was found defective by its first lifecycle run and
 corrected (bounce-gated `rtrip` vs by-design `iter`); the numbers here are post-fix.
 
-Still owed: a route-controlled S3 test (nothing in the suite reliably reaches
-Phase 4 — task 24 routes scoped half the time, and the readiness variant's own
-delta primed routing; it needs a minimal-delta rewrite first), and the one check
+Still owed: only the one check
 no probe here can perform — **what a non-1-shot Sonnet call in the live dashboard
 actually is**. 26 runs found no re-dispatch-after-bounce anywhere, so if the
 dashboard's "1-shot" counts multi-turn tool use inside a single dispatch, or

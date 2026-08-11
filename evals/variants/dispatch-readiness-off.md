@@ -9,14 +9,18 @@ exit. Applies to the tasks that produce a real plan — 23 primarily, plus 17 an
 
 ## Delta (prepended to the dispatched /new-task)
 
-> VARIANT dispatch-readiness-off: Run `/new-task` as written, EXCEPT treat Phase
-> 4 step 1.5 (dispatch-readiness) as absent. The mapping table has three columns
-> only — design decision → plan step(s) → verification — and the phase exits when
-> that table is complete with no gaps, regardless of whether a step names its
-> files, its interface contract, or an exact verification command. Step 2's
-> checklist source is the unmapped rows only; GATE 2's Results carry the
-> mapping-table result without a readiness verdict. Everything else — the coder's
-> ambiguity policy, review machinery, gates — is unchanged.
+Rewritten 2026-08-10 to a terse subtraction: the first version's ~10 lines
+discussing Phase 4 primed both variant runs toward the standard route while the
+unprimed baseline runs went scoped, confounding the A/B (see the 2026-08-10
+scorecard and the variants/ rule in evals/README). Naming the ablated step is
+unavoidable; explaining it is not. Route-controlled runs additionally pin a
+**route floor: standard** in BOTH arms (the triage-manifest floor mechanism,
+identical text both sides), which neutralizes routing as a variable entirely.
+
+> VARIANT dispatch-readiness-off: Treat `new-task.md` Phase 4 step 1.5 as
+> absent: the mapping table has three columns (design decision → plan step →
+> verification), the phase exits when that table is complete with no gaps, and
+> GATE 2 carries no readiness verdict. Everything else is unchanged.
 
 ## What to read from the A/B
 

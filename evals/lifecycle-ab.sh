@@ -19,6 +19,12 @@
 #   route or raise n — see the 2026-07-29 lifecycle scorecard.
 set -u
 ARM="$1"; IDX="$2"; VARIANT="${3:-}"; TASKID="${4:-23}"
+# ROUTE_FLOOR=standard pins the route via the workflow's own triage-manifest
+# floor mechanism (new-task.md Phase 0 step 5: floors are monotonic, inherit and
+# escalate only). Set it in BOTH arms of an A/B — identical text both sides —
+# so routing stops being a variable. Added after the 2026-08-10 readiness A/B,
+# where route confounded arm perfectly.
+ROUTE_FLOOR="${ROUTE_FLOOR:-}"
 SCRATCH="${EVAL_SCRATCH:-/tmp/workflow-eval}"
 mkdir -p "$SCRATCH"
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -50,7 +56,14 @@ if [ -n "$VARIANT" ]; then
 "
 fi
 
-PROMPT="${DELTA}You are running under the eval harness. You are the approver: at every human gate, AUTO-APPROVE and log the gate summary verbatim; NEVER call AskUserQuestion or ask the human anything.
+FLOOR=""
+if [ -n "$ROUTE_FLOOR" ]; then
+    FLOOR="A triage manifest for this task supplies the route floor: **$ROUTE_FLOOR** (per new-task.md Phase 0 step 5, the floor is monotonic — inherit it and escalate only, never de-escalate below it; state the inherited floor at the first touchpoint).
+
+"
+fi
+
+PROMPT="${DELTA}${FLOOR}You are running under the eval harness. You are the approver: at every human gate, AUTO-APPROVE and log the gate summary verbatim; NEVER call AskUserQuestion or ask the human anything.
 
 Follow the workflow in /root/.claude/commands/new-task.md VERBATIM for the task below. Read that file first; it is the command definition.
 
