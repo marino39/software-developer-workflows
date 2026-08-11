@@ -195,7 +195,7 @@ PR head branch (`git push`, with the network retry
 backoff), post ONLY the approved replies (in-thread `COMMENT` replies;
 `handoff` rows post their invocation as the reply so the thread records where
 the work went), then run `new-task.md` **Phase 6.5** CI verification verbatim
-(event-driven wait, the `ci-triage` skill, same ladder + fable budget).
+(event-driven wait, the `ci-triage` skill, same ladder + one-fable budget).
 
 ## Retro — deferred and batched
 

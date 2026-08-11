@@ -21,6 +21,15 @@ for d in "$REPO_DIR"/skills/*/; do
     cp "$d"* "$CLAUDE_DIR/skills/$name/"
 done
 
+# Warn about live skills that no longer exist in the repo (e.g. a renamed skill
+# leaves its old copy behind, and a stale SKILL.md is a live footgun). Never
+# delete — ~/.claude/skills also holds skills this repo does not own.
+for d in "$CLAUDE_DIR"/skills/*/; do
+    [ -d "$d" ] || continue
+    name="$(basename "$d")"
+    [ -d "$REPO_DIR/skills/$name" ] || echo "warning: $CLAUDE_DIR/skills/$name has no counterpart in this repo (renamed or removed upstream?) — review and delete it by hand if it is stale"
+done
+
 seed() {
     src="$1" dest="$2"
     if [ ! -f "$dest" ]; then

@@ -1,5 +1,5 @@
 ---
-description: Review a pull request you did not author — the Phase 6 review engine (multi-channel fan-out + confidence-scored consolidation + skeptic pass), decoupled and aimed at a foreign PR. Read-only; local report by default, opt-in --comment.
+description: Review a pull request you did not author — the Phase 6 review engine (one Claude reviewer + one out-of-model codex channel, confidence-scored consolidation, batched skeptic pass), decoupled and aimed at a foreign PR. Read-only; local report by default, opt-in --comment.
 ---
 
 # Review PR: $ARGUMENTS
@@ -75,7 +75,7 @@ identical to the PR path.
    links) or `searcher` (in-repo docs) into a capped summary you compose from.
 3. **Fetch the PR head into a read-only worktree** — invoke the
    `superpowers:using-git-worktrees` skill on the fetched PR ref (e.g.
-   `git fetch origin pull/<N>/head` then a detached checkout) so the lens reviewers
+   `git fetch origin pull/<N>/head` then a detached checkout) so the review channel
    can run `git diff`, `git blame`/history, and read surrounding code. The worktree
    is for reading only and is cleaned up on exit.
 4. Compute `BASE_SHA = git merge-base HEAD <pr-base>`, `HEAD_SHA = git rev-parse HEAD`,
@@ -85,30 +85,36 @@ identical to the PR path.
    deletion) → **reduced** tier; otherwise **full** tier with the high-stakes
    escalations of Phase 6 step 7. State the tier and its rationale in the report.
 6. **Locate** (don't read) the CLAUDE.md files covering the changed dirs and pass
-   their paths to the compliance lens — C3 Reads them itself (path-passing, per
+   their paths to Channel A — the reviewer Reads them itself (path-passing, per
    `new-task.md` Token hygiene); their content never transits your context.
 
 ## Phase R1 — Review fan-out
 
-Run `new-task.md` **Phase 6 step 3** verbatim — launch the tier's channels in
-parallel in a single message — with two substitutions:
+Run `new-task.md` **Phase 6 step 3** verbatim — **two channels, one Claude and one
+out-of-model**, launched in parallel in a single message — with two substitutions:
 
-- `PLAN_OR_REQUIREMENTS` → the R0 **intent digest** (there is no plan file).
+- The plan the channels check against → the R0 **intent digest** (there is no plan
+  file). Pass it inline; it is capped by construction.
 - **No local test execution.** CI status was read in R0 (`ci: <state>`); there is no
   behavioral-verification step and no plan Verification section to drive.
 
-Channels A (superpowers review), B (codex, full tier only, degrades free), and C
-(three lens reviewers — C1 shallow-bug / C2 git-history / C3 compliance; reduced
-tier folds C1+C3 into one reviewer and drops C2) are otherwise identical to Phase 6.
+Channel A (ONE `reviewer` carrying the merged four-lens remit — intent compliance,
+bug scan, git history, CLAUDE.md compliance — as its `focus`, with the CLAUDE.md
+paths from R0.6 passed for it to Read, and the `lens_coverage` field required back —
+a lens reported as `none` is evidence, a lens omitted is a bounce) and Channel B (codex per the `codex-exec`
+skill recipe §5.3, full tier only, degrades free) are otherwise identical to
+Phase 6. The reduced tier runs Channel A alone; a high-stakes PR buys back the lens
+split per Phase 6 step 7 (A1 + A2, opus).
 
 ## Phase R2 — Consolidate + skeptic
 
-Run `new-task.md` **Phase 6 step 4** verbatim: a FRESH `reviewer` (clean context)
-fed only the channel reports + the intent digest dedupes, scores each finding 0–100
-confidence, drops `<50`, tags `50–79` Should-fix / `≥80` Must-fix (cross-channel
-agreement bumps confidence); then the default-refute **skeptic pass** runs on each
-Must-fix — a finding survives as Must-fix only if the skeptic fails to refute it,
-else it is demoted to Should-fix with the refutation noted.
+Run `new-task.md` **Phase 6 step 4** verbatim: **you** merge the ≤2 channel reports
+against the intent digest (no consolidator subagent), score each finding 0–100
+confidence, drop `<50`, tag `50–79` Should-fix / `≥80` Must-fix (cross-channel
+agreement bumps confidence); then ONE fresh `reviewer` runs the **batched
+default-refute skeptic pass** over the whole Must-fix list, returning a per-finding
+`stands` / `refuted` verdict — a finding survives as Must-fix only if the skeptic
+fails to refute it, else it is demoted to Should-fix with the refutation noted.
 
 **Differences from Phase 6:**
 
@@ -119,8 +125,9 @@ else it is demoted to Should-fix with the refutation noted.
   `<50`, each with its one-line reason, so the report shows what was considered and
   dismissed — not only what survived.
 
-Escalations (reviewer/consolidator/skeptic sonnet → opus → fable) follow the
-`new-task.md` **Escalation ladder** and its shared fable budget.
+Escalations (Channel A reviewer / skeptic: sonnet → opus → fable) follow the
+`new-task.md` **Escalation ladder** and its one-fable-per-run budget. Codex sits
+outside the ladder — it degrades free here and never escalates.
 
 ## Phase R3 — Deliver
 

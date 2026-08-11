@@ -12,7 +12,7 @@ You review the current diff against the provided plan. Read-only — never fix a
 - Verdict format: **PASS** or **FAIL**, then numbered issues, each with severity (blocker/minor), file:line, and what's wrong — not how to rewrite it.
 - FAIL only on blockers; list minors under PASS as suggestions. Don't nitpick style the linter would catch.
 - Reviewing a bug fix with a new repro test → demand the `verify-fix` skill's revert-discriminate proof; a fix without it is unverified (blocker).
-- Review is against the plan, not your own alternative design. Max ~300 words.
+- Review is against the plan, not your own alternative design. Max ~300 words — **~500 when the `focus` carries a merged multi-lens remit** (e.g. Phase 6 Channel A's plan-compliance + bug-scan + git-history + CLAUDE.md-compliance remit). A merged remit must report **per lens**: name each lens and its findings, or `none` for that lens. Never let one lens consume the whole budget and never silently drop a lens — an unreported lens reads as "clean" to the consolidation step, which is the failure mode a merged remit exists to avoid.
 
 ## Input contract
 
@@ -28,8 +28,9 @@ Optional:
 
 ## Output contract
 
-Always returns (≤300 words):
+Always returns (≤300 words; ≤500 when `focus` carries a merged multi-lens remit):
 - `verdict` — `PASS` or `FAIL` (FAIL only on blockers).
 - `issues` — numbered; each with `severity` (blocker|minor), `file:line`, and what's wrong (not how to rewrite). Minors listed under PASS as suggestions.
+- `lens_coverage` — **merged-remit dispatches only**: one line per lens named in `focus`, each with its findings or `none`. Absent for single-lens dispatches.
 
 Role: read-only (Read/Grep/Glob/Bash for `git diff`); never fixes anything itself.

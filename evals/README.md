@@ -44,11 +44,18 @@ variants/        ablation deltas — write each Delta as a TERSE SUBTRACTION, ne
                  a phase can prime the run toward a route that reaches that phase,
                  which is how the 2026-08-10 dispatch-readiness A/B confounded
                  itself (both primed runs went standard, both unprimed went scoped).
-                 Deltas: (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single, triage-cold, comment-skeptic-off,
-                 comment-hygiene-off, delegation-floor-off, iterate-cold,
-                 ambiguity-policy-off, dispatch-brief-off,
-                 dispatch-readiness-off) prepended to a run for A/B
+                 A *restore* variant is the exception the rule allows: after the
+                 2026-08-11 cost pass cut layers on a directive rather than an A/B,
+                 the only way left to price them is to put them back, so
+                 brainstorm-3head-restore and review-fanout-full-restore read as
+                 additions. Route-control those two — their deltas necessarily name
+                 a phase the fast path skips.
+                 Deltas: (skeptic-off, fable-budget-flat, brainstorm-single,
+                 brainstorm-3head-restore, review-fanout-full-restore, triage-cold,
+                 comment-skeptic-off, comment-hygiene-off, delegation-floor-off,
+                 iterate-cold, ambiguity-policy-off, dispatch-brief-off,
+                 dispatch-readiness-off; single-lens-review is SUPERSEDED — its
+                 delta became the baseline) prepended to a run for A/B
 lifecycle-ab.sh  LIVE-tier Layer-2 A/B runner: one headless /new-task lifecycle per
                  invocation via top-level `claude -p` (which HAS the Agent tool,
                  unlike `claude -p --agent`), on an isolated git-init'd fixture

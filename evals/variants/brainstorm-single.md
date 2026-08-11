@@ -1,5 +1,11 @@
 # Variant — brainstorm-single
 
+> **Re-scoped (2026-08-11).** The baseline is no longer 3 architects + a fable
+> synthesizer — it is 1 `architect` + 1 codex lens + an opus synthesizer (see the cost
+> pass in `evals/complexity-ledger.md`). This variant is now the **floor case**: one
+> Claude architect, *no codex lens*, so it measures what the out-of-model second head
+> buys. `brainstorm-3head-restore` is the ceiling case. Read the three together.
+
 Ablates the Phase 1 three-architect fan-out + fable synthesizer down to a single
 architect, to measure whether multi-lens brainstorming earns its cost on real tasks
 (vs only on genuinely wide design spaces).
@@ -7,8 +13,9 @@ architect, to measure whether multi-lens brainstorming earns its cost on real ta
 ## Delta (prepended to the dispatched /new-task)
 
 > VARIANT brainstorm-single: In Phase 1, dispatch **one** `architect` (opus) that
-> proposes a single recommended approach with its trade-offs, and skip the separate
-> fable synthesizer. The design doc records that one approach plus any alternatives
+> proposes a single recommended approach with its trade-offs; skip the codex design
+> lens and skip the separate synthesizer dispatch (the architect writes the design
+> doc directly in artifact mode). The design doc records that one approach plus any alternatives
 > it explicitly rejected. Phases 2+ are unchanged.
 
 ## What to read from the A/B

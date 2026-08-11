@@ -132,9 +132,9 @@ baseline is trusted because it already passed a full Phase 6.
    changed lines for new large bugs only — this is exactly the **iterations-2+
    delta re-review** of the Review loop conventions, applied from iteration 1.
    **Exception:** if the route escalated to high-stakes (step 1, or Phase I0 step 4),
-   run the FULL Phase 6 fan-out — Channel A + Channel C lens reviewers +
-   consolidator + the default-refute skeptic pass — with the high-stakes tier
-   escalations. Verdict is COMPUTED, never judged:
+   run the FULL Phase 6 fan-out — Channel A (split into A1/A2 per Phase 6
+   step 7) + Channel B codex + the batched default-refute skeptic pass — with
+   the high-stakes tier escalations. Verdict is COMPUTED, never judged:
    **PASS ⇔ tests green AND zero Must-fix remain AND behavioral verification passed
    (or exempt).**
 4. FAIL → route numbered Must-fix issues to `coder` (fix proven per `verify-fix`) →
@@ -158,7 +158,7 @@ On approval: run `new-task.md` Phase 6 step 9's **artifact-hygiene check** first
 `superpowers:finishing-a-development-branch` (or push to the
 existing PR named in the manifest). If the outcome is or remains a PR, run CI
 verification exactly per `new-task.md` **Phase 6.5** (event-driven wait, `ci-triage`
-skill, same ladder + fable budget) before the retro step.
+skill, same ladder + one-fable budget) before the retro step.
 
 ## Retro — deferred and batched
 
