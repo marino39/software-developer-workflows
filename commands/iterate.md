@@ -110,7 +110,7 @@ one there is nothing to delta against.
    reporting done. Loop guard + `debugger` escalation exactly per the Escalation
    ladder in `new-task.md`.
 
-## Phase I2 — Delta review (max 5 iterations)
+## Phase I2 — Delta review (max 3 iterations)
 
 Compute `BASE_SHA` = the manifest's `HEAD_SHA` (the baseline the prior run already
 fan-out-reviewed), `HEAD_SHA = git rev-parse HEAD`, `DIFF_LINES` from

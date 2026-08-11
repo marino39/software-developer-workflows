@@ -53,7 +53,7 @@
         <span class="k"><span class="swatch" style="background:var(--gate)"></span>Human gate</span>
         <span class="k"><span class="swatch" style="background:var(--scoped)"></span>Scoped fast path</span>
         <span class="k"><span class="swatch" style="background:var(--stakes)"></span>High-stakes escalation</span>
-        <span class="k">↻ = bounded review loop (max 5)</span>
+        <span class="k">↻ = bounded review loop (max 3)</span>
       </div>
 
       <div class="flow">
@@ -95,7 +95,7 @@
         <div class="node">
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">2</span></div></div>
           <div class="card">
-            <h3>Approach review <span class="loop-badge">↻ max 5</span></h3>
+            <h3>Approach review <span class="loop-badge">↻ max 3</span></h3>
             <p>An out-of-model <span class="mono">codex</span> pass adversarially reviews the design and returns numbered <strong>blocking</strong> issues or the literal <span class="mono">no blocking issues</span> — a reviewer that did not write the design and does not share its author's priors. Codex absent → a fresh <span class="mono">architect</span> (opus, clean context) falls back into the slot. The phase exits only on that string — never on a gut impression.</p>
             <div class="detail"><span class="tag">codex adversarial</span><span class="tag agent">architect fallback</span></div>
           </div>
@@ -106,7 +106,7 @@
           <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">1</span></div></div>
           <div class="card gate-card">
             <h3>GATE 1 · Approach</h3>
-            <p>Gate summary: chosen approach, rejected alternatives, remaining risks, deviations vs the confirmed brainstorm direction. Human approves or rejects.</p>
+            <p>Gate summary: chosen approach, rejected alternatives, remaining risks, deviations vs the confirmed brainstorm direction. On the standard route this is the merged design-plan gate — the plan is approved here too, and there is no separate GATE 2. Human approves or rejects.</p>
           </div>
         </div>
 
@@ -114,7 +114,7 @@
         <div class="node">
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">3</span></div></div>
           <div class="card">
-            <h3>Plan <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
+            <h3>Plan · high-stakes route <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
             <p>An <span class="mono">architect</span> with clean context drafts a plan fed only the approved design — file-level steps, interface contracts, and per-step verification.</p>
             <div class="detail"><span class="tag skill">writing-plans</span><span class="tag agent">architect</span></div>
           </div>
@@ -124,7 +124,7 @@
         <div class="node">
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">4</span></div></div>
           <div class="card">
-            <h3>Plan review <span class="loop-badge">↻ max 5</span></h3>
+            <h3>Plan review · high-stakes route <span class="loop-badge">↻ max 3</span></h3>
             <p>A fresh <span class="mono">reviewer</span> builds a <strong>mapping table</strong>: every design decision → its plan step(s), every step → its verification. Exits only when the table has no gaps. Failures return the unmapped rows, not prose.</p>
             <div class="detail"><span class="tag agent">reviewer</span></div>
           </div>
@@ -135,7 +135,7 @@
           <div class="rail"><div class="badge"><span class="p">Gate</span><span class="num">2</span></div></div>
           <div class="card gate-card">
             <h3>GATE 2 · Plan</h3>
-            <p>Gate summary: plan steps and deviations vs the approved design. Human approves or rejects.</p>
+            <p>High-stakes route only — on standard the plan is approved at GATE 1 with the design. Gate summary: plan steps and deviations vs the approved design. Human approves or rejects.</p>
           </div>
         </div>
 
@@ -158,7 +158,7 @@
         <div class="node">
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">6</span></div></div>
           <div class="card">
-            <h3>Implementation review <span class="loop-badge">↻ max 5</span></h3>
+            <h3>Implementation review <span class="loop-badge">↻ max 3</span></h3>
             <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — one Claude reviewer carrying the merged four-lens remit, plus codex. The orchestrator scores and dedupes the two reports; the surviving Must-fix list faces one batched default-refute <strong>skeptic pass</strong>. High-stakes diffs buy the lens split back (A1 + A2 at opus). Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
             <div class="detail">
               <span class="tag skill">verify-feature</span>
@@ -183,7 +183,7 @@
         <div class="node">
           <div class="rail"><div class="badge half"><span class="p">Phase</span><span class="num">6.5</span></div></div>
           <div class="card">
-            <h3>CI verification <span class="tag">PR path only</span> <span class="loop-badge">↻ max 5</span></h3>
+            <h3>CI verification <span class="tag">PR path only</span> <span class="loop-badge">↻ max 3</span></h3>
             <p>Runs only when phase 6 produced a PR. Event-driven — it subscribes to PR activity and ends the turn rather than holding it open on a poll. Failures triage through <span class="mono">test-runner</span>; fixes are reviewed before pushing. Green → phase 7; cap exhausted → HALT with the PR left open.</p>
             <div class="detail"><span class="tag skill">ci-triage</span><span class="tag agent">test-runner</span><span class="tag agent">coder</span></div>
           </div>
@@ -310,7 +310,7 @@
       </div>
       <div class="gate-grid">
         <div class="gitem"><span class="gid">GATE 1</span><div><div class="gt">Approach</div><div class="gd">Chosen approach, rejected alternatives, remaining risks. After phase 2.</div></div></div>
-        <div class="gitem"><span class="gid">GATE 2</span><div><div class="gt">Plan</div><div class="gd">Plan steps and deviations vs the approved design. After phase 4.</div></div></div>
+        <div class="gitem"><span class="gid">GATE 2</span><div><div class="gt">Plan</div><div class="gd">Plan steps and deviations vs the approved design. After phase 4 (high-stakes route; standard merges into GATE 1).</div></div></div>
         <div class="gitem auto"><span class="gid">GATE 3</span><div><div class="gt">Implementation <span style="font-weight:400;color:var(--pass)">· fast-path auto-approve</span></div><div class="gd">Route, files, tests, verification, fan-out tier, Must-fix counts. After phase 6.</div></div></div>
         <div class="gitem"><span class="gid">GATE 4</span><div><div class="gt">Self-update</div><div class="gd">Proposed learnings / workflow edits shown as a diff. After phase 7.</div></div></div>
       </div>

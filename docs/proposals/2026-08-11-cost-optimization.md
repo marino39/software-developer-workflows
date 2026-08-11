@@ -62,9 +62,12 @@ The reverse-ablation variants are authored (`brainstorm-3head-restore`,
 
 ---
 
-## 3. Proposed, NOT applied — the user's call
+## 3. Proposed — ALL APPLIED 2026-08-11 (user directive, same day)
 
-Ordered by (saving ÷ risk). Each is a small diff; none is started.
+Ordered by (saving ÷ risk). Originally proposed-not-applied; the user directed
+all six be implemented (branch `claude/orchestrator-efficiency-49ffe2`). Each
+section below carries its status; like the section-2 changes these are
+**directive-sourced** — the A/Bs named per item (and in the ledger rows) are owed.
 
 ### P1. Orchestrator effort `xhigh` → `high` — biggest remaining lever
 
@@ -73,7 +76,7 @@ line in each of the six command headers, plus the guide kickers and README. The
 per-agent `effort: xhigh` frontmatter on `architect`/`debugger` is untouched.
 **OWED per the note below: a real-CLI validation run** — cost via `/usage`, quality
 via attention to Gate-discipline and Routing on live runs — because the harness
-cannot price or falsify this change. P2–P6 remain unapplied.
+cannot price or falsify this change.
 
 Every command header says *"run this on Opus at `xhigh` effort"*. That is the
 **largest context in the system, on the most expensive model, at the deepest
@@ -91,6 +94,12 @@ delegated: `architect` and `debugger` carry `effort: xhigh` in their frontmatter
   SDK eval harness** — so this must be evaluated in a real CLI run, not in-harness.
 
 ### P2. Merge Phases 3–4 into Phase 1–2 for the `standard` route
+
+**Status: APPLIED 2026-08-11.** Phase 1 step 3's synthesizer writes design + plan
+as one artifact on `standard`; Phase 2's review carries the coverage + readiness
+remit as blocking issues; GATE 1 is the merged design-plan gate; Phases 3–4 +
+GATE 2 are high-stakes-only. Restore variant `phase34-split-restore`; the A/B on
+tasks 23–24 (route floor pinned) is OWED — see the ledger row.
 
 Today a standard run pays **two** artifact-authoring passes (design doc, plan),
 **two** adversarial review loops (Phase 2, Phase 4), and **two** human gates
@@ -112,6 +121,11 @@ it once, and GATE 1 + GATE 2 merge into a single design-plan gate.
 
 ### P3. Run codex on the **reduced** tier too
 
+**Status: APPLIED 2026-08-11, command-gated per the recommendation below.**
+`/review-pr` runs codex on both tiers (R0.5); the in-loop commands (new-task
+Phase 6, iterate I2) keep the skip, now re-sourced explicitly as a latency
+choice. Ablation variant `codex-reduced-off`; the small-diff A/B is OWED.
+
 Codex costs wall-clock, not Claude tokens. Today the reduced tier skips it
 (`codex: skipped (small diff)`) — a rule written when the tier logic was about
 saving *tokens*. Running it always would **raise** review quality on small diffs at
@@ -123,6 +137,9 @@ saving *tokens*. Running it always would **raise** review quality on small diffs
   command rather than the tier.
 
 ### P4. Make Phase 7 (retro + GATE 4) conditional
+
+**Status: APPLIED 2026-08-11** as Phase 7 step 0, exactly as proposed. Restore
+variant `retro-skip-off`; the lesson-loss A/B on the scoped tasks is OWED.
 
 A clean fast-path run — zero deviations, zero Must-fix, ≤1 review iteration — has
 nothing durable to learn, yet still pays a retrospective write, a lesson-distillation
@@ -137,6 +154,10 @@ pass, and a per-item GATE 4 decision table.
 
 ### P5. Cap review loops at 3 iterations instead of 5
 
+**Status: APPLIED 2026-08-11** — Phases 2/4/6/6.5, plus the same cap in
+`iterate.md` I2 and `address-review.md` A3 (they share the Review loop
+conventions). Watch the halted-run rate in live scorecards; a one-word revert.
+
 Phases 2/4/6/6.5 each allow 5. In practice the escalation ladder and the
 "different issue each iteration → go back a phase" rule fire well before then, so
 iterations 4–5 are mostly pathological-run tail cost paid at the most expensive
@@ -146,6 +167,12 @@ tier.
   failure — a halt shows the human a failure digest; it never silently passes).
 
 ### P6. Route more work away from `/new-task`
+
+**Status: APPLIED 2026-08-11** as the Phase 0 step 5 **wrong-lane check** —
+`/new-task` now STOPs with a one-line redirect when the request is a delta on a
+reviewed baseline (`/iterate`), a codebase question (`/explain`), or an
+untriaged issue (`/triage-issue`); the human can insist and the override is
+recorded as a Key decision. The usage discipline is thereby self-enforcing.
 
 Not a code change — usage discipline, and probably the largest real-world saving.
 `/new-task` is the full lifecycle; most day-to-day work is a delta on a reviewed
@@ -180,3 +207,12 @@ carry pays the entire brainstorm + plan + gate machinery for nothing.
 4. A batched-vs-per-finding skeptic comparison (anchoring risk).
 5. A machine **without** codex installed, to confirm the Phase 1/2 fallbacks fire and
    are disclosed as Deviations rather than silently dropping a pass.
+6. **P2:** `--variant phase34-split-restore` at `--repeat ≥ 3` on tasks 23–24 with
+   the route floor pinned standard — escaped defects, coverage misses, Phase 2
+   iteration counts, merged-gate decidability.
+7. **P3:** `--variant codex-reduced-off` on a reduced-tier `/review-pr` case — Δ
+   unique/confirming findings vs Δ wall-clock.
+8. **P4:** `--variant retro-skip-off` on the scoped tasks — GATE 4 evidenced rows
+   the skip would have dropped.
+9. **P1 + P5:** real-CLI runs — P1's cost/quality delta (inert in-harness) and the
+   halted-run rate under the 3-iteration caps.

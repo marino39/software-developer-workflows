@@ -43,7 +43,7 @@ cp -r "$FIXTURE"/. "$d"/
   && git -c user.email=eval@local -c user.name=eval commit -qm "base fixture" )
 
 if [ "$TASKID" = "24" ]; then
-    # task 24 — cross-slice contract; routes standard, so it reaches Phase 4
+    # task 24 — cross-slice contract; routes standard, so it exercises plan review (merged into Phase 2 on standard since 2026-08-11; Phase 4 on high-stakes)
     TASK='In the `evalsvc` module, make failures distinguishable to callers of `api.Lookup`: a caller must be able to tell an invalid id from an id that simply is not stored. Today both collapse to "". Change `store.Get` and `validate.ID` to report failures as errors, and have `api.Lookup` return the name plus an HTTP status - 200, 400 for an invalid id, 404 for a missing item, 500 otherwise.'
 else
     TASK='In the `evalfixture` module'"'"'s `calc` package, add a public function `Mode(xs []int) int` that returns the most frequently occurring element of the slice. Add a `TestMode`.'
