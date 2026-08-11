@@ -91,6 +91,24 @@ T=$(ls -t "$pdir"/*.jsonl 2>/dev/null | head -1)
     echo "--- FACTS"
     echo "build: $(cd "$d" && go build ./... 2>&1 | head -2 | tr '\n' ' ')"
     echo "go-test: $(cd "$d" && go test -count=1 ./... 2>&1 | tail -3 | tr '\n' ' ')"
+    # Artifact survival (the 2026-08-11 anchor + rescue-sweep fix): after finish,
+    # the plan/design doc must exist in the MAIN dir, every docs/superpowers/ path
+    # recorded in the manifest must resolve, and no stray worktree may still hold
+    # artifacts. Checked on every run so a green result is evidence, not luck.
+    echo "plan-survives: $(ls "$d"/docs/superpowers/plans/*.md 2>/dev/null | wc -l) file(s)"
+    echo "design-survives: $(ls "$d"/docs/superpowers/specs/*.md 2>/dev/null | wc -l) file(s)"
+    m=$(ls "$d"/docs/superpowers/runs/*-manifest.md 2>/dev/null | head -1)
+    if [ -n "$m" ]; then
+        dangling=0
+        for ap in $(grep -oE '[^ `"'"'"')(]*docs/superpowers/[A-Za-z0-9/._-]*\.md' "$m" | sort -u); do
+            case "$ap" in /*) f="$ap" ;; *) f="$d/$ap" ;; esac
+            [ -f "$f" ] || dangling=$((dangling + 1))
+        done
+        echo "manifest-paths-dangling: $dangling"
+    else
+        echo "manifest-paths-dangling: no-manifest"
+    fi
+    echo "stray-worktree-artifacts: $(find "$SCRATCH/lc-work" -maxdepth 4 -path "*$ARM-$IDX-wt-*docs/superpowers*" -name '*.md' 2>/dev/null | wc -l)"
     if [ "$TASKID" = "24" ]; then
         # S3's question: did the PLAN pin the cross-slice error contract before dispatch?
         echo "plan-pins-contract: $(grep -rilE 'ErrNotFound|errors\.Is|sentinel' "$d"/docs 2>/dev/null | tr '\n' ' ')"
