@@ -1,4 +1,11 @@
-# Variant — dispatch-brief-off
+# Variant — dispatch-brief-off (HISTORICAL — the construct was cut 2026-08-10)
+
+**The Dispatch brief no longer exists in `commands/new-task.md`**: after this
+variant's lifecycle A/B (no verdict, route-confounded) and the strand probe
+(briefed ≡ bare on every axis), the construct was reverted per CLAUDE.md rule 3.
+This file is retained because the 2026-07-29/08-10 scorecards reference it; do
+not run it against the current command text — there is nothing to ablate.
+
 
 Ablates the `commands/new-task.md` **Dispatch brief** (the 2026-07-29 addition:
 the section itself, plus its invocations at Phase 5 step 2, Phase 6 steps 3 and

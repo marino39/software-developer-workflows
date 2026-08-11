@@ -11,11 +11,8 @@ approves or merges. Its product is a review — a ranked findings report, option
 posted as PR comments. Fixing a PR's findings is a different job, not this one.
 
 It reuses `commands/new-task.md` machinery verbatim — the **Review loop
-conventions**, the **Dispatch brief** (a foreign PR has no plan, so each
-`reviewer` spawn carries the derived intent digest in place of `plan` — an
-unbriefed lens on someone else's diff has nothing to review *against*), the
-**Escalation ladder**, the **effort defaults**, the reduced/full **tier** logic,
-and the Phase 6 **fan-out / consolidation / skeptic** steps. Read
+conventions**, the **Escalation ladder**, the **effort defaults**, the reduced/full
+**tier** logic, and the Phase 6 **fan-out / consolidation / skeptic** steps. Read
 that file for those sections; this command defines only the foreign-PR seam (how
 intent is derived without a plan, and how findings are delivered). All substantive
 work goes to subagents; independent subagents fan out in parallel in a single message.

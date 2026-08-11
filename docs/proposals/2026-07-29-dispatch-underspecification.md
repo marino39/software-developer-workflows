@@ -10,22 +10,29 @@ half, and the upstream check can be attributed independently. **S5 remains
 unimplemented** (and unscoped).
 
 **MEASURED at both tiers, 2026-07-29 — and the central claim did not survive.**
-Contract tier (n=3/arm × 2 stimuli, `2026-07-29-ambiguity-policy-ab-scorecard.md`)
-and lifecycle tier (n=2/arm, `2026-07-29-dispatch-brief-lifecycle-ab-scorecard.md`)
-both report **zero underspecification roundtrips, in every arm**. S1 survives
-re-sourced as a *disclosure* guard; S2 has no verdict (route variance dominates at
-n=2); S3 is untested (three of four runs took the fast path, which skips Phase 4).
-The **Measurement** section below supersedes the cost framing in S1's and S2's own
-descriptions — read it before trusting anything above it.
+Four experiments — contract tier, lifecycle tier, the strand probe, and the task-24
+readiness A/B — report **zero underspecification roundtrips across 26 runs, in
+every arm**. Final disposition: **S1 kept** (re-sourced as a disclosure guard,
+measured 3/3 vs 1/3); **S2 CUT 2026-08-10** (no support at any tier, the one
+change that added tokens per dispatch — reverted per CLAUDE.md rule 3, keeping
+only the reviewer dual-mode contract fix it surfaced); **S3 kept,
+ablation-queued** (its A/B was confounded, not negative, and the strand probe's
+contract-divergence failures are exactly its remit); **S4 kept** (corrected
+twice, baseline established). The **Measurement** section below supersedes the
+framing in the sections above it.
 
 `dispatch-trace.sh` itself was found defective by its first lifecycle run and
 corrected (bounce-gated `rtrip` vs by-design `iter`); the numbers here are post-fix.
 
-Still owed: route-controlled repeats at n≥3/arm for a dispatch-brief verdict, a
-standard-routing task for S3, and a probe with enough surface to actually strand a
-coder — the fixture task is one function, which may simply be too small to
-reproduce what the telemetry shows. Stated ledger-style where a change owes
-protocol cost (per `CLAUDE.md`).
+Still owed: a route-controlled S3 test (nothing in the suite reliably reaches
+Phase 4 — task 24 routes scoped half the time, and the readiness variant's own
+delta primed routing; it needs a minimal-delta rewrite first), and the one check
+no probe here can perform — **what a non-1-shot Sonnet call in the live dashboard
+actually is**. 26 runs found no re-dispatch-after-bounce anywhere, so if the
+dashboard's "1-shot" counts multi-turn tool use inside a single dispatch, or
+API-level turns rather than work units, the 53.8% describes normal worker-agent
+shape, not a defect — and that determines whether anything further is owed at
+all. Stated ledger-style where a change owes protocol cost (per `CLAUDE.md`).
 
 ## Problem
 
@@ -176,7 +183,7 @@ turns. This turns an N-roundtrip loop into 0 or 1.
 
 Targets the 4486-call agent directly. Costs nothing per dispatch.
 
-### S2 — dispatch brief, coder and reviewer only (implemented; MEASURED — no support at any tier, recommend hold/revert)
+### S2 — dispatch brief, coder and reviewer only (CUT 2026-08-10 — measured at two tiers plus the strand probe, no support at any; reverted per CLAUDE.md rule 3. The reviewer dual-mode Input contract fix it surfaced is retained; the answer-batched-in-one-re-dispatch rule moved to Token hygiene as S1's caller half)
 
 The caller-side mirror of the Input contract: a short block on every spawn
 carrying `done_when` (the exact command or observable that ends the task),

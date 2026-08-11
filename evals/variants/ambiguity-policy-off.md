@@ -23,9 +23,8 @@ This reproduces the pre-change agent file by subtraction (the policy was purely
 additive apart from the one replaced sentence, restored verbatim above), so
 baseline-vs-variant ≈ post-vs-pre on the same harness.
 
-This variant leaves the caller-side **Dispatch brief** in force; it ablates only
-the agent half. Run it against `dispatch-brief-off` to tell the two apart —
-ablating both at once moves the rate without attributing the movement.
+(The caller-side Dispatch brief this variant was originally paired against was
+cut 2026-08-10 — this variant now ablates the only remaining half.)
 
 ## What to read from the A/B
 

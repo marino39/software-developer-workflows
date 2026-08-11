@@ -15,9 +15,8 @@ exit. Applies to the tasks that produce a real plan — 23 primarily, plus 17 an
 > that table is complete with no gaps, regardless of whether a step names its
 > files, its interface contract, or an exact verification command. Step 2's
 > checklist source is the unmapped rows only; GATE 2's Results carry the
-> mapping-table result without a readiness verdict. Everything else — the
-> Dispatch brief, the coder's ambiguity policy, review machinery, gates — is
-> unchanged.
+> mapping-table result without a readiness verdict. Everything else — the coder's
+> ambiguity policy, review machinery, gates — is unchanged.
 
 ## What to read from the A/B
 
