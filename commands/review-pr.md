@@ -4,7 +4,7 @@ description: Review a pull request you did not author — the Phase 6 review eng
 
 # Review PR: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token). `/review-pr`
+You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, at double the price per context token). `/review-pr`
 aims `new-task.md`'s **Phase 6 review engine** at a PR you did **not** author. It is
 **read-only**: it never edits files, never pushes to the PR branch, and never
 approves or merges. Its product is a review — a ranked findings report, optionally
@@ -84,6 +84,11 @@ identical to the PR path.
    the diff touches no high-stakes category (auth, payments, migrations, data
    deletion) → **reduced** tier; otherwise **full** tier with the high-stakes
    escalations of Phase 6 step 7. State the tier and its rationale in the report.
+   **Codex runs on BOTH tiers in this command**, overriding step 2's reduced-tier
+   skip: that skip is an in-loop latency choice, and here nobody holds a loop open
+   — the product is a report a human reads asynchronously, while codex costs
+   wall-clock, not Claude tokens. Record `codex: run (reduced tier)` in place of
+   the skip line; codex still degrades free on error/timeout per the skill.
 6. **Locate** (don't read) the CLAUDE.md files covering the changed dirs and pass
    their paths to Channel A — the reviewer Reads them itself (path-passing, per
    `new-task.md` Token hygiene); their content never transits your context.
@@ -102,9 +107,10 @@ Channel A (ONE `reviewer` carrying the merged four-lens remit — intent complia
 bug scan, git history, CLAUDE.md compliance — as its `focus`, with the CLAUDE.md
 paths from R0.6 passed for it to Read, and the `lens_coverage` field required back —
 a lens reported as `none` is evidence, a lens omitted is a bounce) and Channel B (codex per the `codex-exec`
-skill recipe §5.3, full tier only, degrades free) are otherwise identical to
-Phase 6. The reduced tier runs Channel A alone; a high-stakes PR buys back the lens
-split per Phase 6 step 7 (A1 + A2, opus).
+skill recipe §5.3, **both tiers here** per R0.5, degrades free) are otherwise
+identical to Phase 6. The reduced tier trims the Claude side only — Channel A
+stays ONE reviewer with no high-stakes escalations; a high-stakes PR buys back the
+lens split per Phase 6 step 7 (A1 + A2, opus).
 
 ## Phase R2 — Consolidate + skeptic
 

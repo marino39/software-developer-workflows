@@ -9,7 +9,7 @@ Static review reads the diff; it cannot observe behavior. A green test suite is 
 
 ## 1. Execute the plan's Verification section
 
-The plan (Phase 3 contract) lists per-step verification. Actually RUN each item — build/run the binary, start the server, invoke the CLI, run the named test — don't just confirm the suite compiles-and-passes and infer the rest. An unexecuted verification item is a gap, not a pass.
+The plan (the merged Phase 1 design-plan artifact on the standard route; Phase 3 on high-stakes) lists per-step verification. Actually RUN each item — build/run the binary, start the server, invoke the CLI, run the named test — don't just confirm the suite compiles-and-passes and infer the rest. An unexecuted verification item is a gap, not a pass.
 
 ## 2. Drive the changed flow
 

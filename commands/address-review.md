@@ -4,7 +4,7 @@ description: Act on inbound review comments on a PR you authored — ingest unre
 
 # Address Review: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token).
+You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, at double the price per context token).
 `/address-review` receives the human review comments on a PR **you (or a prior
 workflow run) authored** and drives each to a disposition: fixed, answered,
 declined with reasons, sent back for clarification, or handed off as new work.
@@ -159,7 +159,7 @@ defect-claim fixes proven per the `verify-fix` skill, loop guard + `debugger`
 escalation per the Escalation ladder. Zero `fix` rows → skip to GATE A (the
 run is disposition-only: replies and handoffs still need the gate).
 
-## Phase A3 — Delta review (max 5 iterations)
+## Phase A3 — Delta review (max 3 iterations)
 
 Run `commands/iterate.md` **Phase I2** verbatim: `BASE_SHA` = the PR head at
 ingest; behavioral verification (per `verify-feature` / `verify-fix`, exempt

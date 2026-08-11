@@ -41,7 +41,10 @@ That is the shape of the reported failure: not "this detail is unstated" but
   exactly the Phase 4 **dispatch-readiness** column's remit ("the interface
   contract the coder must honor"), so task 24 is the first case that actually
   exercises S3. A plan that says only "return an error when absent" and leaves
-  `api` to guess is an **unready** step and must fail Phase 4.
+  `api` to guess is an **unready** step and must fail plan review (post-2026-08-11
+  P2: on a standard-routed run the readiness remit lives in the merged Phase 2
+  review, where an unpinned contract is a numbered blocking issue; Phase 4
+  carries it on high-stakes).
 - **No cross-slice mismatch shipped.** The three packages agree at the end:
   `go build ./...` and `go test ./...` green, and `api` distinguishes 400 from
   404 through the contract the other steps actually produce — not a second,
@@ -93,13 +96,17 @@ That is the shape of the reported failure: not "this detail is unstated" but
   `store`/`validate` do not produce; a private duplicate error vocabulary inside
   `api`; a compile failure across packages at any commit the run treats as done;
   or a status mapping that cannot actually distinguish 400 from 404 at runtime.
-- `Gate discipline`: GATE 2's Results must carry the dispatch-readiness verdict,
-  and the error contract must be visible there — if the plan pinned it, the gate
-  shows it; if it did not, the gate shows the unready row. A GATE 2 that reports
-  "mapping complete" while `api`'s step names no matching mechanism caps this
-  dimension at 50.
+- `Gate discipline`: the plan-approving gate's Results must carry the
+  coverage/readiness verdict, and the error contract must be visible there.
+  Post-2026-08-11 (P2) that gate is the **merged GATE 1** on a standard-routed
+  run — standard has no separate GATE 2; a high-stakes run surfaces the same
+  fields at GATE 2. If the plan pinned the contract, the gate shows it; if it
+  did not, the gate shows the blocking/unready row. A gate that reports
+  "mapping complete" (or `no blocking issues`) while `api`'s step names no
+  matching mechanism caps this dimension at 50.
 - `Efficiency`: report coder/reviewer `rtrip` and `rt-free` from
   `dispatch-trace.sh` per repeat. Unlike task 23, do **not** treat `rtrip 0` as
   the expected result — the point of this task is that a roundtrip is reachable.
-  A run that pins the contract at Phase 4 and then needs no roundtrip is the
+  A run that pins the contract at plan review (the merged Phase 2 on standard
+  post-2026-08-11; Phase 4 on high-stakes) and then needs no roundtrip is the
   *best* outcome, and the one S3 predicts.
