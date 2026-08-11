@@ -70,7 +70,9 @@ one there is nothing to delta against.
    restack on merged history. Either way, apply the **artifact-hygiene** rule
    from `new-task.md` Phase 0 step 2: `docs/superpowers/` registered in the
    local `info/exclude`; manifests, design docs, and plans stay untracked and
-   never enter a commit or the PR diff.
+   never enter a commit or the PR diff — and live under the **main working
+   tree** (the artifact anchor), which is why a recreated worktree still finds
+   them: they were never inside the old one.
 3. **Seed context — don't rediscover it.** The manifest's design doc, plan, and
    layout ARE your context — referenced by path (agents Read what they need),
    not bulk-Read into your own. Apply only the tag-matching learnings per Phase 0's

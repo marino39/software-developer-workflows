@@ -16,6 +16,13 @@ context-trace.sh deterministic orchestrator-context trace over an eval driver's
                  transcript (turns, high-water, mean, first-turn floor, cold
                  re-entries) — the Layer-2 Collect step records it per run into
                  the scorecard's orchestrator-cost column
+dispatch-trace.sh deterministic dispatch trace over the same transcript: per agent
+                 type, the rt-free rate — units never re-dispatched AFTER A BOUNCE.
+                 Splits repeats three ways: same-turn fan-out (by design), later-turn
+                 `iter` with no preceding bounce (also by design — the Phase 2/4/6
+                 revise->re-review loops), and `rtrip`, a re-dispatch following a
+                 bounce (the underspecification signal). Recorded per run into the
+                 orchestrator-cost column
 complexity-ledger.md  the complexity budget: each accreted construct → the failure it
                  prevents → source → status; `intuition — unverified` rows are the backlog
 fixtures/base/   the default Go module most tasks run against (calc + auth helper +
@@ -23,14 +30,34 @@ fixtures/base/   the default Go module most tasks run against (calc + auth helpe
 fixtures/app/    a richer Go module (cart: a call chain + a comparable discount pair),
                  opted into via a task's `## Fixture` section — e.g. the `/explain`
                  Flow/Compare cases; also green
+fixtures/svc/    three packages with cross-slice coupling (api -> store + validate),
+                 for tasks where one plan step's correctness depends on a contract
+                 another step defines — the only fixture where a coder can be
+                 stranded by a gap it cannot close locally (task 24); also green
 tasks/           frozen task specs: statement + expected behaviour + score overrides;
                  a task/contract needing a failing baseline carries a `## Seed` step
                  (command/patch) applied to its fixture copy after copy, before dispatch;
                  a `## Command` section names a non-default driver (task 06 → /review-pr),
                  a `## Fixture` section a non-default fixture (tasks 15–16 → fixtures/app)
-variants/        ablation deltas (skeptic-off, single-lens-review, fable-budget-flat,
-                 brainstorm-single, triage-cold, comment-skeptic-off) prepended to a
-                 run for A/B
+variants/        ablation deltas — write each Delta as a TERSE SUBTRACTION, never as
+                 an explanation of the machinery it removes: a delta that discusses
+                 a phase can prime the run toward a route that reaches that phase,
+                 which is how the 2026-08-10 dispatch-readiness A/B confounded
+                 itself (both primed runs went standard, both unprimed went scoped).
+                 Deltas: (skeptic-off, single-lens-review, fable-budget-flat,
+                 brainstorm-single, triage-cold, comment-skeptic-off,
+                 comment-hygiene-off, delegation-floor-off, iterate-cold,
+                 ambiguity-policy-off, dispatch-brief-off,
+                 dispatch-readiness-off) prepended to a run for A/B
+lifecycle-ab.sh  LIVE-tier Layer-2 A/B runner: one headless /new-task lifecycle per
+                 invocation via top-level `claude -p` (which HAS the Agent tool,
+                 unlike `claude -p --agent`), on an isolated git-init'd fixture
+                 copy — used for the 2026-07-29 dispatch-brief lifecycle A/B
+contract-ab.sh   LIVE-tier (model-dispatching, non-deterministic) contract A/B runner:
+                 N isolated coder dispatches per arm against a fresh fixture copy,
+                 for file-level agent ablations. Stimuli: product/mode (fixtures/base)
+                 and strand-briefed/strand-bare (fixtures/svc, the cross-slice probe).
+                 Used for the 2026-07-29 ambiguity-policy and strand-probe A/Bs
 contracts/       per-agent contract-test stimuli: input + expected output fields + role
 results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
 ```
@@ -78,6 +105,13 @@ Scorecards land in `results/` and diff against the newest prior scorecard (or
 
 - Single-run outcomes vary (LLM non-determinism); a small per-dimension delta is
   noise. Raise `--repeat` before trusting an ablation verdict.
+- Task 24 exercises **cross-slice coupling** on `fixtures/svc`: three packages
+  where `api` must match on error values `store`/`validate` define. It is the
+  suite's only task whose gap a coder cannot close locally. Built after tasks
+  17/20/23 all failed to strand a coder (2026-07-29 strand-probe scorecard).
+  **It does NOT reliably reach Phase 4** — 2 of 4 lifecycle runs routed `scoped`
+  and took the fast path, which skips it (2026-08-10 scorecard), so it cannot
+  currently serve as the S3 test it was built to be.
 - The first cut is 21 tasks / 2 fixtures covering the routing, bug-fix,
   auto-approve, `/iterate` warm-start, `/review-pr`, `/triage-issue`
   (bug + feature), the `/new-task` triage warm-start seam, `/explain`

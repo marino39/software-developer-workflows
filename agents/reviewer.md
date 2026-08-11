@@ -16,12 +16,15 @@ You review the current diff against the provided plan. Read-only — never fix a
 
 ## Input contract
 
+Required — the review target, one of (they are the two review modes):
+- `diff_range` — the `BASE_SHA..HEAD` (or equivalent) diff to review (**diff mode**: Phases 6/6.5, `/review-pr`, `/iterate`).
+- `artifact_paths` — the artifact(s) to review and what they are checked against, e.g. a plan path + the approved design-doc path (**artifact mode**: Phase 4's plan review, where no diff exists yet). Read them yourself.
+
 Required:
-- `diff_range` — the `BASE_SHA..HEAD` (or equivalent) diff to review.
-- `plan` — the plan (or requirements) the diff is reviewed against. Preferred form: the plan file's path (Read it yourself); inline text only when no plan file exists.
+- `plan` — the plan (or requirements) the target is reviewed against. Preferred form: the plan file's path (Read it yourself); inline text only when no plan file exists. In artifact mode this is the upstream artifact the target must satisfy (Phase 4: the design doc), and it may be the same path listed in `artifact_paths`.
 
 Optional:
-- `focus` — a specific lens (e.g. a single channel's remit) or the prior iteration's issue checklist.
+- `focus` — a specific lens (e.g. a single channel's remit), the prior iteration's issue checklist, or a required output shape (Phase 4's mapping table).
 
 ## Output contract
 

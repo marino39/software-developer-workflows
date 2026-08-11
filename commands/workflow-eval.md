@@ -111,7 +111,7 @@ For each selected task, `--repeat` times:
 
    Under `--variant <name>`, also prepend the variant's Delta block from
    `evals/variants/<name>.md`.
-3. **Collect** only those structured artifacts (capped) — no raw transcript. Two
+3. **Collect** only those structured artifacts (capped) — no raw transcript. Three
    cost datapoints are also recorded per run:
    - the dispatch's **usage trailer** (the Agent tool's returned token count,
      tool-use count, and duration) — the driver's total consumption;
@@ -122,6 +122,18 @@ For each selected task, `--repeat` times:
      (post-first-turn samples at full input price — the cache-bleed signal from
      the 2026-07-20 context-compaction proposal). Gates end turns, so the
      trajectory samples gate boundaries by construction.
+   - the **dispatch trace**: run `sh <repo>/evals/dispatch-trace.sh <driver
+     transcript path>` (same deterministic tier) and record its TOTAL row plus
+     the per-agent **rt-free** column — the share of dispatched work units that
+     returned without the orchestrator re-dispatching the same unit. A
+     re-dispatch is a roundtrip charged at orchestrator rates; the script
+     separates it both from by-design parallel fan-out (same turn) and from
+     by-design revise->re-review iteration (`iter`, a later-turn repeat with no
+     preceding bounce) — only a re-dispatch FOLLOWING a bounce counts, so
+     `rtrip` (bounce-gated re-dispatch) and `bounce` are the underspecification signal from the
+     2026-07-29 dispatch-underspecification proposal. This is deliberately the
+     same quantity live cost dashboards report as "1-shot", so the number is
+     comparable outside the harness.
 4. **Score**: spawn a FRESH `reviewer` as judge, fed only the collected artifacts +
    the usage trailer + the task's `expect` block + `evals/rubric.md`. It returns
    the five per-dimension scores (0–100, honoring `expect` overrides and `n/a`
@@ -170,10 +182,13 @@ the variant name; date via `date +%F`). Include:
 
 - Per-task table: the five dimension scores, task score, escaped-defect count,
   repeat spread, and **orchestrator cost** — driver tokens / tool calls /
-  wall-clock (usage trailer) plus context high-water / cold re-entries
-  (`evals/context-trace.sh` over the driver transcript). Cost is tracked, not
-  scored against a threshold — but a large cost jump on an unchanged task
-  belongs in the regression section's prose even when no dimension dropped.
+  wall-clock (usage trailer), context high-water / cold re-entries
+  (`evals/context-trace.sh`), and the **rt-free rate + rtrip count**
+  (`evals/dispatch-trace.sh`), both over the driver transcript. Cost is tracked,
+  not scored against a threshold — but a large cost jump on an unchanged task
+  belongs in the regression section's prose even when no dimension dropped, and
+  so does an rt-free drop: no rubric dimension sees a roundtrip inside an
+  otherwise-passing run, so the dispatch trace is the only place it shows.
 - Suite score (mean of task scores).
 - **Regression section** vs the baseline scorecard: every dimension that dropped
   > 10 points, and every new escaped defect — listed explicitly, never averaged
