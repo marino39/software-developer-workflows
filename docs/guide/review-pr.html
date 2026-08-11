@@ -61,7 +61,7 @@
           <div class="itr-tag" style="color:var(--scoped)">Phase R1</div>
           <div class="itr-body">
             <div class="itr-t">Review fan-out</div>
-            <p>Phase 6's channels, run verbatim — Channel A (superpowers review), Channel B (codex, run per the <span class="mono">codex-review</span> skill, full tier, degrades free), Channel C three lens reviewers (C1 shallow-bug · C2 git-history · C3 compliance). The one substitution: the <strong>intent digest</strong> stands in for the approved plan the in-workflow reviews check against.</p>
+            <p>Phase 6's channels, run verbatim — <strong>two channels, one Claude and one out-of-model</strong>: Channel A is one <span class="mono">reviewer</span> carrying the merged four-lens remit (intent compliance · bug scan · git history · CLAUDE.md compliance), Channel B is codex per the <span class="mono">codex-exec</span> skill (full tier, degrades free). The one substitution: the <strong>intent digest</strong> stands in for the approved plan the in-workflow reviews check against.</p>
           </div>
         </div>
         <div class="itr-arrow" aria-hidden="true">→</div>
@@ -123,7 +123,7 @@
         <p><span class="mono">/review-pr</span> adds a command surface, not new engine complexity — it reuses the Phase 6 machinery and every agent contract unchanged. Read it once on the <a href="new-task.html">/new-task</a> page.</p>
       </div>
       <div class="grid cols-3">
-        <div class="panel"><h3><span class="ic">⚑</span>Fan-out channels</h3><p>Channel A + codex + three lens reviewers, launched in parallel in one message. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⚑</span>Fan-out channels</h3><p>One Claude reviewer (merged four-lens remit) + codex, launched in parallel in one message. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">◄►</span>Consolidation scoring</h3><p>Dedupe, 0–100 confidence, drop &lt;50, Should-fix / Must-fix bands. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">⊘</span>Skeptic pass</h3><p>Default-refute stress test — a Must-fix must survive an attempt to refute it. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
         <div class="panel"><h3><span class="ic">⌖</span>Tier logic</h3><p>Reduced vs full by diff size and high-stakes category. <a href="new-task.html#routes" class="mono">detail →</a></p></div>

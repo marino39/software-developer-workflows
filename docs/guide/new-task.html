@@ -81,11 +81,12 @@
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">1</span></div></div>
           <div class="card">
             <h3>Brainstorm <span class="tag" style="border-color:color-mix(in srgb,var(--scoped) 40%,transparent);color:var(--scoped);background:var(--scoped-soft)">human input</span></h3>
-            <p>Three <span class="mono">architect</span> agents each explore a distinct lens (simplest / most robust / alternative paradigm) in parallel with clarifying questions. A fresh <span class="mono">fable</span> architect synthesizes and ranks them into one recommendation, written to a design doc.</p>
+            <p>Two heads explore distinct lenses in parallel with clarifying questions: one <span class="mono">architect</span> agent and one out-of-model <span class="mono">codex</span> pass (codex absent → an architect backfills the lens, recorded as a deviation). A fresh <span class="mono">architect</span> then ranks the two approaches and writes the design doc in the same pass.</p>
             <div class="detail">
               <span class="tag skill">brainstorming</span>
-              <span class="tag agent">architect ×3</span>
-              <span class="tag agent">architect · fable synth</span>
+              <span class="tag agent">architect ×1</span>
+              <span class="tag">codex design lens</span>
+              <span class="tag agent">architect · synth + doc</span>
             </div>
           </div>
         </div>
@@ -95,8 +96,8 @@
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">2</span></div></div>
           <div class="card">
             <h3>Approach review <span class="loop-badge">↻ max 5</span></h3>
-            <p>A fresh <span class="mono">fable</span> architect (clean context) adversarially reviews the design and returns numbered <strong>blocking</strong> issues or the literal <span class="mono">no blocking issues</span>. The phase exits only on that string — never on a gut impression.</p>
-            <div class="detail"><span class="tag agent">architect · fable adversarial</span></div>
+            <p>An out-of-model <span class="mono">codex</span> pass adversarially reviews the design and returns numbered <strong>blocking</strong> issues or the literal <span class="mono">no blocking issues</span> — a reviewer that did not write the design and does not share its author's priors. Codex absent → a fresh <span class="mono">architect</span> (opus, clean context) falls back into the slot. The phase exits only on that string — never on a gut impression.</p>
+            <div class="detail"><span class="tag">codex adversarial</span><span class="tag agent">architect fallback</span></div>
           </div>
         </div>
 
@@ -158,13 +159,12 @@
           <div class="rail"><div class="badge"><span class="p">Phase</span><span class="num">6</span></div></div>
           <div class="card">
             <h3>Implementation review <span class="loop-badge">↻ max 5</span></h3>
-            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — superpowers review, codex, and three lens reviewers. A fresh consolidator scores and dedupes findings; each Must-fix survives a default-refute <strong>skeptic pass</strong>. Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
+            <p>Behavioral verification runs first. Then a risk-scaled fan-out: small non-high-stakes diffs get a <strong>reduced</strong> tier; everything else gets the <strong>full</strong> tier — one Claude reviewer carrying the merged four-lens remit, plus codex. The orchestrator scores and dedupes the two reports; the surviving Must-fix list faces one batched default-refute <strong>skeptic pass</strong>. High-stakes diffs buy the lens split back (A1 + A2 at opus). Verdict is computed: <span class="mono" style="color:var(--pass)">PASS ⇔ tests green ∧ zero Must-fix ∧ verified</span>. On approval it writes a <strong>run manifest</strong> — route, SHAs, paths, outcome, and open Should-fix — so a later <span class="mono">/iterate</span> can warm-start.</p>
             <div class="detail">
               <span class="tag skill">verify-feature</span>
-              <span class="tag skill">requesting-code-review</span>
-              <span class="tag agent">reviewer ×N lenses</span>
+              <span class="tag agent">reviewer ×1 (4-lens remit)</span>
               <span class="tag">codex (full tier)</span>
-              <span class="tag agent">consolidator + skeptics</span>
+              <span class="tag agent">batched skeptic</span>
               <span class="tag">run manifest → /iterate</span>
             </div>
           </div>
@@ -351,25 +351,26 @@
           <h3><span class="ic">⇧</span>Escalation ladder &amp; fable budget</h3>
           <p>Same error twice → escalate one model rung with fresh context. Different error each time → the upstream artifact is wrong; go back a phase instead.</p>
           <ul>
-            <li>Two <span class="tier fable">fable</span> slots are by-design &amp; unbudgeted: the phase-1 synthesizer and the phase-2 adversarial reviewer.</li>
-            <li>Beyond those, <strong>at most one</strong> fable escalation per run — debugger, reviewer, or architect.</li>
+            <li><strong>No</strong> by-design <span class="tier fable">fable</span> slots since the 2026-08 cost pass — phase-1 synthesis runs on opus and phase-2's adversarial review is out-of-model.</li>
+            <li><strong>At most one</strong> fable escalation per run — debugger, reviewer, or architect — and only after opus has failed on the same issue.</li>
+            <li>Codex sits outside the ladder: it never escalates, and either degrades free (review) or hands off to a named Claude fallback (phases 1–2).</li>
             <li>Ladder exhausted → STOP with a full failure digest.</li>
           </ul>
         </div>
 
         <div class="panel">
           <h3><span class="ic">⌖</span>Risk-scaled review fan-out</h3>
-          <p>Phase 6 sizes its review to the diff. Small, non-high-stakes changes get a <strong>reduced</strong> tier (one combined reviewer, codex skipped, orchestrator consolidates). Larger or high-stakes changes get the <strong>full</strong> tier.</p>
+          <p>Phase 6 sizes its review to the diff — <strong>two channels, one Claude and one out-of-model</strong>. Small, non-high-stakes changes get a <strong>reduced</strong> tier (Channel A alone, codex skipped). Larger changes get the <strong>full</strong> tier; high-stakes changes additionally split Channel A back into two reviewers at opus.</p>
           <ul>
-            <li><strong>Channel A</strong> — superpowers code review.</li>
-            <li><strong>Channel B</strong> — codex CLI, run per the <span class="mono">codex-review</span> skill (full tier, degrades gracefully).</li>
-            <li><strong>Channel C</strong> — three lens reviewers: bug scan · git history · CLAUDE.md compliance.</li>
+            <li><strong>Channel A</strong> — one <span class="mono">reviewer</span> carrying the merged remit: plan compliance · bug scan · git history · CLAUDE.md compliance.</li>
+            <li><strong>Channel B</strong> — codex CLI, run per the <span class="mono">codex-exec</span> skill (full tier, degrades free).</li>
+            <li><strong>Consolidation</strong> — orchestrator-side; no consolidator subagent for ≤2 reports.</li>
           </ul>
         </div>
 
         <div class="panel">
           <h3><span class="ic">⚑</span>Skeptic pass &amp; computed verdict</h3>
-          <p>A fresh consolidator dedupes findings, scores each 0–100 confidence, drops &lt;50, and tags Should-fix (50–79) vs Must-fix (≥80). Each Must-fix then faces a default-refute skeptic — it survives only if the skeptic can't refute it.</p>
+          <p>The orchestrator dedupes the two channel reports, scores each finding 0–100 confidence, drops &lt;50, and tags Should-fix (50–79) vs Must-fix (≥80). The whole Must-fix list then faces one batched default-refute skeptic — a finding survives only if the skeptic can't refute it.</p>
           <p style="font-family:var(--mono);font-size:12.5px;color:var(--pass);background:var(--pass-soft);border:1px solid color-mix(in srgb,var(--pass) 35%,transparent);border-radius:6px;padding:9px 12px;">PASS ⇔ tests green ∧ zero Must-fix ∧ behavioral verification passed</p>
         </div>
 

@@ -1,5 +1,11 @@
 # Variant — single-lens-review
 
+> **SUPERSEDED (2026-08-11).** Its delta — one reviewer covering correctness,
+> git-history context, and CLAUDE.md compliance together — became the **baseline** in
+> the cost pass, so running it now ablates nothing. Kept as the historical record of
+> the proposal that anticipated the cut. To measure the cut, run the reverse ablation
+> `review-fanout-full-restore` instead.
+
 Ablates Channel C's three-lens split (C1 shallow bug scan / C2 git history / C3
 compliance) down to one thorough reviewer, to measure whether lens diversity earns
 its extra fan-out.

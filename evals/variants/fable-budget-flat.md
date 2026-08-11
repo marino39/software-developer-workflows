@@ -1,5 +1,11 @@
 # Variant — fable-budget-flat
 
+> **Re-scoped (2026-08-11).** The cost pass removed both by-design fable slots (Phase 1
+> synthesis now runs on opus; Phase 2's adversarial review moved out-of-model to codex),
+> so the baseline is "at most ONE fable escalation per run, only after opus fails".
+> This variant now tests the remaining question in the opposite direction: whether that
+> last fable rung earns its price at all.
+
 Ablates the fable-budget *accounting* (the "exactly two unbudgeted slots + at most
 one more escalation per run" rule in the Escalation ladder) down to a single flat
 cap, to measure whether the intricate accounting buys anything over a simple limit.

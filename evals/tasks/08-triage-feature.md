@@ -33,7 +33,7 @@ pattern to mirror; `calc.Product` does not exist yet.
 - **Light approach sketch:** ONE `architect` proposes the recommended approach (add
   `Product` mirroring `Sum`; empty slice → 1 as the identity; add a `TestProduct`) with
   acceptance criteria (e.g. `Product([]int{2,3,4}) == 24`, `Product(nil) == 1`). It must
-  **NOT** run the full Phase 1 three-lens brainstorm fan-out — that design is deferred to
+  **NOT** run the full Phase 1 two-head brainstorm fan-out — that design is deferred to
   `/new-task` Phase 1.
 - **Scope + handoff:** target `calc/calc.go` (+ `calc/calc_test.go`), ~10 lines; cold
   feature → a scoped `/new-task` invocation, ready to paste.
@@ -53,10 +53,10 @@ pattern to mirror; `calc.Product` does not exist yet.
   renormalize onto the others.
 - `Gate discipline`: **n/a** (local mode has no gates) — renormalize onto the others.
 - `Efficiency`: **the feature-specific check** — the design stays **light**: ONE
-  `architect` for the approach, NOT the full Phase 1 three-lens brainstorm (that would
+  `architect` for the approach, NOT the full Phase 1 two-head brainstorm (that would
   pay for design twice, the exact cost `/triage-issue`'s light path avoids). No
-  `debugger`; within the shared fable budget. A run that spawns the full 3-architect
-  brainstorm scores this dimension ≤ 40.
+  `debugger`; within the shared fable budget. A run that spawns the full two-head
+  brainstorm plus its synthesizer scores this dimension ≤ 40.
 - Fail the run if any fixture file was modified (no implementation), the issue was
   misclassified as a bug, or the full brainstorm fan-out was run instead of the light
   sketch.
