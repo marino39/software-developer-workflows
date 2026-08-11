@@ -68,6 +68,13 @@ Ordered by (saving ÷ risk). Each is a small diff; none is started.
 
 ### P1. Orchestrator effort `xhigh` → `high` — biggest remaining lever
 
+**Status: APPLIED 2026-08-11** (branch `claude/orchestrator-efficiency-49ffe2`) — one
+line in each of the six command headers, plus the guide kickers and README. The
+per-agent `effort: xhigh` frontmatter on `architect`/`debugger` is untouched.
+**OWED per the note below: a real-CLI validation run** — cost via `/usage`, quality
+via attention to Gate-discipline and Routing on live runs — because the harness
+cannot price or falsify this change. P2–P6 remain unapplied.
+
 Every command header says *"run this on Opus at `xhigh` effort"*. That is the
 **largest context in the system, on the most expensive model, at the deepest
 reasoning setting, on every one of 100+ turns** — and the orchestrator's own job is

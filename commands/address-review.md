@@ -4,7 +4,7 @@ description: Act on inbound review comments on a PR you authored — ingest unre
 
 # Address Review: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `xhigh` effort — Fable optional, at double the price per context token).
+You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, at double the price per context token).
 `/address-review` receives the human review comments on a PR **you (or a prior
 workflow run) authored** and drives each to a disposition: fixed, answered,
 declined with reasons, sent back for clarification, or handed off as new work.
