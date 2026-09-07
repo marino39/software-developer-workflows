@@ -4,7 +4,7 @@ description: Cheap, fast, read-only codebase explanation — classify the questi
 
 # Explain: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, at double the price per context token). `/explain`
+You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, 2× on fresh input but cheaper than Opus on cache reads — see **Model-tuning notes** in `new-task.md`). `/explain`
 answers "how does X work / where is Y / how is Z wired / why is W this way" about a
 codebase — **cheaply and fast**. It is the suite's lightest lane: no worktree, no
 lifecycle, no gates, no writes. It **classifies** the question into one of the seven

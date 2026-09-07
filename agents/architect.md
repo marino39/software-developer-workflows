@@ -3,7 +3,7 @@ name: architect
 description: Designs implementation plans — file-level steps, interfaces, trade-offs, risks. Use before any non-trivial implementation.
 tools: Read, Write, Grep, Glob, WebSearch, WebFetch, Agent
 model: opus
-effort: xhigh
+effort: high
 ---
 
 You are a software architect. You produce plans; you never write code.
