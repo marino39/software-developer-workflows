@@ -4,7 +4,7 @@ description: Full-lifecycle task workflow — brainstorm, review, plan, implemen
 
 # New Task: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `high` effort — the deep reasoning is delegated, `architect`/`debugger` carry `effort: xhigh`; Fable is optional and doubles the price of every context token; the escalation ladder already buys Fable where it pays). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human — you only do trivial work yourself. All substantive work goes to subagents; independent subagents fan out in parallel in a single message.
+You are the orchestrator (run this on Opus at `high` effort — the deep reasoning is delegated, and `architect`/`debugger` run at the same `high` default; Fable is optional — 2× Opus on fresh input, but cheaper than Opus on cache reads, so weigh it on fresh-input volume rather than total context size (**Model-tuning notes**); the escalation ladder already buys Fable where it pays). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human. **Substantive work goes to subagents; trivial work does not** — the floor and the cap in **Token hygiene** bound it from both sides. Independent subagents fan out in parallel in a single message.
 
 ## Human contract
 
@@ -177,10 +177,39 @@ Reasoning **effort** is orthogonal to the model ladder above and is a **static p
 |---|---|---|
 | searcher | low | Mechanical lookups; spend belongs in tool calls, not reasoning. |
 | test-runner | low | Runs builds/tests, returns a digest — no deep reasoning. |
-| architect | xhigh | Design + adversarial review; the deep-reasoning agents. |
-| debugger | xhigh | Stubborn root-cause work. |
+| architect | high | Design + adversarial review; the deep-reasoning agents. `high` is the API default and the intended starting point — raise to `xhigh` only on a measured win (see **Model-tuning notes**). |
+| debugger | high | Stubborn root-cause work; same `high`-by-default rule as architect. |
 
 coder, reviewer, researcher run at the `high` default (no `effort:` field).
+
+## Model-tuning notes
+
+The fleet is **heterogeneous under one set of prompts**: this command is read by the
+Opus orchestrator, each `agents/*.md` by the model that agent is pinned to, and by
+whatever rung the ladder overrides it to. Vendor prompting guidance is therefore
+**per file, by the model that reads it** — never applied repo-wide.
+
+- **Opus 5 and Fable 5.1 disagree on two axes.** Opus 5 reaches for subagents readily
+  and self-verifies unasked (so it wants a delegation cap and no verification nudges);
+  Fable 5.1 wants the opposite — delegate freely, and keep verification instructions.
+  A change justified by one model's guidance must name which files it touches and
+  which model reads them.
+- **Fable is 2× on fresh input, not on cached context.** The per-command header framing
+  ("doubles the price of every context token") holds for uncached input. Cache reads
+  invert it: Fable 5.1 reads at 0.025× its base rate, roughly **half** the Opus cache-read
+  price. The orchestrator context is cache-read-dominated, so the 2× penalty is smallest
+  exactly where the context is largest — weigh a Fable orchestrator on fresh-input volume,
+  not on total context size.
+- **Never switch your own model mid-run** (Session hygiene, below) now has a second
+  reason beyond cache invalidation: on Fable-tier models thinking blocks are bound to
+  the model that produced them, so a mid-run switch drops them from the prompt. Subagent
+  `model` overrides remain safe — separate contexts.
+- **Opus 5 caches from 512 tokens** (down from 1024), so short dispatch prompts
+  previously below the floor now cache. Prompt-caching-shaped decisions written against
+  the old floor are worth re-checking.
+- **Effort defaults do not transfer across model generations.** `high` is the API
+  default and the intended starting point; `xhigh`/`max` are for a measured win, not a
+  starting posture. Re-sweep after any model change rather than carrying a level over.
 
 ## Token hygiene
 
@@ -188,6 +217,7 @@ coder, reviewer, researcher run at the `high` default (no `effort:` field).
 - **A second opinion is bought out-of-model, not as a second Claude call.** Wherever a pass needs two independent heads — the Phase 1 design lenses, the Phase 2 adversarial design review, the Phase 6 review fan-out — the second head is **codex** per the `codex-exec` skill, and the Claude side of that pass stays at ONE agent. Adding a third Claude agent to a pass that already has two heads needs a ledger row and an A/B, not a hunch: the wide fan-outs (3 architects, 3 lens reviewers, per-finding skeptics, a consolidator subagent) were cut for cost on 2026-08-11 and only high-stakes diffs buy any of them back.
 - **Pass paths, not payloads:** artifacts (design doc, plan, manifest) live in files; a spawn prompt references them by path (+ step numbers for a slice) and never inlines artifact text that exists on disk — the agent Reads what it needs. The architect writes its own artifacts (artifact mode) so their full text never transits your context.
 - Never Read back a file you or an agent just wrote — reference it by path; compose gate summaries once, in the gate message, not drafted in tool calls first.
+- **Delegation floor AND cap.** The floor: substantive work — source edits, test runs, verification drives, gap investigation — is dispatched, never absorbed inline; doing it in your own context is the most expensive seat in the system and serializes what subagents run in parallel. The cap, its other half: a subagent costs a full context re-establishment plus your re-read of its report, so do NOT dispatch work you would finish in a handful of your own tool calls (a couple of file reads, one lookup you already know the path for, reading back a gate's own artifact), never spawn one purely to double-check work you already have evidence for, and keep parallel spawns to genuinely independent tracks rather than splitting one modest job. Where a phase names its dispatches, that naming wins over both — the floor and cap govern the seams the phases leave open. Consolidation (Phase 6 step 4) is routing, not review judgment, and is explicitly on the cap side.
 - Run independent subagents in parallel in a single message.
 - A `coder` returns its open questions batched, each with the default it would proceed on (its ambiguity policy); answer ALL of them in a SINGLE re-dispatch — never answer one and let the next come back.
 - Test execution always goes through `test-runner`.

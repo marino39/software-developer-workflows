@@ -4,7 +4,7 @@ description: Warm-start follow-up on a reviewed baseline — delta implement + d
 
 # Iterate: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, at double the price per context token). `/iterate`
+You are the orchestrator (run this on Opus at `high` effort — deep reasoning is delegated to the agents; Fable optional, 2× on fresh input but cheaper than Opus on cache reads — see **Model-tuning notes** in `new-task.md`). `/iterate`
 is the follow-up entry point for a change a prior `/new-task` already carried
 through review: a **delta on a reviewed baseline**, not a cold task. It exists so
 that tweaking, extending, or correcting just-finished work does not re-pay the full
