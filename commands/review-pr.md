@@ -110,7 +110,9 @@ bug scan as the explicit secondary lens, per Phase 6 step 3's lead order; the CL
 paths from R0.6 passed for it to Read, and the `lens_coverage` field required back —
 a lens reported as `none` is evidence, a lens omitted is a bounce) and Channel B (codex per the `codex-exec`
 skill recipe §5.3, leading on correctness and cross-file behavior, **both tiers here**
-per R0.5, model pinned and tiered per the skill's §0 ladder, degrades free) are
+per R0.5, model pinned per the skill's §0 ladder — the full tier runs the flagship at
+`xhigh`; the reduced tier runs the mid tier, escalating to the flagship when the PR's
+diff spans ≥2 interdependent files — degrades free) are
 otherwise identical to Phase 6. The reduced tier trims the Claude side only — Channel A
 stays ONE reviewer with no high-stakes escalations; a high-stakes PR buys back the
 lens split per Phase 6 step 7 (A1 + A2, opus).

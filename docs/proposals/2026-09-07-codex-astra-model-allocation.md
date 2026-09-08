@@ -4,7 +4,8 @@
 ("Apply")** — directive-sourced, not evidence-sourced on this suite, so every
 behavior-affecting row carries an OWED A/B and a `complexity-ledger.md` row, and all
 four ablation variants are authored in `evals/variants/`. See § *Applied* for the
-per-row status and the file each change landed in.
+per-row status and the file each change landed in. **Amended 2026-09-08** (user
+directive): R2's cap relaxed and R3's tier assignment re-cut — see § *Amendment*.
 **Question asked:** where can more codex — specifically **GPT-6 Astra** — be brought
 into the workflow; how do the Anthropic and OpenAI fleets compare on strengths,
 weaknesses and cost; which model should sit in which seat, and what escalates to what.
@@ -150,7 +151,7 @@ R2–R4, which cannot be measured while the model is whatever the CLI last shipp
 
 ### R2 — Correct the "codex is free" claim, and give codex a budget
 
-*Status: **Applied** — `codex-exec` §0/§2; `new-task.md` Escalation ladder + Token hygiene; ledger row *Codex model ladder + one-flagship-per-run budget*.*
+*Status: **Applied, amended 2026-09-08** — `codex-exec` §0/§2; `new-task.md` Escalation ladder + Token hygiene; ledger row *Codex model ladder + soft two-flagship-per-run cap*. The cap is now a soft **2**, not a hard 1 (§ Amendment).*
 
 Three places assert or imply that codex is free and unbounded:
 `skills/codex-exec/SKILL.md` §2 (*"codex time is not Claude spend, so a slow codex is
@@ -163,7 +164,8 @@ but "free" is now false in two ways: a plan-billed CLI meters Astra at 5–45 me
 text should say **off the Claude bill, on its own quota**, and the ladder should gain a
 **codex budget** mirroring the fable rule:
 
-> **AT MOST ONE `gpt-6-astra` pass per run** by default. It is spent on the pass with
+> **AT MOST ONE `gpt-6-astra` pass per run** by default.  *[Superseded by § 6: a soft
+> cap of two, with the tier assigned by advantage rather than rationed.]*  It is spent on the pass with
 > the largest measured Astra delta — the Phase 6 review channel on a cross-file or
 > high-stakes diff — unless a CI/debug escalation (R4) claims it first. Every other
 > codex pass runs on the cheap tier.
@@ -173,7 +175,7 @@ the `codex-astra-review-on` A/B.*
 
 ### R3 — A codex ladder, mirroring the Claude ladder
 
-*Status: **Applied** — `codex-exec` §0 table; `new-task.md` Escalation ladder; Phases 1.2/2.1/6.3; `review-pr` R1.*
+*Status: **Applied, amended 2026-09-08** — `codex-exec` §0 table; `new-task.md` Escalation ladder; Phases 1.2/2.1/6.3; `review-pr` R1. The flagship is now the full-tier review **default** rather than a budgeted escalation (§ Amendment).*
 
 Codex currently sits outside the escalation ladder as a single undifferentiated rung.
 Give it its own two-rung ladder, so the scarce quota is spent where the evidence says
@@ -297,6 +299,8 @@ own degrade path:
 
 ## 5. Recommended allocation, end state
 
+*(As amended 2026-09-08 — see § 6.)*
+
 | Seat | Model | Effort | Change |
 |---|---|---|---|
 | Orchestrator | Opus 5 | high | unchanged — highest broad aggregate per dollar; Fable's cache-read edge does not offset its 2× on the orchestrator's fresh-input volume |
@@ -308,15 +312,47 @@ own degrade path:
 | `test-runner` | Haiku 4.5 | low | unchanged |
 | Codex design lens (1.2) | `gpt-5.6-terra` | high | pinned + downshifted (R1, R3) |
 | Codex design review (2.1) | `gpt-5.6-sol` → Astra on high-stakes | high | pinned + tiered (R1, R3) |
-| Codex review Channel B | `gpt-5.6-sol` → **Astra @ xhigh** on cross-file / high-stakes | high → xhigh | pinned + tiered (R1, R3); **remit re-weighted** to correctness (R7) |
+| Codex review Channel B | **Astra @ xhigh** on the full tier; `gpt-5.6-sol` → Astra if cross-file on the reduced tier | xhigh / high | pinned + tiered (R1, R3, § 6); **remit re-weighted** to correctness (R7) |
 | Codex CI / root-cause rung | `gpt-6-astra` | xhigh | new (R4, R5) |
-| Codex skeptic (address-review) | `gpt-5.6-sol` | high | new, batched (R6) |
+| Codex skeptic (address-review) | `gpt-5.6-sol` → Astra on high-stakes | high | new, batched (R6) |
 
-**Budgets:** at most **one fable escalation** per run (unchanged) and at most **one
-Astra pass** per run (new, R2). The two are independent — the point of R4 is that
-spending the Astra message can *avoid* spending the fable one.
+**Budgets:** at most **one fable escalation** per run (unchanged, hard) and a **soft
+cap of two Astra passes** per run (R2 as amended — a third downshifts and records
+rather than halting). The two are independent — the point of R4 is that spending an
+Astra message can *avoid* spending the fable one.
 
-## 6. Applied
+## 6. Amendment (2026-09-08) — relax the cap, assign by advantage
+
+User directive: *"We can relax use of Astra a little bit as most of our use will still
+be Claude and the idea is to spread usage a little bit more and use advantages of each
+model."*
+
+The original cap answered the quota finding (§0) by rationing the flagship to one pass
+per run. That was the wrong shape of answer twice over: it under-used a resource the
+workflow spends 3–5 times a run at most, and it made the *cheapest* tier the default
+everywhere, which is cost-first assignment — the opposite of the comparative-advantage
+argument §2 was built to make. Claude carries the lifecycle either way; the question was
+only which codex tier staffs each out-of-model slot.
+
+Re-cut, **advantage first, cap second**:
+
+| Codex pass | Was | Now | Why |
+|---|---|---|---|
+| Design lens (1.2) | cheap → mid | **unchanged** | the slot buys a *divergent* sketch for the Opus synthesizer to rank; cheap-and-fast is a real advantage here, not a compromise |
+| Adversarial design review (2.1) | mid → flagship (high-stakes) | **unchanged** | judgment work, where the flagship trails Opus 5 and Fable 5.1 anyway (§2) |
+| Review Channel B — full tier | mid, escalating to flagship | **flagship @ `xhigh` by default** | the largest measured edge in the whole comparison (~20% cross-file) sits exactly here; making it an escalation meant most runs never bought it |
+| Review Channel B — reduced tier | mid | mid → flagship if cross-file | cross-file-ness, not diff size, is what predicts the gap |
+| Root-cause digest | flagship | **unchanged** | already the advantage-matched assignment |
+| Batched claim verification (A3) | mid | mid → flagship (high-stakes) | bulk work where a wrong refute is the expensive error, so the flagship's noise weakness cuts against it — except where the stakes justify the recall |
+| **Cap** | hard 1/run | **soft 2/run** | two is the shape a real run takes (one review + one root-cause). Exceeding it **downshifts and records** (`codex: capped → <model>`) — unlike the fable budget it never halts a pass, and quota refusals already degrade the same way (`codex-exec` §3) |
+
+The A/B moved with the baseline: `codex-astra-review-on` is **superseded** (its delta
+is now the default) and **`codex-astra-review-off`** — ablate the flagship back to the
+mid tier everywhere — is the variant that prices the relaxation. The ledger row was
+amended in place rather than duplicated: same construct, different constant and
+assignment rule.
+
+## 7. Applied
 
 All nine recommendations landed the same day on the user's directive, following the
 repo's established directive-sourced pattern (2026-08-11, 2026-09-07 model tuning):
@@ -327,7 +363,7 @@ apply, record the owed A/B, author the variant. Files touched:
 contract is unchanged** — R7 re-orders lenses inside the `focus`, it does not add or
 remove a returned field — so `evals/contracts/reviewer.md` needs no update.
 
-## 7. What is owed
+## 8. What is owed
 
 - **A live `/workflow-eval` scorecard with a regression diff is owed before merge**
   (`CLAUDE.md` rule 2) — every row except R1, R2's text correction and R9 is

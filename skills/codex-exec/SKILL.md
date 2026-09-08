@@ -15,9 +15,9 @@ use it:
 |---|---|---|---|---|
 | **Design lens** | new-task Phase 1.2 | §5.1 | `gpt-5.6-terra` → `gpt-5.6-sol` | fall back to a second `architect` on the alternate lens |
 | **Adversarial design review** | new-task Phase 2.1 | §5.2 | `gpt-5.6-sol` → `gpt-6-astra` (high-stakes only) | fall back to a fresh `architect` (opus) |
-| **Code review (Channel B)** | new-task Phase 6.3; review-pr R1; iterate I2 | §5.3 | `gpt-5.6-sol` → **`gpt-6-astra` @ `xhigh`** | degrades free — the Claude channel still runs |
+| **Code review (Channel B)** | new-task Phase 6.3; review-pr R1; iterate I2 | §5.3 | **full tier: `gpt-6-astra` @ `xhigh`**; reduced tier: `gpt-5.6-sol` → `gpt-6-astra` if cross-file | degrades free — the Claude channel still runs |
 | **Root-cause digest** | new-task Phase 6.5 / debugger rung; triage-issue T2 | §5.4 | `gpt-6-astra` @ `xhigh` | ladder continues to the fable `debugger` |
-| **Batched claim verification** | address-review A3 | §5.5 | `gpt-5.6-sol` | fall back to the per-item Claude `reviewer` fan-out |
+| **Batched claim verification** | address-review A3 | §5.5 | `gpt-5.6-sol` → `gpt-6-astra` (high-stakes only) | fall back to the per-item Claude `reviewer` fan-out |
 
 **Degrade policy differs by pass, and that difference is the point.** In review,
 codex is one of two channels, so a skip costs a perspective and nothing else. In
@@ -46,13 +46,30 @@ Two corrections to the 2026-08-11 framing, applied 2026-09-07
   and quota bucket silently. **Always pass `--model`.** The pass chooses; the CLI
   does not.
 
-Hence the ladder in the table above, and its budget: **AT MOST ONE `gpt-6-astra` pass
-per run.** It is spent on the pass with the largest measured Astra delta — the code
-review channel on a cross-file or high-stakes diff — unless a root-cause escalation
-(§5.4) claims it first. Every other pass runs a cheaper tier. The evidence behind the
-split: `gpt-6-astra` leads `gpt-5.6-sol` by ~2 points on ordinary review but by ~20%
-on **cross-file** review, so cross-file-ness (not diff size) is the escalation
-trigger.
+Hence the ladder in the table above. **Assign by advantage first, then cap** (relaxed
+2026-09-08 on user directive — the original one-pass-per-run cap over-rationed a
+resource the workflow barely spends):
+
+- **Each pass gets the tier whose measured advantage matches its job**, not the
+  cheapest tier that might do. `gpt-6-astra` leads `gpt-5.6-sol` by ~2 points on
+  ordinary review but by ~20% on **cross-file** review and clearly on long
+  multi-step error recovery — so it is the **default** on the full-tier review channel
+  and the root-cause digest, which is where those two bands live. `gpt-5.6-sol` carries
+  the design review, the reduced-tier review and the bulk claim-verification pass —
+  judgment and volume work where the flagship's edge is small and its noise is not.
+  `gpt-5.6-terra` keeps the design lens: that slot buys a *divergent* approach for the
+  Opus synthesizer to rank, and cheap-and-fast is a genuine advantage there, not a
+  compromise.
+- **Soft cap: at most TWO `gpt-6-astra` passes per run** (was one). Two is the shape a
+  real run takes — one review channel plus one root-cause escalation. A third
+  flagship pass **downshifts to `gpt-5.6-sol` and records
+  `codex: capped → gpt-5.6-sol`**; the cap never halts a pass and never blocks a
+  barrier. Quota refusals are handled separately and identically (§3), so a plan that
+  cannot sustain two passes degrades gracefully rather than needing a tighter cap here.
+- **Claude still carries the lifecycle.** Spreading work across codex *tiers* is not
+  moving work off Claude: every codex pass remains ONE pass standing beside a Claude
+  agent, and the seats recorded as must-not-move in `new-task.md`'s **Model-tuning
+  notes** stay in-model.
 
 ## 1. Invoke non-interactively, with stdin closed
 

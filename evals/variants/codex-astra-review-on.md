@@ -1,4 +1,11 @@
-# Variant — codex-astra-review-on
+# Variant — codex-astra-review-on (SUPERSEDED 2026-09-08)
+
+> **Superseded — its delta became the baseline.** The 2026-09-08 relaxation made the
+> flagship the *default* on the full-tier review channel rather than a budgeted
+> escalation, so "escalate to the flagship" is no longer a variant of anything. The
+> A/B that prices that choice is now **`codex-astra-review-off`** (ablate the flagship
+> back to the mid tier). Kept for the record; do not dispatch it.
+
 
 Tests R1–R3 of `docs/proposals/2026-09-07-codex-astra-model-allocation.md`: pinning
 the review Channel B model and escalating it to `gpt-6-astra` on the diffs the vendor
