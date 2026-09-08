@@ -75,9 +75,15 @@ does not re-discover them.
   **discriminates** (an existing failing test that pinpoints the bug qualifies;
   otherwise it writes one and proves it fails for the right reason), execution
   through `test-runner`. The same `coder`, seeded with T1's digests, reports the
-  **root-cause hypothesis with evidence** (`file:line`). A stubborn root cause
-  escalates to `debugger` per the Escalation ladder — triage still stops at the
-  hypothesis, it does not fix.
+  **root-cause hypothesis with evidence** (`file:line`). **In parallel** (it costs no
+  barrier — this step already waits on the repro), run ONE **codex root-cause digest**
+  per the `codex-exec` skill (recipe §5.4): triage is read-only by construction, which
+  makes it the cleanest fit in the suite for a read-only out-of-model pass, and
+  cross-file root-cause is the band it wins. Feed both digests to the scoping step; a
+  cause only codex names still needs the `coder`'s evidence before it enters the
+  manifest. Codex unavailable or quota-exhausted → the `coder` hypothesis stands alone,
+  recorded as a Deviation. A stubborn root cause escalates to `debugger` per the
+  Escalation ladder — triage still stops at the hypothesis, it does not fix.
 - **Feature:** a **light** approach sketch — ONE `architect` proposes a recommended
   approach + scope. Do NOT run the full Phase 1 three-lens brainstorm; that is deferred
   to `/new-task` Phase 1, so triage does not pay for design twice.

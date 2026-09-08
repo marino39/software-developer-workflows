@@ -1,8 +1,10 @@
 # Cross-vendor model allocation: where GPT-6 Astra belongs in the workflow
 
-**Date:** 2026-09-07 · **Status:** evaluation + recommendations — **nothing applied**
-(every row below is behavior-affecting and gated on `/workflow-eval` per `CLAUDE.md`
-rules 2–3; four ablation variants authored in `evals/variants/`)
+**Date:** 2026-09-07 · **Status:** **R1–R9 applied same day on user directive
+("Apply")** — directive-sourced, not evidence-sourced on this suite, so every
+behavior-affecting row carries an OWED A/B and a `complexity-ledger.md` row, and all
+four ablation variants are authored in `evals/variants/`. See § *Applied* for the
+per-row status and the file each change landed in.
 **Question asked:** where can more codex — specifically **GPT-6 Astra** — be brought
 into the workflow; how do the Anthropic and OpenAI fleets compare on strengths,
 weaknesses and cost; which model should sit in which seat, and what escalates to what.
@@ -131,6 +133,8 @@ Four variants are authored; two rows are corrections of fact that carry no A/B.
 
 ### R1 — Pin the codex model explicitly; stop inheriting the CLI default
 
+*Status: **Applied** — `skills/codex-exec/SKILL.md` §0/§1/§4.*
+
 `skills/codex-exec/SKILL.md` never passes `--model`. When the CLI's bundled default
 moved to Astra at v0.153.4, every codex pass in the workflow silently changed model,
 cost tier, latency profile and quota bucket. The skill's own principle — *"flag names
@@ -145,6 +149,8 @@ stdin/timeout/sandbox discipline unchanged.
 R2–R4, which cannot be measured while the model is whatever the CLI last shipped.*
 
 ### R2 — Correct the "codex is free" claim, and give codex a budget
+
+*Status: **Applied** — `codex-exec` §0/§2; `new-task.md` Escalation ladder + Token hygiene; ledger row *Codex model ladder + one-flagship-per-run budget*.*
 
 Three places assert or imply that codex is free and unbounded:
 `skills/codex-exec/SKILL.md` §2 (*"codex time is not Claude spend, so a slow codex is
@@ -167,6 +173,8 @@ the `codex-astra-review-on` A/B.*
 
 ### R3 — A codex ladder, mirroring the Claude ladder
 
+*Status: **Applied** — `codex-exec` §0 table; `new-task.md` Escalation ladder; Phases 1.2/2.1/6.3; `review-pr` R1.*
+
 Codex currently sits outside the escalation ladder as a single undifferentiated rung.
 Give it its own two-rung ladder, so the scarce quota is spent where the evidence says
 it pays:
@@ -186,6 +194,8 @@ default, `xhigh` for the escalated pass, and `max` is not used (latency on a bar
 *Owes:* `evals/variants/codex-astra-review-on.md`.
 
 ### R4 — Insert a codex root-cause rung **before** the one fable escalation
+
+*Status: **Applied** — `new-task.md` Phase 6 step 6, Phase 6.5 step 5, Escalation ladder; `codex-exec` §5.4.*
 
 Today `debugger` (opus) → fable `debugger` is the terminal rung, and Phase 6.5's CI
 ladder shares that single fable budget. Both are the Terminal-Bench profile — messy,
@@ -207,6 +217,8 @@ its fable escalation at all.
 
 ### R5 — A codex root-cause lens in `/triage-issue` T2
 
+*Status: **Applied** — `triage-issue.md` Phase T2 (parallel with the `coder` repro).*
+
 `/triage-issue` classifies, reproduces and root-causes with a `coder` plus a `debugger`
 escalation, entirely in-model. Root-causing an unfamiliar bug across files is Astra's
 best-measured band, and triage is read-only by construction — it is the cleanest fit in
@@ -218,6 +230,8 @@ scoping step.
 mechanism; a separate variant is only warranted if that A/B lands positive.
 
 ### R6 — Batch `/address-review`'s skeptic verification out-of-model
+
+*Status: **Applied** — `address-review.md` A3 step 2; `codex-exec` §5.5.*
 
 A3 dispatches *"one fresh parallel `reviewer` per item, default-refute"* — N Claude
 dispatches, the largest surviving Claude fan-out after the 2026-08-11 cuts, on a
@@ -233,6 +247,8 @@ intent, which codex cannot judge without the repo context.
 *Owes:* `evals/variants/codex-skeptic-batched-on.md`. Ledger row required.
 
 ### R7 — Split the review remit by comparative advantage, don't duplicate it
+
+*Status: **Applied** — `new-task.md` Phase 6 step 3; `review-pr.md` R1; `agents/reviewer.md` secondary-lens rule.*
 
 Channel A (one Claude `reviewer`, **sonnet**) carries a merged four-lens remit — plan
 compliance · bug scan · git history · `CLAUDE.md` compliance — and Channel B (codex)
@@ -253,6 +269,8 @@ lens, so an unreported lens can never read as "clean" to consolidation.
 
 ### R8 — What must **not** move out-of-model
 
+*Status: **Applied as a record** — `new-task.md` **Model-tuning notes** § *Cross-vendor allocation*, so a future pass does not re-derive it.*
+
 Recorded so a future pass does not re-derive it: **Phase 1.3 synthesis / ranking**
 (Astra trails both Opus 5 and Fable 5.1 on the broad aggregate; this is the judgment
 seat that writes the artifact a human approves), **`/explain`** (a 10-minute codex pass
@@ -262,6 +280,8 @@ by design), and **`searcher` / `test-runner`** (mechanical work, and haiku token
 cheaper than a scarce Astra message).
 
 ### R9 — Quota exhaustion needs its own exit class
+
+*Status: **Applied** — `codex-exec` §3 (downshift a tier, then the named fallback).*
 
 `codex-exec` §3 classifies `0`, `124` (timeout), `127` (not installed) and *"any other
 nonzero"*. A plan-quota or rate-limit refusal lands in that catch-all and is recorded as
@@ -296,14 +316,30 @@ own degrade path:
 Astra pass** per run (new, R2). The two are independent — the point of R4 is that
 spending the Astra message can *avoid* spending the fable one.
 
-## 6. What is owed
+## 6. Applied
 
-- Every row except R1, R2's text correction and R9 is behavior-affecting and needs a
-  live `/workflow-eval` scorecard with a regression diff before merge (`CLAUDE.md`
-  rule 2). R2's budget, R4's rung and R6's pass each add a construct and additionally
-  need a `complexity-ledger.md` row and an ablation A/B (rule 3).
-- Variants authored: `codex-astra-review-on`, `codex-debug-rung-on`,
-  `codex-skeptic-batched-on`, `codex-review-remit-split`.
+All nine recommendations landed the same day on the user's directive, following the
+repo's established directive-sourced pattern (2026-08-11, 2026-09-07 model tuning):
+apply, record the owed A/B, author the variant. Files touched:
+`skills/codex-exec/SKILL.md`, `commands/new-task.md`, `commands/review-pr.md`,
+`commands/triage-issue.md`, `commands/address-review.md`, `agents/reviewer.md`,
+`evals/complexity-ledger.md` (four new rows). `agents/reviewer.md`'s **Output
+contract is unchanged** — R7 re-orders lenses inside the `focus`, it does not add or
+remove a returned field — so `evals/contracts/reviewer.md` needs no update.
+
+## 7. What is owed
+
+- **A live `/workflow-eval` scorecard with a regression diff is owed before merge**
+  (`CLAUDE.md` rule 2) — every row except R1, R2's text correction and R9 is
+  behavior-affecting. R2's budget, R4's rung, R6's pass and R7's re-weighting each add
+  or change a construct and additionally owe their ablation A/B (rule 3); the four
+  ledger rows name what each A/B must read.
+- Variants authored and registered in `evals/README.md`: `codex-astra-review-on`,
+  `codex-debug-rung-on`, `codex-skeptic-batched-on`, `codex-review-remit-split`.
+- **The riskiest applied row is R6**, and it is the one to measure first: a wrong
+  `refuted` verdict drops a real reviewer's ask and reaches a human through
+  `/address-review`'s reply gate. The convention/intent carve-out and the
+  `undetermined` route back to Claude are the guards; the A/B must show they hold.
 - **The measurement has a hard prerequisite:** codex is not installed in the
   environment this evaluation was written in (`command -v codex` fails), so none of
   these numbers are from this suite. The vendor and third-party results in §2 are
