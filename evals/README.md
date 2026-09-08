@@ -54,8 +54,12 @@ variants/        ablation deltas — write each Delta as a TERSE SUBTRACTION, ne
                  brainstorm-3head-restore, review-fanout-full-restore, triage-cold,
                  comment-skeptic-off, comment-hygiene-off, delegation-floor-off,
                  iterate-cold, ambiguity-policy-off, dispatch-brief-off,
-                 dispatch-readiness-off; single-lens-review is SUPERSEDED — its
-                 delta became the baseline) prepended to a run for A/B
+                 dispatch-readiness-off, codex-reduced-off, verify-scaffold-trim,
+                 agent-effort-xhigh-restore, retro-skip-off, phase34-split-restore,
+                 codex-astra-review-off, codex-debug-rung-on,
+                 codex-skeptic-batched-on, codex-review-remit-split;
+                 single-lens-review and codex-astra-review-on are SUPERSEDED —
+                 their deltas became the baseline) prepended to a run for A/B
 lifecycle-ab.sh  LIVE-tier Layer-2 A/B runner: one headless /new-task lifecycle per
                  invocation via top-level `claude -p` (which HAS the Agent tool,
                  unlike `claude -p --agent`), on an isolated git-init'd fixture

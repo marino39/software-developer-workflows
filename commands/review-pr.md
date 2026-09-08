@@ -87,8 +87,9 @@ identical to the PR path.
    **Codex runs on BOTH tiers in this command**, overriding step 2's reduced-tier
    skip: that skip is an in-loop latency choice, and here nobody holds a loop open
    — the product is a report a human reads asynchronously, while codex costs
-   wall-clock, not Claude tokens. Record `codex: run (reduced tier)` in place of
-   the skip line; codex still degrades free on error/timeout per the skill.
+   wall-clock and a metered message (`codex-exec` §0), not Claude tokens. Record
+   `codex: run (reduced tier, <model>)` in place of the skip line; codex still
+   degrades free on error/timeout per the skill.
 6. **Locate** (don't read) the CLAUDE.md files covering the changed dirs and pass
    their paths to Channel A — the reviewer Reads them itself (path-passing, per
    `new-task.md` Token hygiene); their content never transits your context.
@@ -103,12 +104,16 @@ out-of-model**, launched in parallel in a single message — with two substituti
 - **No local test execution.** CI status was read in R0 (`ci: <state>`); there is no
   behavioral-verification step and no plan Verification section to drive.
 
-Channel A (ONE `reviewer` carrying the merged four-lens remit — intent compliance,
-bug scan, git history, CLAUDE.md compliance — as its `focus`, with the CLAUDE.md
+Channel A (ONE `reviewer` carrying the merged four-lens remit **led by the three
+repo-context lenses** — intent compliance, git history, CLAUDE.md compliance — with
+bug scan as the explicit secondary lens, per Phase 6 step 3's lead order; the CLAUDE.md
 paths from R0.6 passed for it to Read, and the `lens_coverage` field required back —
 a lens reported as `none` is evidence, a lens omitted is a bounce) and Channel B (codex per the `codex-exec`
-skill recipe §5.3, **both tiers here** per R0.5, degrades free) are otherwise
-identical to Phase 6. The reduced tier trims the Claude side only — Channel A
+skill recipe §5.3, leading on correctness and cross-file behavior, **both tiers here**
+per R0.5, model pinned per the skill's §0 ladder — the full tier runs the flagship at
+`xhigh`; the reduced tier runs the mid tier, escalating to the flagship when the PR's
+diff spans ≥2 interdependent files — degrades free) are
+otherwise identical to Phase 6. The reduced tier trims the Claude side only — Channel A
 stays ONE reviewer with no high-stakes escalations; a high-stakes PR buys back the
 lens split per Phase 6 step 7 (A1 + A2, opus).
 

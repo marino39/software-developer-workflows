@@ -134,15 +134,24 @@ Everything from Phase A1 on is identical.
    behaves) comes from a dispatched `searcher` — never from inline Grep/Read
    (the Delegation floor).
 2. **Skeptic pass on every defect claim / prescribed change** among the `fix`
-   candidates: one fresh parallel `reviewer` per item, default-refute — verify
-   the comment's technical claim against the actual code and try to refute it.
-   Refuted → re-disposition to `decline`, with the refutation drafted as the
-   reply. Not refuted → stays `fix`. Style/nit asks that are
-   convention-compliant and trivial skip the skeptic — just fix them. This is
-   Phase 6 step 4's skeptic placement: it runs BEFORE coders, so a wrong
-   suggestion costs one reviewer, not an implement-review cycle. A human
-   comment is a hypothesis about the code, not an order — but a refuted one is
-   never silently dropped; the push-back reply rides the gate.
+   candidates — default-refute: verify the comment's technical claim against
+   the actual code and try to refute it. **One batched out-of-model pass**, not
+   one dispatch per item: run the claim-verification recipe per the
+   `codex-exec` skill (§5.5), handing it every candidate at once with identical
+   numbering, and join the verdicts back on that numbering. Two exceptions stay
+   on a Claude `reviewer`, because a read-only pass handed a diff cannot judge
+   them: any claim turning on **repo convention, plan intent, or CLAUDE.md
+   compliance**, and any item codex returns `undetermined`. Codex unavailable or
+   quota-exhausted → the per-item `reviewer` fan-out is the named fallback,
+   recorded as a Deviation. Refuted → re-disposition to `decline`, with the
+   refutation drafted as the reply. Not refuted → stays `fix`. Style/nit asks
+   that are convention-compliant and trivial skip the skeptic — just fix them.
+   This is Phase 6 step 4's skeptic placement AND its batching lesson: it runs
+   BEFORE coders, so a wrong suggestion costs one verification, not an
+   implement-review cycle. A human comment is a hypothesis about the code, not
+   an order — but a refuted one is never silently dropped; the push-back reply
+   rides the gate, and a **refute is the expensive error** here (it drops a real
+   reviewer ask), so an unrefuted-but-shaky verdict stays `fix`.
 3. **Route re-check (monotonic):** check the accepted `fix` set against the
    high-stakes categories (auth, payments, migrations, data deletion) and the
    `DIFF_LINES ≥ 200` trigger from Phase 0. Any hit escalates above the floor,
