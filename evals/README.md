@@ -79,9 +79,12 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    no-LLM, no-network script checking `commands/`, `agents/`, `skills/` for
    reference integrity, route/tier consistency, phase completeness, gate-format
    consistency, **agent contracts** (every agent declares a well-formed
-   Input/Output contract), and the **complexity ledger** (every row names a failure
-   it prevents + a source). Catches drift like a branch that lets an escalated
-   `scoped` task auto-approve. It is enforced by the repo's **pre-commit hook**
+   Input/Output contract), the **complexity ledger** (every row names a failure
+   it prevents + a source), and **agent model/effort frontmatter** (values the CLI
+   actually accepts, agreeing with the Effort-defaults table in `new-task.md`).
+   Catches drift like a branch that lets an escalated `scoped` task auto-approve,
+   or an `effort:` tier that is silently ignored because the pinned model exposes
+   no effort control. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with
    `sh evals/lint.sh`.

@@ -1,0 +1,220 @@
+# Workflow leanness — verification of the cost-tiering handoff — 2026-09-20
+
+**Trigger:** user directive — "I need our workflows lean and clean", attached to a
+handoff document proposing model tiering (Opus planning / Sonnet orchestrator /
+Haiku explorers), compressed subagent returns, cache-prefix stability, and a draft
+replacement `commands/new-task.md`.
+
+This document does three things: **verifies** the handoff's factual claims against
+the shipped Claude Code model catalog; **audits** its recommendations against what
+this repo already does; and **re-derives the cost model** from this repo's own
+measured context trace so the remaining levers are ranked by evidence rather than
+by intuition.
+
+Short version: the handoff is a reasonable generic cost-tiering playbook, it is
+**already implemented here in a more evidence-backed form**, two of its numbers are
+stale, and three of its recommendations would be **regressions** against decisions
+this repo made on measurement. The genuinely open lever is one the handoff does not
+mention: **orchestrator turn count**.
+
+---
+
+## 1. Verified facts (source: shipped CLI model catalog)
+
+All figures below are read from the hand-maintained model catalog baked into the
+installed `claude` binary (`pricing_tiers` + per-model `capabilities`), not from
+recall. USD per megatoken.
+
+| Model | Alias | Input | Output | Cache read | Cache write 5m | Cache write 1h |
+|---|---|---|---|---|---|---|
+| Haiku 4.5 | `haiku` | 1 | 5 | 0.10 | 1.25 | 2 |
+| Sonnet 5 | `sonnet` | 2 | 10 | 0.20 | 2.50 | 4 |
+| Opus 5 | `opus` | 5 | 25 | 0.50 | 6.25 | 10 |
+| Fable 5.1 | `fable` | 10 | 50 | **0.25** | 12.50 | 20 |
+
+Derived, and load-bearing below:
+
+- **Cache read is uniformly 0.1× input; 5m cache write 1.25× input; 1h cache write
+  2× input.** The handoff's "reads ~10%, writes ~125%" is **correct** (for the 5m TTL).
+- **Fable 5.1's cache read ($0.25) is half Opus 5's ($0.50)** — the one place the
+  most expensive model is the cheaper one. Confirms the existing **Model-tuning
+  notes** claim; that claim was previously asserted, now it is sourced.
+- **Effort capability is not universal.** `claude-haiku-4-5` lists
+  `capabilities:["context_management"]` — **no `effort`**. Opus 5, Sonnet 5 and
+  Fable 5.1 all carry `effort` + `xhigh_effort` and `default_effort:"high"`.
+- Valid subagent model aliases are exactly `sonnet` `opus` `haiku` `fable`, so the
+  escalation ladder's `fable` rung is valid. `opusplan` is a **session** model
+  setting, not a subagent one.
+
+---
+
+## 2. Handoff audit
+
+### 2.1 Stale or wrong
+
+| Claim | Verdict |
+|---|---|
+| Haiku gives "bulk input tokens at a fraction of Sonnet's price" | **Overstated.** Haiku 4.5 is exactly **2×** cheaper than Sonnet 5 ($1 vs $2 in). The claim was true against Sonnet 4.6 ($3 in, a 3× gap); Sonnet 5's price cut halved the advantage. Haiku still wins on mechanical work, by less than advertised. |
+| "Match reasoning effort to role — low effort for Haiku explorers" | **Not implementable.** Haiku 4.5 exposes no effort control at all. This repo had already written `effort: low` into both haiku agents and documented a cost rationale for it — that rationale was false. Corrected in this change; see §4. |
+| "Opus-everywhere → tiered often cuts spend 3–5×" | **Not supported by current prices.** The full Opus→Sonnet orchestrator move is 2.5×; Sonnet→Haiku is 2×. 3–5× is only reachable by *also* cutting dispatches and turns — which is where this repo's savings actually came from (17+K dispatches → 10 on 2026-08-11), not from tiering. |
+
+### 2.2 Already implemented here, usually better
+
+- **Model tiering by role** — the escalation ladder (`new-task.md` § Escalation
+  ladder) already pins every seat and defines *when* each may escalate, with a
+  one-fable-per-run budget. The handoff's static table has no budget and no ladder.
+- **Compress subagent returns (≤300 tokens)** — every agent caps at ~200–400 **words**
+  and declares an `## Output contract`, enforced by `evals/lint.sh` Check 6 and
+  testable via `/workflow-eval --contracts`. Strictly stronger than a prose request.
+- **Escalate by trigger, not default** — the ladder's "same error twice" rule, plus
+  the distinction the handoff lacks: *different* error each time means the upstream
+  artifact is wrong, so go back a phase rather than escalate a model.
+- **Fresh session per task with lessons loaded** — Phase 0 does **tag-scoped**
+  retrieval (subject vs activity tags), not the handoff's "read LESSONS.md in full".
+  Reading a growing lessons file in full on every run is the cost bug the tag scoping
+  exists to prevent.
+- **Cache-prefix stability** — `new-task.md` § Token hygiene, Session hygiene bullet.
+
+### 2.3 Would be regressions
+
+1. **`model: opusplan` in the command header.** `opusplan` switches Opus→Sonnet at
+   the plan/execute boundary, which is a **mid-session model switch** — it
+   invalidates the prompt cache for the whole context, and the next turn re-pays
+   full input price for all of it. This **directly contradicts the handoff's own
+   cost-hygiene rule #2** ("don't switch models mid-session") and this repo's
+   Session hygiene rule. On a 60k-token context that is one 60k re-read at $5/MTok
+   ≈ $0.30, plus, on Fable-tier models, silently dropped thinking blocks.
+2. **Sonnet orchestrator.** Priced in §3: it saves roughly $1–2 per run, on the one
+   seat that does routing, gate decisions, consolidation and human contact. This
+   repo already tested the adjacent question and moved the *other* way (Opus
+   orchestrator, deep reasoning delegated). The handoff asserts the saving without
+   pricing the seat.
+3. **Replacing `commands/new-task.md` with the draft.** The draft is a ~50-line
+   command targeting a stack (webrpc/pgx/squirrel/goose) and an agent set
+   (`webrpc-specialist`, `db-specialist`, `code-reviewer`, `security-auditor`,
+   `test-writer`) that **do not exist in this repo** — the real set is `architect`,
+   `coder`, `debugger`, `researcher`, `reviewer`, `searcher`, `test-runner`. It also
+   drops the gate-decidability contract, the iteration caps, the route monotonicity,
+   the agent contracts and the complexity ledger — every one of which is a lint-
+   enforced invariant with a dated failure behind it. Adopting it would fail
+   `evals/lint.sh` on the first commit.
+
+**Its two open decisions, answered from the repo:**
+- *Escalation trigger count* — the handoff's "3 failed iterations" does conflict with
+  an existing source of truth. The ladder escalates on **the same error twice**, and
+  review loops cap at **3 iterations** (P5, 2026-08-11). Those are different
+  mechanisms; the handoff collapses them. Keep the existing pair.
+- *Worktree merge step* — already covered: worktrees are handled by the
+  `superpowers:using-git-worktrees` skill with the artifact-anchor discipline in
+  Phase 0 step 2.
+
+---
+
+## 3. Where the money actually goes (re-derived from this repo's trace)
+
+The 2026-07-20 context trace (`evals/results/2026-07-20-context-compaction-scorecard.md`)
+is the only measured cost data this repo has. Orchestrator **input** bill, taking the
+warm-session approximation that the bulk of each turn's context is a cache read:
+
+| Task | Turns | Mean ctx | Read volume | on Opus 5 | on Fable 5.1 | on Sonnet 5 |
+|---|---|---|---|---|---|---|
+| 01 doc-only | 71 | 57,329 | 4.07 MTok | **$2.04** | $1.02 | $0.81 |
+| 02 bugfix | 57 | 61,319 | 3.50 MTok | **$1.75** | $0.87 | $0.70 |
+| 03 route-correct | 95 | 73,729 | 7.00 MTok | **$3.50** | $1.75 | $1.40 |
+
+Orchestrator **output** is a co-dominant term the trace does not capture: at a
+nominal 1k tokens/turn, 71 turns on Opus is ~$1.78 — the same order as the input
+bill. Output is what `effort` and verbosity actually move.
+
+Three conclusions, in order of size:
+
+**L1 — Turn count is the dominant multiplier, and nothing bounds it.** Every lever
+in the table is multiplied by turns. A **doc-only task on a toy Go fixture took 71
+turns**; the route-correctness task took 95. The workflow caps *review iterations*
+(3) and *escalations* (1 fable) but has no notion of a turn budget at all. This is
+the lever the handoff never mentions and the repo has never attacked — every prior
+cost pass cut **dispatches** (17+K → 10), which is a different quantity.
+
+**L2 — Orchestrator output per turn.** The 2026-08-11 P1 change (`xhigh` → `high`)
+targets exactly this and is *still* carrying an explicit OWED: effort is inert in the
+eval harness, so it has never been validated in a real CLI run. Per §1, `high` is
+also the model's own `default_effort`, so P1 was a move **to** the default, not away
+from it — lower risk than the ledger implies, and cheap to validate.
+
+**L3 — Prompt bytes, and they are cheaper than they look.** `commands/new-task.md` is
+8,618 words / 56.7 KB ≈ 15k tokens: **20–26% of the orchestrator's mean context on
+every turn**, costing **$0.43–0.71 per run** on Opus. Halving it saves ~$0.25/run.
+Real, worth doing, but an order of magnitude below L1 — because prompt bytes are
+cached, and cache reads are 0.1× input. **Byte-cutting is a clarity win first and a
+cost win second, and should be argued that way.**
+
+The corollary matters for L2.3 of the handoff: since the orchestrator seat is
+cache-read-dominated, **Fable 5.1 costs less to run there than Opus 5** on the input
+side ($1.02 vs $2.04 on task 01) and more only on fresh input and output. The
+existing Model-tuning note says to weigh Fable on fresh-input volume; the numbers
+now back it.
+
+---
+
+## 4. Applied in this change
+
+| # | Change | Where |
+|---|---|---|
+| A1 | **Lint Check 8** — agent `model:`/`effort:` frontmatter must use values the CLI accepts, and must agree with the **Effort defaults** table in `new-task.md`. Both directions checked. An unrecognised tier is not a runtime error — the field is silently ignored — so only a lint can catch it. | `evals/lint.sh` |
+| A2 | **Corrected the Effort defaults table.** It claimed `searcher`/`test-runner` were cheap partly because of `effort: low`; haiku exposes no effort control, so that was false. The field is **kept, not deleted** — it is live on the escalated rung (`searcher` haiku → sonnet honors effort) — and now reads as "applies if and when this seat escalates". | `commands/new-task.md` § Effort defaults |
+| A3 | This document: the verified price/capability table, the handoff audit, and the cost model. | `docs/proposals/` |
+
+A1 is a new construct and takes a ledger row. A2 corrects a false factual claim
+about the platform (CLAUDE.md rule 2 doc-fix tier); it changes no procedure and the
+`effort: low` fields are byte-identical before and after, so no live eval is owed.
+
+---
+
+## 5. Proposed — not applied
+
+Ranked by (saving ÷ risk), each with the A/B that would settle it.
+
+### P1. Give the orchestrator a turn budget (L1 — biggest lever, untried)
+
+71 turns for a doc-only task is the single largest cost fact this repo has measured,
+and no construct addresses it. Proposal: record a per-route **expected turn band** in
+the run ledger and have the orchestrator report actual-vs-expected at each gate — an
+observability step first, not a cap. Caps risk truncating real work; measurement is
+free and tells us whether the tail is gate overhead, re-dispatch, or genuine work.
+`evals/context-trace.sh` already parses turns, so the scorecard column exists.
+**A/B:** none needed for the observability step. A later cap needs `turn-budget-off`.
+
+### P2. Validate P1-of-2026-08-11 (orchestrator `high` vs `xhigh`) in a real CLI run
+
+Owed since 2026-08-11, still open, and §1 shows `high` is the model default — so this
+is now a *confirmation* rather than a gamble. It is the cheapest open item on the
+board: two real runs, cost read from `/usage`.
+**Variant:** `agent-effort-xhigh-restore` (already authored).
+
+### P3. Move maintainer-facing rationale out of the runtime prompt (L3)
+
+`commands/new-task.md` carries ~3.9 KB of **Model-tuning notes** plus its
+**Cross-vendor allocation** subsection. Reading them, most is a design record aimed
+at whoever edits the workflow next — "recorded so a future pass does not re-derive
+it", "a change justified by one model's guidance must name which files it touches" —
+not instruction the orchestrator acts on during a run. One operative line
+(*never switch your own model mid-run*) is **already duplicated** in the Session
+hygiene bullet. Proposal: move the record to `docs/`, keep the operative lines, leave
+a one-line pointer. ~1.1k tokens off every turn, and the file gets easier to read.
+**A/B:** `model-tuning-notes-inline` (restore variant) — cheap, but the prior is that
+a pure relocation of non-operative prose is behavior-neutral, so this may qualify as
+a doc change. Decide when writing it, not now.
+
+### P4. Price the 1h cache TTL recommendation
+
+`ENABLE_PROMPT_CACHING_1H=1` is recommended in the README and the 2026-07-20 proposal
+without its price. Per §1 it costs **2× input on write vs 1.25× for 5m** — i.e. an
+extra 0.75× input per cached prefix — and pays for itself the moment it saves one
+re-write. This workflow's gates are **human approval points**, which routinely idle
+past 5 minutes and rarely past an hour, so the recommendation is sound; it should
+just carry the number. Doc-only.
+
+### P5. Do NOT adopt the handoff's draft command
+
+Per §2.3. If any of it is wanted, the portable parts are already present; the rest
+would need to be re-derived against this repo's agent set and would fail the lint.

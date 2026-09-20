@@ -161,6 +161,53 @@ else
     bad "learnings bullets: malformed (missing tag or src:):$bad_bullets"
 fi
 
+
+# --- Check 8: agent model/effort frontmatter validity + table agreement -----
+# Two failure modes this catches, both silent at runtime:
+#   (a) a `model:`/`effort:` value the CLI does not accept (a typo'd tier is not
+#       an error — the field is simply ignored and the agent runs on the default);
+#   (b) drift between an agent's frontmatter and the **Effort defaults** table in
+#       commands/new-task.md, which is the orchestrator's only statement of what
+#       each seat's reasoning depth is. A table that disagrees with the
+#       frontmatter is a false belief the orchestrator reasons from.
+# Valid subagent model aliases and effort levels are the CLI's own sets.
+valid_models="sonnet opus haiku fable"
+valid_efforts="low medium high xhigh max"
+fm_bad=""
+table_bad=""
+for f in agents/*.md; do
+    [ -e "$f" ] || continue
+    name="$(basename "$f" .md)"
+    m="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^model:/{print $2;exit}' "$f")"
+    e="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "$f")"
+    if [ -n "$m" ] && ! echo " $valid_models " | grep -q " $m "; then
+        fm_bad="$fm_bad ${name}(model=$m)"
+    fi
+    if [ -n "$e" ]; then
+        if ! echo " $valid_efforts " | grep -q " $e "; then
+            fm_bad="$fm_bad ${name}(effort=$e)"
+        elif ! grep -qE "^\| *$name *\| *$e *\|" commands/new-task.md; then
+            table_bad="$table_bad ${name}(frontmatter=$e)"
+        fi
+    fi
+done
+# Reverse direction: a table row must correspond to a real frontmatter effort.
+while IFS= read -r row; do
+    rname="$(printf '%s' "$row" | awk -F'|' '{gsub(/ /,"",$2); print $2}')"
+    reff="$(printf '%s' "$row" | awk -F'|' '{gsub(/ /,"",$3); print $3}')"
+    [ -f "agents/$rname.md" ] || { table_bad="$table_bad ${rname}(no-such-agent)"; continue; }
+    aeff="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "agents/$rname.md")"
+    [ "$aeff" = "$reff" ] || table_bad="$table_bad ${rname}(table=$reff,frontmatter=${aeff:-none})"
+done <<EOF
+$(awk '/^## Effort defaults/{t=1;next} t&&/^## /{exit} t&&/^\| *[a-z][a-z-]* *\| *(low|medium|high|xhigh|max) *\|/{print}' commands/new-task.md)
+EOF
+if [ -n "$fm_bad" ]; then
+    bad "agent frontmatter: invalid model/effort value(s):$fm_bad"
+elif [ -n "$table_bad" ]; then
+    bad "agent frontmatter: Effort-defaults table disagrees with frontmatter:$table_bad"
+else
+    pass "agent frontmatter (model/effort values valid; Effort-defaults table agrees)"
+fi
 # ---------------------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
     printf 'workflow-lint: all checks passed\n'

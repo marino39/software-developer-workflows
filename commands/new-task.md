@@ -185,12 +185,18 @@ Reasoning **effort** is orthogonal to the model ladder above and is a **static p
 
 | Agent | Effort | Why |
 |---|---|---|
-| searcher | low | Mechanical lookups; spend belongs in tool calls, not reasoning. |
-| test-runner | low | Runs builds/tests, returns a digest — no deep reasoning. |
+| searcher | low | Mechanical lookups; spend belongs in tool calls, not reasoning. **Inert at the haiku default rung** (below) — it bites only on escalation to sonnet. |
+| test-runner | low | Runs builds/tests, returns a digest — no deep reasoning. **Inert at the haiku default rung** (below) — this agent never escalates, so the field never bites today. |
 | architect | high | Design + adversarial review; the deep-reasoning agents. `high` is the API default and the intended starting point — raise to `xhigh` only on a measured win (see **Model-tuning notes**). |
 | debugger | high | Stubborn root-cause work; same `high`-by-default rule as architect. |
 
 coder, reviewer, researcher run at the `high` default (no `effort:` field).
+
+**Effort is not a knob on every seat.** Haiku 4.5 exposes no effort control, so the two
+`low` rows buy nothing at their pinned model — those seats are cheap because they are
+haiku and word-capped. The field is kept because it IS live on the sonnet escalation
+rung. Never count either row as a current saving. (Lint Check 8 holds this table and the
+frontmatter in agreement; evidence in `docs/proposals/2026-09-20-workflow-leanness-verification.md`.)
 
 ## Model-tuning notes
 
