@@ -156,6 +156,40 @@ now back it.
 
 ---
 
+## 3b. Measured, 2026-09-20 — what the eval actually said
+
+§3 was built on the 2026-07-20 trace. Tasks 01–03 were re-run
+(`evals/results/2026-09-20-baseline-scorecard.md`) and Layer 3 contracts run in
+full (`2026-09-20-contracts.md`). Three results change or sharpen the picture.
+
+**L3 was understated, and it is the finding of the run.** The orchestrator's
+first-turn floor — fixed overhead, near-identical across tasks in both traces —
+grew **27.4k → 41.0k tokens (+50%)**. `commands/new-task.md` grew **5,236 → 8,544
+words (+63%)** over the same span, and *every* intervening commit added words: the
+2026-08-11 cost pass, its P2–P6 follow-up, the model tuning, the cross-vendor
+allocation. **Every pass that cut dispatches grew the prompt**, and nothing
+measured it — this ledger counts constructs, the lint counted consistency, neither
+counts words. Dispatch cuts are paid once per run; prompt words are paid on every
+turn. Applied in response: lint **Check 9**, a word ratchet (§4 A4).
+
+**L1 (turn count) is not yet measurable here.** A dispatched subagent has no Agent
+tool in this environment, so the drivers could not delegate and ran every named
+seat inline. Turn and mean-context deltas are confounded; the floor is not. The
+turn-budget proposal (P1) stands, unmeasured.
+
+**A real fast-path defect surfaced.** Task 01 failed its expect block — GATE 3 did
+not auto-approve — because the plan-lite set itself a cosmetic `≤15 added lines`
+budget and the idiomatic gofmt import needs 18. The product diff was exactly right;
+the run bought a human gate with a presentation number. That is ceremony diluting
+the auto-approve signal, and it is a leanness fix (P6 below).
+
+**One contract failure, fixed and re-verified.** The `reviewer` invented a severity
+`Informational`, outside the declared `blocker|minor` enum that Phase 6
+consolidation buckets on — so the finding would route nowhere. Drift, not a
+deterministic break (1 of 2 finding-bearing runs). `agents/reviewer.md` now pins
+the enum and names the consequence; re-run 2/2 conform, with the finding correctly
+refiled as `minor` at low confidence.
+
 ## 4. Applied in this change
 
 | # | Change | Where |
@@ -163,6 +197,9 @@ now back it.
 | A1 | **Lint Check 8** — agent `model:`/`effort:` frontmatter must use values the CLI accepts, and must agree with the **Effort defaults** table in `new-task.md`. Both directions checked. An unrecognised tier is not a runtime error — the field is silently ignored — so only a lint can catch it. | `evals/lint.sh` |
 | A2 | **Corrected the Effort defaults table.** It claimed `searcher`/`test-runner` were cheap partly because of `effort: low`; haiku exposes no effort control, so that was false. The field is **kept, not deleted** — it is live on the escalated rung (`searcher` haiku → sonnet honors effort) — and now reads as "applies if and when this seat escalates". | `commands/new-task.md` § Effort defaults |
 | A3 | This document: the verified price/capability table, the handoff audit, and the cost model. | `docs/proposals/` |
+| A4 | **Lint Check 9** — an instruction-file **word ratchet** (`evals/size-budget.txt`, budgets at 2026-09-20 sizes +2%). Growth stays allowed; it has to be deliberate, because the budget bump lands in the same diff. Verified to fail on both growth and a missing row. | `evals/lint.sh` |
+| A5 | **`agents/reviewer.md` severity enum pinned** to `blocker`/`minor` with the consequence named, after the contract test caught an invented `Informational` level. Re-verified 2/2. | `agents/reviewer.md` |
+| A6 | Eval artifacts: baseline scorecard + contract report. | `evals/results/2026-09-20-*` |
 
 A1 is a new construct and takes a ledger row. A2 corrects a false factual claim
 about the platform (CLAUDE.md rule 2 doc-fix tier); it changes no procedure and the
@@ -213,6 +250,15 @@ extra 0.75× input per cached prefix — and pays for itself the moment it saves
 re-write. This workflow's gates are **human approval points**, which routinely idle
 past 5 minutes and rarely past an hour, so the recommendation is sound; it should
 just carry the number. Doc-only.
+
+### P6. Drop cosmetic size caps from plan-lite (new, from task 01)
+
+Plan-lite should state **content** contracts, never cosmetic line budgets. A
+self-imposed `≤15 added lines` cost task 01 its fast-path auto-approval for a diff
+that was otherwise perfect, because meeting the cap meant degrading idiomatic Go.
+Auto-approval is a safety signal; diluting it with presentation numbers makes a
+human gate mean less, not more. Behavior-affecting (`commands/new-task.md` fast
+path) → owes its own scorecard.
 
 ### P5. Do NOT adopt the handoff's draft command
 

@@ -12,6 +12,8 @@ Driven by the `/workflow-eval` command; this directory holds its inputs and outp
 ```
 rubric.md        shared scoring rubric (5 dimensions) — the contract for scoring
 lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
+size-budget.txt  per-file word budgets for commands/agents/skills — lint Check 9's
+                 ratchet, so prompt growth is a visible decision, not a drift
 context-trace.sh deterministic orchestrator-context trace over an eval driver's
                  transcript (turns, high-water, mean, first-turn floor, cold
                  re-entries) — the Layer-2 Collect step records it per run into
@@ -84,7 +86,11 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    actually accepts, agreeing with the Effort-defaults table in `new-task.md`).
    Catches drift like a branch that lets an escalated `scoped` task auto-approve,
    or an `effort:` tier that is silently ignored because the pinned model exposes
-   no effort control. It is enforced by the repo's **pre-commit hook**
+   no effort control. It also enforces a **word ratchet** over the instruction
+   files (`size-budget.txt`): these are paid on every turn of every run, and
+   between 2026-07-20 and 2026-09-20 `commands/new-task.md` grew 63% while the
+   orchestrator's first-turn floor grew 50%, unmeasured by anything. Growth is
+   still allowed — the budget bump just has to appear in the same commit. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with
    `sh evals/lint.sh`.
