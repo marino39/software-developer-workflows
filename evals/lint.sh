@@ -161,6 +161,108 @@ else
     bad "learnings bullets: malformed (missing tag or src:):$bad_bullets"
 fi
 
+
+# --- Check 8: agent model/effort frontmatter validity + table agreement -----
+# Two failure modes this catches:
+#   (a) a `model:`/`effort:` value outside the accepted set — a typo'd tier is
+#       otherwise only discovered when the agent is dispatched;
+#   (b) drift between an agent's frontmatter and the **Effort defaults** table in
+#       commands/new-task.md, which is the orchestrator's only statement of what
+#       each seat's reasoning depth is. A table that disagrees with the
+#       frontmatter is a false belief the orchestrator reasons from.
+# NOT checked: whether the pinned model honors effort at all. Haiku 4.5 does not
+# (see new-task.md § Effort defaults); `searcher` keeps `effort: low` on purpose
+# because it is live on its sonnet escalation rung, so a model/effort capability
+# rule would need an exception and is left to review.
+# Accepted model values: the CLI's subagent aliases, `inherit`, or a full
+# `claude-*` model ID. Values may be YAML-quoted; quotes are stripped first.
+valid_models="sonnet opus haiku fable inherit"
+valid_efforts="low medium high xhigh max"
+fm_bad=""
+table_bad=""
+effort_table="$(awk '/^## Effort defaults/{t=1;next} t&&/^## /{exit} t' commands/new-task.md)"
+for f in agents/*.md; do
+    [ -e "$f" ] || continue
+    name="$(basename "$f" .md)"
+    m="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^model:/{print $2;exit}' "$f" | tr -d "\"'")"
+    e="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "$f" | tr -d "\"'")"
+    if [ -n "$m" ] && ! echo " $valid_models " | grep -q " $m " \
+            && ! printf '%s' "$m" | grep -qE '^claude-[a-z0-9-]+(\[1m\])?$'; then
+        fm_bad="$fm_bad ${name}(model=$m)"
+    fi
+    if [ -n "$e" ]; then
+        if ! echo " $valid_efforts " | grep -q " $e "; then
+            fm_bad="$fm_bad ${name}(effort=$e)"
+        elif ! printf '%s\n' "$effort_table" | grep -qE "^\| *$name *\| *$e *\|"; then
+            table_bad="$table_bad ${name}(frontmatter=$e)"
+        fi
+    fi
+done
+# Reverse direction: a table row must correspond to a real frontmatter effort.
+while IFS= read -r row; do
+    rname="$(printf '%s' "$row" | awk -F'|' '{gsub(/ /,"",$2); print $2}')"
+    reff="$(printf '%s' "$row" | awk -F'|' '{gsub(/ /,"",$3); print $3}')"
+    [ -f "agents/$rname.md" ] || { table_bad="$table_bad ${rname}(no-such-agent)"; continue; }
+    aeff="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "agents/$rname.md")"
+    [ "$aeff" = "$reff" ] || table_bad="$table_bad ${rname}(table=$reff,frontmatter=${aeff:-none})"
+done <<EOF
+$(printf '%s\n' "$effort_table" | grep -E '^\| *[a-z][a-z-]* *\| *(low|medium|high|xhigh|max) *\|')
+EOF
+if [ -n "$fm_bad" ]; then
+    bad "agent frontmatter: invalid model/effort value(s):$fm_bad"
+elif [ -n "$table_bad" ]; then
+    bad "agent frontmatter: Effort-defaults table disagrees with frontmatter:$table_bad"
+else
+    pass "agent frontmatter (model/effort values valid; Effort-defaults table agrees)"
+fi
+# --- Check 9: instruction-file size budget (ratchet) ------------------------
+# commands/, agents/ and skills/ are read into an orchestrator or agent context
+# on every run, so their WORDS are paid on every turn. Measured 2026-09-20:
+# commands/new-task.md went 5,236 -> 8,544 words between 2026-07-20 and
+# 2026-09-20 (+63%); once read it is ~22.6k tokens, 25-28% of every later turn's
+# context (measured 2026-09-20). Every cost pass in that window cut DISPATCHES and grew the
+# PROMPT; nothing measured the second axis, because the complexity ledger counts
+# constructs, not words. This is the ratchet that makes prompt growth visible at
+# commit time. It moves both ways:
+#   - over budget  -> trim, or raise the number in the same commit (growth is
+#                     allowed, but deliberate);
+#   - >5% under    -> lower the number in the same commit, so words a trim removed
+#                     cannot grow back later without a visible bump.
+# The failure prints the exact budget line to paste (actual +2%).
+budget_file="evals/size-budget.txt"
+over=""
+under=""
+nobudget=""
+if [ -f "$budget_file" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in ''|\#*) continue;; esac
+        bf="$(printf '%s' "$line" | awk '{print $1}')"
+        bw="$(printf '%s' "$line" | awk '{print $2}')"
+        [ -f "$bf" ] || continue
+        aw="$(wc -w < "$bf" | tr -d ' ')"
+        if [ "$aw" -gt "$bw" ]; then
+            over="$over ${bf}(${aw}>${bw})"
+        elif [ $((aw * 100)) -lt $((bw * 95)) ]; then
+            under="$under
+    $(printf '%-34s %d' "$bf" $(( (aw * 102 + 99) / 100 )))   # was ${bw}, actual ${aw}"
+        fi
+    done < "$budget_file"
+    for f in commands/*.md agents/*.md skills/*/SKILL.md; do
+        grep -qE "^${f}[[:space:]]" "$budget_file" || nobudget="$nobudget $f"
+    done
+    if [ -n "$over" ]; then
+        bad "size budget: over budget (trim, or raise it in $budget_file in this commit):$over"
+    elif [ -n "$under" ]; then
+        bad "size budget: >5% under budget — bank the trim, set these lines in $budget_file in this commit:$under"
+    elif [ -n "$nobudget" ]; then
+        bad "size budget: instruction file(s) with no budget row in $budget_file:$nobudget"
+    else
+        pass "size budget (every instruction file within its word budget)"
+    fi
+else
+    bad "size budget: $budget_file is missing"
+fi
+
 # ---------------------------------------------------------------------------
 if [ "$fail" -eq 0 ]; then
     printf 'workflow-lint: all checks passed\n'

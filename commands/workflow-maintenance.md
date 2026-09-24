@@ -11,7 +11,8 @@ Run the three checks below in order. Each check reports; only check 1 may commit
 1. Locate the workflow repo (the directory containing this repo's `capture.sh`; default `~/Prywatne/software-developer-workflows`). Missing → report `capture: repo not found` and skip to check 2.
 2. Run `capture.sh`, then inspect `git status --short` and `git diff` in the repo.
 3. Commit ONLY a faithful mirror of live state: agent/command/skill files that match a live self-improvement. Message: one line describing what drifted (e.g. `capture: coder comment-hygiene tweak`). Do NOT push. **Never commit learnings** — `new-task/LEARNINGS.md` and `new-task/learnings/*.md` are local, per-machine runtime state; `capture.sh` does not copy them and `.gitignore` excludes `new-task/learnings/`. If either shows up modified in `git status`, leave it uncommitted.
-4. Anything surprising — deleted files, drift in files no `/new-task` run should touch, conflict markers → report it, revert the working tree for those paths, commit nothing for them.
+4. **Lint blocks the commit** → never `--no-verify`, never raise a budget in `evals/size-budget.txt` (accepting prompt growth is a human call — lint Check 9). Leave the capture uncommitted and report `capture: blocked by lint — <failing check>`.
+5. Anything surprising — deleted files, drift in files no `/new-task` run should touch, conflict markers → report it, revert the working tree for those paths, commit nothing for them.
 
 ## 2. Learnings curation
 

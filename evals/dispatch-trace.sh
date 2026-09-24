@@ -115,6 +115,7 @@ print(fmt.format("transcript", "agent", "units", "disp", "fanout", "iter",
 
 for path in sys.argv[1:]:
     turn = 0
+    last_mid = None
     chain = None
     per_agent = {}        # agent -> {"disp","fanout","iter","rtrip","bounce"}
     unit_turns = {}       # unit key -> [turn, ...]
@@ -145,7 +146,13 @@ for path in sys.argv[1:]:
                         chain = e.get("agentId")
                     if e.get("agentId") != chain:
                         continue
-                    turn += 1
+                    # One API response is split into one entry per content block;
+                    # only a new message.id starts a new turn (before 2026-09-24
+                    # every block did, so same-message fan-out read as `iter`).
+                    mid = (e.get("message") or {}).get("id")
+                    if mid is None or mid != last_mid:
+                        turn += 1
+                    last_mid = mid
                     for blk in ((e.get("message") or {}).get("content") or []):
                         if not isinstance(blk, dict) or blk.get("type") != "tool_use":
                             continue

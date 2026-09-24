@@ -12,6 +12,8 @@ Driven by the `/workflow-eval` command; this directory holds its inputs and outp
 ```
 rubric.md        shared scoring rubric (5 dimensions) — the contract for scoring
 lint.sh          deterministic Layer-1 lint (no LLM); also runs from the pre-commit hook
+size-budget.txt  per-file word budgets for commands/agents/skills — lint Check 9's
+                 ratchet, so prompt growth is a visible decision, not a drift
 context-trace.sh deterministic orchestrator-context trace over an eval driver's
                  transcript (turns, high-water, mean, first-turn floor, cold
                  re-entries) — the Layer-2 Collect step records it per run into
@@ -79,9 +81,17 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    no-LLM, no-network script checking `commands/`, `agents/`, `skills/` for
    reference integrity, route/tier consistency, phase completeness, gate-format
    consistency, **agent contracts** (every agent declares a well-formed
-   Input/Output contract), and the **complexity ledger** (every row names a failure
-   it prevents + a source). Catches drift like a branch that lets an escalated
-   `scoped` task auto-approve. It is enforced by the repo's **pre-commit hook**
+   Input/Output contract), the **complexity ledger** (every row names a failure
+   it prevents + a source), and **agent model/effort frontmatter** (values the CLI
+   actually accepts, agreeing with the Effort-defaults table in `new-task.md`).
+   Catches drift like a branch that lets an escalated `scoped` task auto-approve,
+   or an Effort-defaults table that disagrees with the frontmatter it documents.
+   It does NOT check which models honor effort (haiku does not; see the Effort
+   defaults section in `new-task.md`). It also enforces a **word ratchet** over the instruction
+   files (`size-budget.txt`): these are paid on every turn of every run, and
+   between 2026-07-20 and 2026-09-20 `commands/new-task.md` grew 63%, unmeasured
+   by anything. The ratchet moves both ways: growth needs a visible budget raise
+   in the same commit, and a trim must be banked by lowering the budget. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with
    `sh evals/lint.sh`.
