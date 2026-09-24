@@ -256,7 +256,7 @@ board: two real runs, cost read from `/usage`.
 
 ### P3. Move maintainer-facing rationale out of the runtime prompt (L3)
 
-**Status: APPLIED 2026-09-24.** The Model-tuning notes and Cross-vendor allocation section (588 words) moved verbatim to `docs/model-tuning-notes.md`, with a preface naming where each operative piece still lives. The one list an instruction file acts on — the must-not-move seats — is inlined in `skills/codex-exec/SKILL.md`; the five command headers lose their now-dangling pointer (their inline Fable cost note stays). `new-task.md` 8,544 → 7,992 words with P6; budget lowered to match under the two-way ratchet.
+**Status: APPLIED 2026-09-24.** The Model-tuning notes and Cross-vendor allocation section (588 words) moved verbatim to `docs/model-tuning-notes.md`, with a preface naming where each operative piece still lives. The one list an instruction file acts on — the must-not-move seats — is inlined in `skills/codex-exec/SKILL.md`; the five command headers lose their now-dangling pointer (their inline Fable cost note stays). `new-task.md` 8,544 → 7,992 words with P6; budget lowered to match under the two-way ratchet. Measured on the P6 re-run: the file's footprint in context fell **~22.4k → ~19.0k tokens** (−15%) on every turn after it is read.
 
 `commands/new-task.md` carries ~3.9 KB of **Model-tuning notes** plus its
 **Cross-vendor allocation** subsection. Reading them, most is a design record aimed
@@ -283,7 +283,7 @@ just carry the number. Doc-only.
 
 ### P6. Drop cosmetic size caps from plan-lite (new, from task 01)
 
-**Status: APPLIED 2026-09-24** — one sentence in fast-path step 3, phrased as something the orchestrator tells the `architect` (which never reads `new-task.md`). Validation: task 01 re-run — see `evals/results/2026-09-20-baseline-scorecard.md`.
+**Status: APPLIED 2026-09-24** — one sentence in fast-path step 3, phrased as something the orchestrator tells the `architect` (which never reads `new-task.md`). Validation: task 01 re-run **passed** — GATE 3 auto-approved, zero `.go` changes, plan-lite stated six content contracts and no numeric budget (n=1; `evals/results/2026-09-20-baseline-scorecard.md`).
 
 Plan-lite should state **content** contracts, never cosmetic line budgets. A
 self-imposed `≤15 added lines` cost task 01 its fast-path auto-approval for a diff

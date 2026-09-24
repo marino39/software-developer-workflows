@@ -76,7 +76,7 @@ none removing any.
 two-way per-file word ratchet — growth must land with a visible budget raise, trims
 must be banked by lowering the budget. The first trim under it (2026-09-24, moving
 the maintainer-only Model-tuning notes to `docs/`) took `new-task.md` to 7,992 words,
-~1.5k tokens off every turn after the Read.
+measured at **~22.4k → ~19.0k tokens** in context (−3.4k, −15%, for a 7% character cut — the moved section was token-dense); see the re-run below.
 
 ## Task 01 re-run after P6 (2026-09-24)
 
@@ -86,8 +86,33 @@ re-run of task 01, the run that failed on exactly that, under the identical
 preamble and the same no-delegation environment. The rule is an orchestrator
 instruction, so it is exercised whether or not delegation works.
 
-**Result: PENDING** — run in flight. Pass bar: GATE 3 auto-approves, no `.go` file
-changed, and the plan-lite states no numeric size budget.
+Pass bar: GATE 3 auto-approves, no `.go` file changed, and the plan-lite states no
+numeric size budget.
+
+**Result: PASS.** Route `scoped` throughout; **GATE 3 auto-approved** (all fast-path
+criteria held); `README.md` +20/−0 and **zero `.go` files** changed (checked by `git diff`
+against the base, not taken from the report); `go test ./...` green; the plan-lite
+stated six content contracts (C1–C6: doc-only, heading placement, correct API,
+truthful output, snippet compiles and runs, nothing else regresses) and **no numeric
+budget** (grep of the plan for line/word caps: 0). The snippet was compiled and run
+against the real package and printed `6`. Channel A's one finding (confidence 30) was
+dropped by consolidation — correctly, it was out of scope.
+
+Caveat: n=1 on each side, and the failing run's cap was the model's own choice, so
+one pass shows the fix is consistent with the outcome, not that it forces it. What
+the run does show beyond doubt is that the plan-lite, told to state contracts, wrote
+checkable ones — every criterion was verified mechanically.
+
+**Cost, same run:**
+
+| | Before P3/P6 (3 runs) | After (this run) |
+|---|---|---|
+| Command-file Read result | 56,619 chars | 52,672 chars (−7.0%) |
+| Context added by the Read, minus the issuing response's own output | ~22.4k tok (22,388 / 22,419 / 22,632) | **~19.0k tok** (19,023) |
+| Turns (responses) vs scoped band ≤ 30 | 16 | 17 — in band |
+
+A file tokenizes the same way every time, so the before/after gap is a measurement
+of the file, not run-to-run noise: the three before-runs agree within ~250 tokens.
 
 ## Regressions vs baseline
 
