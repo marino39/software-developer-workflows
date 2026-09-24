@@ -84,7 +84,7 @@ Derived, and load-bearing below:
    cost-hygiene rule #2** ("don't switch models mid-session") and this repo's
    Session hygiene rule. On a 60k-token context that is one 60k re-read at $5/MTok
    ≈ $0.30, plus, on Fable-tier models, silently dropped thinking blocks.
-2. **Sonnet orchestrator.** Priced in §3: it saves roughly $1–2 per run, on the one
+2. **Sonnet orchestrator.** Priced in §3: it saves roughly $0.4–0.6 per run on input, on the one
    seat that does routing, gate decisions, consolidation and human contact. This
    repo already tested the adjacent question and moved the *other* way (Opus
    orchestrator, deep reasoning delegated). The handoff asserts the saving without
@@ -112,25 +112,33 @@ Derived, and load-bearing below:
 
 ## 3. Where the money actually goes (re-derived from this repo's trace)
 
-The 2026-07-20 context trace (`evals/results/2026-07-20-context-compaction-scorecard.md`)
-is the only measured cost data this repo has. Orchestrator **input** bill, taking the
-warm-session approximation that the bulk of each turn's context is a cache read:
+> **Corrected 2026-09-24.** The first version of this table used the 2026-07-20
+> turn counts (71 / 57 / 95). Those came from `evals/context-trace.sh`, which counted
+> one turn per *content block* instead of per API response — ~2.6–3.1× too many — so
+> every dollar figure here was inflated by roughly 3×. The script is fixed; the table
+> below is recounted from the 2026-09-20 transcripts (responses), which are
+> confounded by missing delegation but correctly counted.
 
-| Task | Turns | Mean ctx | Read volume | on Opus 5 | on Fable 5.1 | on Sonnet 5 |
+Orchestrator **input** bill, taking the warm-session approximation that the bulk of
+each turn's context is a cache read:
+
+| Task | Turns (responses) | Mean ctx | Read volume | on Opus 5 | on Fable 5.1 | on Sonnet 5 |
 |---|---|---|---|---|---|---|
-| 01 doc-only | 71 | 57,329 | 4.07 MTok | **$2.04** | $1.02 | $0.81 |
-| 02 bugfix | 57 | 61,319 | 3.50 MTok | **$1.75** | $0.87 | $0.70 |
-| 03 route-correct | 95 | 73,729 | 7.00 MTok | **$3.50** | $1.75 | $1.40 |
+| 01 doc-only | 16 | 80,685 | 1.29 MTok | **$0.65** | $0.32 | $0.26 |
+| 02 bugfix | 20 | 87,120 | 1.74 MTok | **$0.87** | $0.44 | $0.35 |
+| 03 route-correct | 21 | 91,327 | 1.92 MTok | **$0.96** | $0.48 | $0.38 |
 
 Orchestrator **output** is a co-dominant term the trace does not capture: at a
-nominal 1k tokens/turn, 71 turns on Opus is ~$1.78 — the same order as the input
-bill. Output is what `effort` and verbosity actually move.
+nominal 1k tokens/turn, 16–21 turns on Opus is ~$0.40–0.53 — the same order as the
+input bill. Output is what `effort` and verbosity actually move.
 
 Three conclusions, in order of size:
 
 **L1 — Turn count is the dominant multiplier, and nothing bounds it.** Every lever
-in the table is multiplied by turns. A **doc-only task on a toy Go fixture took 71
-turns**; the route-correctness task took 95. The workflow caps *review iterations*
+in the table is multiplied by turns. A doc-only task on a toy Go fixture took 16
+API responses, the route-correctness task 21 — and the turns this item originally
+quoted (71, 95) were content-block counts from a since-fixed script, which is itself
+a sign nobody had been looking at turns. The workflow caps *review iterations*
 (3) and *escalations* (1 fable) but has no notion of a turn budget at all. This is
 the lever the handoff never mentions and the repo has never attacked — every prior
 cost pass cut **dispatches** (17+K → 10), which is a different quantity.
@@ -141,16 +149,17 @@ eval harness, so it has never been validated in a real CLI run. Per §1, `high` 
 also the model's own `default_effort`, so P1 was a move **to** the default, not away
 from it — lower risk than the ledger implies, and cheap to validate.
 
-**L3 — Prompt bytes, and they are cheaper than they look.** `commands/new-task.md` is
-8,618 words / 56.7 KB ≈ 15k tokens: **20–26% of the orchestrator's mean context on
-every turn**, costing **$0.43–0.71 per run** on Opus. Halving it saves ~$0.25/run.
+**L3 — Prompt bytes, and they are cheaper than they look.** Measured 2026-09-20: when
+the driver's Read of `commands/new-task.md` lands, context jumps **~22.6k tokens**
+(the Read result carries line-number prefixes), and it is re-read every turn after —
+**25–28% of the orchestrator's mean context**, ~$0.17–0.23 per run on Opus.
 Real, worth doing, but an order of magnitude below L1 — because prompt bytes are
 cached, and cache reads are 0.1× input. **Byte-cutting is a clarity win first and a
 cost win second, and should be argued that way.**
 
 The corollary matters for L2.3 of the handoff: since the orchestrator seat is
 cache-read-dominated, **Fable 5.1 costs less to run there than Opus 5** on the input
-side ($1.02 vs $2.04 on task 01) and more only on fresh input and output. The
+side ($0.32 vs $0.65 on task 01) and more only on fresh input and output. The
 existing Model-tuning note says to weigh Fable on fresh-input volume; the numbers
 now back it.
 
@@ -162,15 +171,19 @@ now back it.
 (`evals/results/2026-09-20-baseline-scorecard.md`) and Layer 3 contracts run in
 full (`2026-09-20-contracts.md`). Three results change or sharpen the picture.
 
-**L3 was understated, and it is the finding of the run.** The orchestrator's
-first-turn floor — fixed overhead, near-identical across tasks in both traces —
-grew **27.4k → 41.0k tokens (+50%)**. `commands/new-task.md` grew **5,236 → 8,544
-words (+63%)** over the same span, and *every* intervening commit added words: the
-2026-08-11 cost pass, its P2–P6 follow-up, the model tuning, the cross-vendor
-allocation. **Every pass that cut dispatches grew the prompt**, and nothing
-measured it — this ledger counts constructs, the lint counted consistency, neither
-counts words. Dispatch cuts are paid once per run; prompt words are paid on every
-turn. Applied in response: lint **Check 9**, a word ratchet (§4 A4).
+**L3: the prompt grew unchecked.** `commands/new-task.md` grew **5,236 → 8,544 words
+(+63%)** between 2026-07-20 and 2026-09-20, and *every* intervening commit added
+words — the 2026-08-11 cost pass, its P2–P6 follow-up, the model tuning, the
+cross-vendor allocation. **Every pass that cut dispatches grew the prompt**, and
+nothing measured it: the ledger counts constructs, the lint counted consistency,
+neither counts words. Once read, the file is ~22.6k tokens and 25–28% of every
+later turn's context. Applied in response: lint **Check 9**, a word ratchet (§4 A4).
+
+*Correction (2026-09-24):* the first version of this paragraph also claimed the
+orchestrator's first-turn floor grew 27.4k → 41.0k *because of* the file growth. It
+did not: the floor is measured before the command file is read, so it is
+environment overhead, and the two traces came from different environments. The
+file growth and its per-turn share stand on their own measurement above.
 
 **L1 (turn count) is not yet measurable here.** A dispatched subagent has no Agent
 tool in this environment, so the drivers could not delegate and ran every named
@@ -218,15 +231,23 @@ Ranked by (saving ÷ risk), each with the A/B that would settle it.
 
 ### P1. Give the orchestrator a turn budget (L1 — biggest lever, untried)
 
-71 turns for a doc-only task is the single largest cost fact this repo has measured,
-and no construct addresses it. Proposal: record a per-route **expected turn band** in
-the run ledger and have the orchestrator report actual-vs-expected at each gate — an
-observability step first, not a cap. Caps risk truncating real work; measurement is
+**Status: APPLIED 2026-09-24 — harness-side, not as first proposed.** Turns multiply
+every other cost and no construct addresses them. As first written, the orchestrator
+would report its own turn count at each gate; that was dropped because a model cannot
+count its own turns reliably deep into a long context, and the instruction would add
+prompt words to the file this change is shrinking. Instead: provisional per-route
+**turn bands** in `evals/rubric.md` (Efficiency dimension) and a turns-vs-band column
+in the `/workflow-eval` scorecard, fed by `evals/context-trace.sh` — whose turn count
+was fixed in the same change (it had been counting content blocks, ~3× responses).
+Still an observability step first, not a cap. Caps risk truncating real work; measurement is
 free and tells us whether the tail is gate overhead, re-dispatch, or genuine work.
 `evals/context-trace.sh` already parses turns, so the scorecard column exists.
 **A/B:** none needed for the observability step. A later cap needs `turn-budget-off`.
 
 ### P2. Validate P1-of-2026-08-11 (orchestrator `high` vs `xhigh`) in a real CLI run
+
+**Status: NOT APPLIED — cannot be, here.** It is a measurement, not a change, and it
+needs a real CLI session (effort is inert in the eval harness).
 
 Owed since 2026-08-11, still open, and §1 shows `high` is the model default — so this
 is now a *confirmation* rather than a gamble. It is the cheapest open item on the
@@ -234,6 +255,8 @@ board: two real runs, cost read from `/usage`.
 **Variant:** `agent-effort-xhigh-restore` (already authored).
 
 ### P3. Move maintainer-facing rationale out of the runtime prompt (L3)
+
+**Status: APPLIED 2026-09-24.** The Model-tuning notes and Cross-vendor allocation section (588 words) moved verbatim to `docs/model-tuning-notes.md`, with a preface naming where each operative piece still lives. The one list an instruction file acts on — the must-not-move seats — is inlined in `skills/codex-exec/SKILL.md`; the five command headers lose their now-dangling pointer (their inline Fable cost note stays). `new-task.md` 8,544 → 7,992 words with P6; budget lowered to match under the two-way ratchet.
 
 `commands/new-task.md` carries ~3.9 KB of **Model-tuning notes** plus its
 **Cross-vendor allocation** subsection. Reading them, most is a design record aimed
@@ -249,6 +272,8 @@ a doc change. Decide when writing it, not now.
 
 ### P4. Price the 1h cache TTL recommendation
 
+**Status: APPLIED 2026-09-24** — README session-hygiene line.
+
 `ENABLE_PROMPT_CACHING_1H=1` is recommended in the README and the 2026-07-20 proposal
 without its price. Per §1 it costs **2× input on write vs 1.25× for 5m** — i.e. an
 extra 0.75× input per cached prefix — and pays for itself the moment it saves one
@@ -257,6 +282,8 @@ past 5 minutes and rarely past an hour, so the recommendation is sound; it shoul
 just carry the number. Doc-only.
 
 ### P6. Drop cosmetic size caps from plan-lite (new, from task 01)
+
+**Status: APPLIED 2026-09-24** — one sentence in fast-path step 3, phrased as something the orchestrator tells the `architect` (which never reads `new-task.md`). Validation: task 01 re-run — see `evals/results/2026-09-20-baseline-scorecard.md`.
 
 Plan-lite should state **content** contracts, never cosmetic line budgets. A
 self-imposed `≤15 added lines` cost task 01 its fast-path auto-approval for a diff

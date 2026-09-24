@@ -1,16 +1,19 @@
 # Instruction-file size budget (words). Lint Check 9 — a RATCHET, not a limit.
 # Every cost pass so far cut dispatches and GREW the prompt: commands/new-task.md went
-# 5,236 -> 8,544 words between 2026-07-20 and 2026-09-20 (+63%), and the measured
-# orchestrator first-turn floor went 27.4k -> 41.0k tokens (+50%) over the same span.
+# 5,236 -> 8,544 words between 2026-07-20 and 2026-09-20 (+63%). Once read it is ~22.6k
+# tokens, 25-28% of every later turn's context (measured 2026-09-20).
 # Nothing tracked that. The complexity ledger counts CONSTRUCTS, not WORDS.
 #
 # These files are read into the orchestrator's context on every run, so their words are
 # paid on every turn. Exceeding a budget is not forbidden - it must be DELIBERATE: trim,
 # or raise the number here in the same commit so the growth shows up in the diff.
+# The ratchet moves both ways: a file more than 5% UNDER its budget also fails, so a
+# trim is banked by lowering the number in the same commit (the lint prints the line).
+# Budgets set 2026-09-20 at then-current size +2%.
 commands/address-review.md         2324
 commands/explain.md                1063
 commands/iterate.md                2057
-commands/new-task.md               8715
+commands/new-task.md               8152
 commands/review-pr.md              1575
 commands/triage-issue.md           1117
 commands/workflow-eval.md          1924

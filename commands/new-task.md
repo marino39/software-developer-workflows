@@ -4,7 +4,7 @@ description: Full-lifecycle task workflow — brainstorm, review, plan, implemen
 
 # New Task: $ARGUMENTS
 
-You are the orchestrator (run this on Opus at `high` effort — the deep reasoning is delegated, and `architect`/`debugger` run at the same `high` default; Fable is optional — 2× Opus on fresh input, but cheaper than Opus on cache reads, so weigh it on fresh-input volume rather than total context size (**Model-tuning notes**); the escalation ladder already buys Fable where it pays). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human. **Substantive work goes to subagents; trivial work does not** — the floor and the cap in **Token hygiene** bound it from both sides. Independent subagents fan out in parallel in a single message.
+You are the orchestrator (run this on Opus at `high` effort — the deep reasoning is delegated, and `architect`/`debugger` run at the same `high` default; Fable is optional — 2× Opus on fresh input, but cheaper than Opus on cache reads, so weigh it on fresh-input volume rather than total context size; the escalation ladder already buys Fable where it pays). Drive the task above through the full lifecycle below. You judge results, route work, and talk to the human. **Substantive work goes to subagents; trivial work does not** — the floor and the cap in **Token hygiene** bound it from both sides. Independent subagents fan out in parallel in a single message.
 
 ## Human contract
 
@@ -48,7 +48,7 @@ Phases 1–4 collapse; Phases 5–7 run as written.
 
 1. **Scope gate**: present the scope and the `scoped` classification as a plain-text gate per the Human contract's **Gate rendering & follow-ups** rule (end the turn; do not use `AskUserQuestion`). This is the fast path's FIRST (and often only) human touchpoint, so it MUST carry the route rationale per the Human contract — the signals weighed and explicitly why the task is *not* high-stakes (which high-stakes categories the diff avoids: auth, payments, migrations, data deletion). Present that reasoning in the message body, not a bare "confirm scoped?"; it is the primary misroute-catch point. Human overrides the classification → run the full lifecycle instead.
 2. Investigate: `searcher` for existing patterns; for observability/logging/error-handling adds, follow the `convention-scan` skill; `researcher` only if external context is needed.
-3. Plan-lite: ONE `architect` writes the plan directly, in artifact mode (`artifact_path` = the plan location; it returns path + ≤200-word summary + step titles) — no design doc, no brainstorm fan-out, no separate plan-review phase (the adversarial check happens in Phase 6).
+3. Plan-lite: ONE `architect` writes the plan directly, in artifact mode (`artifact_path` = the plan location; it returns path + ≤200-word summary + step titles) — no design doc, no brainstorm fan-out, no separate plan-review phase (the adversarial check happens in Phase 6). Tell it to state **content contracts** (what must be true, how it is verified), never cosmetic budgets (line, word or snippet counts): step 4 treats every stated number as scope, so a presentation cap voids auto-approval on a correct diff.
 3.5. **Early route re-check:** before implementing, check the plan-lite's target files/interfaces against the high-stakes categories (Phase 0). Any hit → escalate the route to `high-stakes` now (record a Deviation) and continue on the upgraded posture — full-tier review in Phase 6, high-stakes escalations, human GATE 3 — so the escalation lands before review spend, not after.
 4. **GATE 3 auto-approves iff** the route was not escalated after Phase 0 AND tests are green AND zero Must-fix remain AND behavioral verification passed (or exempt, per Phase 6 step 1) AND zero deviations from the approved scope. Emit the gate summary marked `auto-approved`. Any criterion missed (including a route escalation) → normal human GATE 3.
 
@@ -186,7 +186,7 @@ Reasoning **effort** is orthogonal to the model ladder above and is a **static p
 | Agent | Effort | Why |
 |---|---|---|
 | searcher | low | Mechanical lookups; spend belongs in tool calls, not reasoning. **Inert at the haiku default rung** (below) — it bites only on escalation to sonnet. |
-| architect | high | Design + adversarial review; the deep-reasoning agents. `high` is the API default and the intended starting point — raise to `xhigh` only on a measured win (see **Model-tuning notes**). |
+| architect | high | Design + adversarial review; the deep-reasoning agents. `high` is the API default and the intended starting point — raise to `xhigh` only on a measured win; effort defaults do not transfer across model generations. |
 | debugger | high | Stubborn root-cause work; same `high`-by-default rule as architect. |
 
 coder, reviewer, researcher run at the `high` default (no `effort:` field); `test-runner` carries none because haiku has no effort control and it never escalates.
@@ -196,62 +196,6 @@ coder, reviewer, researcher run at the `high` default (no `effort:` field); `tes
 and word-capped. The field is kept only because it IS live on the sonnet escalation rung.
 Never count it as a current saving. (Lint Check 8 holds this table and the
 frontmatter in agreement; evidence in `docs/proposals/2026-09-20-workflow-leanness-verification.md`.)
-
-## Model-tuning notes
-
-The fleet is **heterogeneous under one set of prompts**: this command is read by the
-Opus orchestrator, each `agents/*.md` by the model that agent is pinned to, and by
-whatever rung the ladder overrides it to. Vendor prompting guidance is therefore
-**per file, by the model that reads it** — never applied repo-wide.
-
-- **Opus 5 and Fable 5.1 disagree on two axes.** Opus 5 reaches for subagents readily
-  and self-verifies unasked (so it wants a delegation cap and no verification nudges);
-  Fable 5.1 wants the opposite — delegate freely, and keep verification instructions.
-  A change justified by one model's guidance must name which files it touches and
-  which model reads them.
-- **Fable is 2× on fresh input, not on cached context.** The per-command header framing
-  ("doubles the price of every context token") holds for uncached input. Cache reads
-  invert it: Fable 5.1 reads at 0.025× its base rate, roughly **half** the Opus cache-read
-  price. The orchestrator context is cache-read-dominated, so the 2× penalty is smallest
-  exactly where the context is largest — weigh a Fable orchestrator on fresh-input volume,
-  not on total context size.
-- **Never switch your own model mid-run** (Session hygiene, below) now has a second
-  reason beyond cache invalidation: on Fable-tier models thinking blocks are bound to
-  the model that produced them, so a mid-run switch drops them from the prompt. Subagent
-  `model` overrides remain safe — separate contexts.
-- **Opus 5 caches from 512 tokens** (down from 1024), so short dispatch prompts
-  previously below the floor now cache. Prompt-caching-shaped decisions written against
-  the old floor are worth re-checking.
-- **Effort defaults do not transfer across model generations.** `high` is the API
-  default and the intended starting point; `xhigh`/`max` are for a measured win, not a
-  starting posture. Re-sweep after any model change rather than carrying a level over.
-
-### Cross-vendor allocation (2026-09-07)
-
-The fleet is heterogeneous across **vendors** too, not just across Claude tiers
-(`docs/proposals/2026-09-07-codex-astra-model-allocation.md`).
-
-- **Out-of-model is off the Claude bill, not free.** A plan-billed codex CLI meters the
-  flagship per 5-hour window; an API-billed one prices it **above Fable 5.1 on cached
-  context**. So codex is tiered and bounded like fable — a ladder plus a soft
-  two-flagship-per-run cap (`codex-exec` §0), not an unbounded resource. The cap is
-  soft by design: it downshifts and records, never halts a pass.
-- **Allocate by comparative advantage, and never by headline capability.** The
-  out-of-model flagship's measured edge is concentrated in **detection** — cross-file
-  defect finding, and long-horizon terminal/error-recovery work. It **trails** both
-  Opus 5 and Fable 5.1 on broad reasoning aggregates. So it leads the review channel's
-  correctness lens and the root-cause rung, and it stays out of the synthesis seats.
-- **What must NOT move out-of-model** (recorded so a future pass does not re-derive
-  it): **Phase 1.3 synthesis/ranking** — judgment, and the seat that writes the
-  artifact a human approves at GATE 1; **`/explain`** — a ~10-min pass contradicts the
-  command's defining cheapness, and Q&A synthesis is not the band codex wins;
-  **`coder`** — parity on the coding benchmarks, and every codex pass here runs
-  `--sandbox read-only` by design; **`searcher`/`test-runner`** — mechanical work, and
-  haiku tokens are cheaper than a metered codex message.
-- **A read-only pass does not carry repo context.** The Claude agents read `CLAUDE.md`,
-  the plan, the learnings and the run ledger; a codex pass handed a path does not. That
-  asymmetry — not raw capability — is what assigns the lenses in Phase 6.3 and what
-  routes convention/intent claims back to Claude in `/address-review` A3.
 
 ## Token hygiene
 

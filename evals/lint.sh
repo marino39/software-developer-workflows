@@ -219,14 +219,19 @@ fi
 # commands/, agents/ and skills/ are read into an orchestrator or agent context
 # on every run, so their WORDS are paid on every turn. Measured 2026-09-20:
 # commands/new-task.md went 5,236 -> 8,544 words between 2026-07-20 and
-# 2026-09-20 (+63%) while the orchestrator's first-turn floor went 27.4k -> 41.0k
-# tokens (+50%). Every cost pass in that window cut DISPATCHES and grew the
+# 2026-09-20 (+63%); once read it is ~22.6k tokens, 25-28% of every later turn's
+# context (measured 2026-09-20). Every cost pass in that window cut DISPATCHES and grew the
 # PROMPT; nothing measured the second axis, because the complexity ledger counts
 # constructs, not words. This is the ratchet that makes prompt growth visible at
-# commit time. Exceeding a budget is allowed -- it just has to be deliberate:
-# trim, or raise the number in evals/size-budget.txt in the same commit.
+# commit time. It moves both ways:
+#   - over budget  -> trim, or raise the number in the same commit (growth is
+#                     allowed, but deliberate);
+#   - >5% under    -> lower the number in the same commit, so words a trim removed
+#                     cannot grow back later without a visible bump.
+# The failure prints the exact budget line to paste (actual +2%).
 budget_file="evals/size-budget.txt"
 over=""
+under=""
 nobudget=""
 if [ -f "$budget_file" ]; then
     while IFS= read -r line || [ -n "$line" ]; do
@@ -235,13 +240,20 @@ if [ -f "$budget_file" ]; then
         bw="$(printf '%s' "$line" | awk '{print $2}')"
         [ -f "$bf" ] || continue
         aw="$(wc -w < "$bf" | tr -d ' ')"
-        [ "$aw" -le "$bw" ] || over="$over ${bf}(${aw}>${bw})"
+        if [ "$aw" -gt "$bw" ]; then
+            over="$over ${bf}(${aw}>${bw})"
+        elif [ $((aw * 100)) -lt $((bw * 95)) ]; then
+            under="$under
+    $(printf '%-34s %d' "$bf" $(( (aw * 102 + 99) / 100 )))   # was ${bw}, actual ${aw}"
+        fi
     done < "$budget_file"
     for f in commands/*.md agents/*.md skills/*/SKILL.md; do
         grep -qE "^${f}[[:space:]]" "$budget_file" || nobudget="$nobudget $f"
     done
     if [ -n "$over" ]; then
         bad "size budget: over budget (trim, or raise it in $budget_file in this commit):$over"
+    elif [ -n "$under" ]; then
+        bad "size budget: >5% under budget — bank the trim, set these lines in $budget_file in this commit:$under"
     elif [ -n "$nobudget" ]; then
         bad "size budget: instruction file(s) with no budget row in $budget_file:$nobudget"
     else

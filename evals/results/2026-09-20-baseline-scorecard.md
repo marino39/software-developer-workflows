@@ -39,50 +39,55 @@ by a criterion that buys no safety. The run's own retro reached the same conclus
 independently. Candidate fix (not applied — behavior-affecting, owes its own
 scorecard): plan-lite states *content* contracts, never cosmetic size caps.
 
-## Orchestrator cost — and the finding that matters
+## Orchestrator cost
 
-`evals/context-trace.sh` over each driver transcript, against the 2026-07-20 trace
-(same three tasks):
+> **Corrected 2026-09-24.** The first version of this section had two errors. (1) It
+> attributed the growth of the first-turn floor (27.4k → 41.0k) to the growth of
+> `commands/new-task.md`. The transcripts show the floor is measured **before** the
+> driver reads the command file — it is environment overhead (system prompt, tool
+> definitions, agent/skill lists, preamble) and is not comparable across the two
+> environments. (2) Its turn counts came from `context-trace.sh`, which counted one
+> "turn" per content block rather than per API response (~2.6–3.1× too many); the
+> script is fixed and the numbers below are recounted.
 
-| Task | Turns (7-20 → 9-20) | Ctx mean | Ctx hi-water | **First-turn floor** |
-|---|---|---|---|---|
-| 01 | 71 → 44 | 57,329 → 78,927 | 81,251 → 109,402 | 27,368 → **40,963** |
-| 02 | 57 → 62 | 61,319 → 85,008 | 88,431 → 125,770 | 27,406 → **41,055** |
-| 03 | 95 → 54 | 73,729 → 86,273 | 109,888 → 116,760 | 27,370 → **41,169** |
+`evals/context-trace.sh` (fixed) over each driver transcript:
 
-Turn and mean-context deltas are **confounded** by the missing delegation (inline
-work moves subagent tokens into the orchestrator's context and changes turn shape),
-so do not read them as a trend.
+| Task | Turns (responses) | Ctx mean | Ctx hi-water | Floor (pre-Read) | Cold |
+|---|---|---|---|---|---|
+| 01 | 16 | 80,685 | 109,402 | 40,963 | 0 |
+| 02 | 20 | 87,120 | 125,770 | 41,055 | 0 |
+| 03 | 21 | 91,327 | 130,282 | 41,169 | 0 |
 
-**The first-turn floor is not confounded.** It is the fixed overhead before any work
-— command file, agent descriptions, harness preamble — and it is near-identical
-across all three tasks in both traces (±200 tokens), exactly as a fixed cost should
-be. It grew **27.4k → 41.0k, +50%**.
+Turn and mean-context values are **confounded** by the missing delegation (inline work
+moves subagent tokens into the orchestrator's context). The two "cold re-entries" the
+first version reported on task 01 were an artifact of the same counting bug — the
+extra content blocks of the first response, each re-counted as a cache-cold sample.
 
-That is almost entirely prompt growth, and it is attributable by `git`:
-
-| | 2026-07-20 | 2026-09-20 | Δ |
-|---|---|---|---|
-| `commands/new-task.md` | 35,368 B / **5,236 w** | 56,280 B / **8,544 w** | **+63%** |
-| measured first-turn floor | 27.4k tok | 41.0k tok | **+50%** |
-
-Every intervening commit that touched the file **added** words — the 2026-08-11
-cost pass (+2,636 B), its P2–P6 follow-up (+3,635 B), the 2026-09-07 model tuning
-(+3,291 B), the cross-vendor allocation (+4,832 B). Not one reduced it.
-
-**So every pass that cut dispatches grew the prompt, and nothing measured the second
-axis.** The complexity ledger counts *constructs*, not *words*; the lint checked
-*consistency*, not *size*. Dispatch cuts are paid once per run; prompt words are
-paid on every turn of every run.
-
-In dollars this is modest — ~15k tokens at Opus's $0.50/MTok cache read over ~50
-turns is ~$0.35/run — but it is **monotonic and unbounded**, which is the actual
-problem.
+**What the command file actually costs — measured, not inferred.** The context jump
+when the driver's Read of `new-task.md` lands is **~22.6k tokens** on all three runs
+(22,626 / 22,715 / 22,636 — the Read result carries line-number prefixes, so it is
+larger than the raw ~15k). From then on it is re-read on every turn: **25–28% of the
+mean context**. On Opus cache reads over these runs that is ~$0.17–0.23 per run — a
+small dollar figure, a large share. And the file grew **5,236 → 8,544 words (+63%)**
+between 2026-07-20 and 2026-09-20, with every intervening commit adding words and
+none removing any.
 
 **Applied in response:** `evals/lint.sh` **Check 9** + `evals/size-budget.txt`, a
-per-file word ratchet set at 2026-09-20 sizes +2%. Growth is still allowed; it now
-has to be deliberate, because the budget bump appears in the same diff. Verified to
-fail on both growth and a missing budget row.
+two-way per-file word ratchet — growth must land with a visible budget raise, trims
+must be banked by lowering the budget. The first trim under it (2026-09-24, moving
+the maintainer-only Model-tuning notes to `docs/`) took `new-task.md` to 7,992 words,
+~1.5k tokens off every turn after the Read.
+
+## Task 01 re-run after P6 (2026-09-24)
+
+P6 adds one sentence to fast-path step 3: the orchestrator tells the plan-lite
+`architect` to state content contracts, never cosmetic budgets. Validation is a
+re-run of task 01, the run that failed on exactly that, under the identical
+preamble and the same no-delegation environment. The rule is an orchestrator
+instruction, so it is exercised whether or not delegation works.
+
+**Result: PENDING** — run in flight. Pass bar: GATE 3 auto-approves, no `.go` file
+changed, and the plan-lite states no numeric size budget.
 
 ## Regressions vs baseline
 

@@ -68,8 +68,8 @@ resource the workflow barely spends):
   cannot sustain two passes degrades gracefully rather than needing a tighter cap here.
 - **Claude still carries the lifecycle.** Spreading work across codex *tiers* is not
   moving work off Claude: every codex pass remains ONE pass standing beside a Claude
-  agent, and the seats recorded as must-not-move in `new-task.md`'s **Model-tuning
-  notes** stay in-model.
+  agent, and the must-not-move seats stay in-model: Phase 1.3 synthesis, `/explain`, `coder`,
+  and `searcher`/`test-runner` (rationale: `docs/model-tuning-notes.md`).
 
 ## 1. Invoke non-interactively, with stdin closed
 

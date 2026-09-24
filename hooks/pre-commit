@@ -1,11 +1,11 @@
 #!/bin/sh
 # Workflow repo pre-commit hook: run the deterministic lint whenever a commit
-# touches the workflow instruction files. Blocks the commit on lint failure.
+# touches the workflow instruction files or the files the lint itself reads. Blocks the commit on lint failure.
 # Installed into the repo's git hooks dir by install.sh.
 set -eu
 
 changed="$(git diff --cached --name-only --diff-filter=ACM \
-           | grep -E '^(commands|agents|skills|new-task)/' || true)"
+           | grep -E '^(commands|agents|skills|new-task)/|^evals/(lint\.sh|size-budget\.txt|complexity-ledger\.md)$' || true)"
 [ -z "$changed" ] && exit 0
 
 root="$(git rev-parse --show-toplevel)"
@@ -14,8 +14,16 @@ if [ ! -x "$root/evals/lint.sh" ]; then
     exit 0
 fi
 
-echo "pre-commit: workflow files changed, running lint…"
-if ! sh "$root/evals/lint.sh"; then
+# Lint the STAGED snapshot, not the working tree: export the index to a temp dir
+# and run the lint from there (lint.sh resolves the repo root from its own
+# location). Otherwise an unstaged edit — e.g. a size-budget bump left out of the
+# commit — would satisfy the lint while the commit itself does not.
+snap="$(mktemp -d)"
+trap 'rm -rf "$snap"' EXIT
+git checkout-index -a --prefix="$snap/"
+
+echo "pre-commit: workflow files changed, running lint on the staged snapshot…"
+if ! sh "$snap/evals/lint.sh"; then
     echo "pre-commit: workflow-lint failed — commit blocked. Fix the issues above or commit with --no-verify to override." >&2
     exit 1
 fi

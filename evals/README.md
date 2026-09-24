@@ -89,9 +89,9 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    It does NOT check which models honor effort (haiku does not; see the Effort
    defaults section in `new-task.md`). It also enforces a **word ratchet** over the instruction
    files (`size-budget.txt`): these are paid on every turn of every run, and
-   between 2026-07-20 and 2026-09-20 `commands/new-task.md` grew 63% while the
-   orchestrator's first-turn floor grew 50%, unmeasured by anything. Growth is
-   still allowed — the budget bump just has to appear in the same commit. It is enforced by the repo's **pre-commit hook**
+   between 2026-07-20 and 2026-09-20 `commands/new-task.md` grew 63%, unmeasured
+   by anything. The ratchet moves both ways: growth needs a visible budget raise
+   in the same commit, and a trim must be banked by lowering the budget. It is enforced by the repo's **pre-commit hook**
    (installed by `install.sh`), so every commit touching workflow files must pass
    it; `/workflow-eval --lint-only` runs the same script. Run it directly with
    `sh evals/lint.sh`.

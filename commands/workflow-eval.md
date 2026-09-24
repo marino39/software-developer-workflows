@@ -182,7 +182,7 @@ the variant name; date via `date +%F`). Include:
 
 - Per-task table: the five dimension scores, task score, escaped-defect count,
   repeat spread, and **orchestrator cost** — driver tokens / tool calls /
-  wall-clock (usage trailer), context high-water / cold re-entries
+  wall-clock (usage trailer), **turns vs the route's band** (`evals/rubric.md` § Turn bands), context high-water / cold re-entries
   (`evals/context-trace.sh`), and the **rt-free rate + rtrip count**
   (`evals/dispatch-trace.sh`), both over the driver transcript. Cost is tracked,
   not scored against a threshold — but a large cost jump on an unchanged task

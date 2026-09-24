@@ -9,8 +9,11 @@
 # `usage` blocks:
 #   context_tokens = input + cache_read + cache_creation   (total prompt size)
 #   cold           = context > 20k and cache_read < 1k     (full-price re-entry)
-# Gates end turns, so a driver's per-turn trajectory samples gate boundaries by
-# construction. Cold re-entries exclude each transcript's first sample (a
+# A "turn" is one API response: Claude Code writes one JSONL entry per content
+# block, so entries sharing a message.id are collapsed (before 2026-09-24 they
+# were not, and every recorded turn count was a content-block count, ~2.6-3.1x
+# the response count). Gates end turns, so a driver's per-turn trajectory samples
+# gate boundaries by construction. Cold re-entries exclude each transcript's first sample (a
 # session's first turn is cache-cold by nature).
 #
 # Usage:
@@ -54,8 +57,16 @@ for path in sys.argv[1:]:
                 cr = int(u.get("cache_read_input_tokens") or 0)
                 cc = int(u.get("cache_creation_input_tokens") or 0)
                 ctx = inp + cr + cc
-                traj.append({"ctx": ctx, "cache_read": cr, "uncached": inp,
-                             "cold": ctx > 20000 and cr < 1000})
+                sample = {"ctx": ctx, "cache_read": cr, "uncached": inp,
+                          "cold": ctx > 20000 and cr < 1000}
+                # One API response is written as one entry PER CONTENT BLOCK
+                # (thinking / text / tool_use), all carrying the same input usage.
+                # Count responses, not blocks: collapse entries sharing message.id.
+                mid = (e.get("message") or {}).get("id")
+                if mid and traj and traj[-1].get("mid") == mid:
+                    continue
+                sample["mid"] = mid
+                traj.append(sample)
     except OSError as ex:
         print(f"{os.path.basename(path):<28} ERROR: {ex}")
         continue
