@@ -49,8 +49,14 @@ WHAT-restating comments. Expected additionally:
   not a pass.
 - The comment-hygiene findings are **reported**, not suppressed for being minor.
 - `severity` uses only the declared enum (`blocker` | `minor`). A third value
-  invented at report time (e.g. `note`) is a contract deviation: consolidation
-  buckets on this field.
+  invented at report time (e.g. `note`) is a contract deviation: severity decides
+  the reviewer's own PASS/FAIL, and a finding in an invented level has no defined
+  effect on it. (Phase 6 consolidation does NOT read severity — it re-scores and
+  buckets on confidence.)
+- `confidence` is independent of `severity`: a certain-but-minor finding (e.g. a
+  WHAT-restating comment) carries HIGH confidence. Consolidation drops anything
+  under 50, so a response that lowers confidence to mean "unimportant" loses real
+  findings — a contract smell even when the enum is respected.
 
 ## Merged-remit stimulus (Phase 6 Channel A shape)
 

@@ -163,30 +163,37 @@ fi
 
 
 # --- Check 8: agent model/effort frontmatter validity + table agreement -----
-# Two failure modes this catches, both silent at runtime:
-#   (a) a `model:`/`effort:` value the CLI does not accept (a typo'd tier is not
-#       an error — the field is simply ignored and the agent runs on the default);
+# Two failure modes this catches:
+#   (a) a `model:`/`effort:` value outside the accepted set — a typo'd tier is
+#       otherwise only discovered when the agent is dispatched;
 #   (b) drift between an agent's frontmatter and the **Effort defaults** table in
 #       commands/new-task.md, which is the orchestrator's only statement of what
 #       each seat's reasoning depth is. A table that disagrees with the
 #       frontmatter is a false belief the orchestrator reasons from.
-# Valid subagent model aliases and effort levels are the CLI's own sets.
-valid_models="sonnet opus haiku fable"
+# NOT checked: whether the pinned model honors effort at all. Haiku 4.5 does not
+# (see new-task.md § Effort defaults); `searcher` keeps `effort: low` on purpose
+# because it is live on its sonnet escalation rung, so a model/effort capability
+# rule would need an exception and is left to review.
+# Accepted model values: the CLI's subagent aliases, `inherit`, or a full
+# `claude-*` model ID. Values may be YAML-quoted; quotes are stripped first.
+valid_models="sonnet opus haiku fable inherit"
 valid_efforts="low medium high xhigh max"
 fm_bad=""
 table_bad=""
+effort_table="$(awk '/^## Effort defaults/{t=1;next} t&&/^## /{exit} t' commands/new-task.md)"
 for f in agents/*.md; do
     [ -e "$f" ] || continue
     name="$(basename "$f" .md)"
-    m="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^model:/{print $2;exit}' "$f")"
-    e="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "$f")"
-    if [ -n "$m" ] && ! echo " $valid_models " | grep -q " $m "; then
+    m="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^model:/{print $2;exit}' "$f" | tr -d "\"'")"
+    e="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "$f" | tr -d "\"'")"
+    if [ -n "$m" ] && ! echo " $valid_models " | grep -q " $m " \
+            && ! printf '%s' "$m" | grep -qE '^claude-[a-z0-9-]+(\[1m\])?$'; then
         fm_bad="$fm_bad ${name}(model=$m)"
     fi
     if [ -n "$e" ]; then
         if ! echo " $valid_efforts " | grep -q " $e "; then
             fm_bad="$fm_bad ${name}(effort=$e)"
-        elif ! grep -qE "^\| *$name *\| *$e *\|" commands/new-task.md; then
+        elif ! printf '%s\n' "$effort_table" | grep -qE "^\| *$name *\| *$e *\|"; then
             table_bad="$table_bad ${name}(frontmatter=$e)"
         fi
     fi
@@ -199,7 +206,7 @@ while IFS= read -r row; do
     aeff="$(awk 'NR==1&&/^---$/{fm=1;next} fm&&/^---$/{exit} fm&&/^effort:/{print $2;exit}' "agents/$rname.md")"
     [ "$aeff" = "$reff" ] || table_bad="$table_bad ${rname}(table=$reff,frontmatter=${aeff:-none})"
 done <<EOF
-$(awk '/^## Effort defaults/{t=1;next} t&&/^## /{exit} t&&/^\| *[a-z][a-z-]* *\| *(low|medium|high|xhigh|max) *\|/{print}' commands/new-task.md)
+$(printf '%s\n' "$effort_table" | grep -E '^\| *[a-z][a-z-]* *\| *(low|medium|high|xhigh|max) *\|')
 EOF
 if [ -n "$fm_bad" ]; then
     bad "agent frontmatter: invalid model/effort value(s):$fm_bad"
@@ -222,7 +229,7 @@ budget_file="evals/size-budget.txt"
 over=""
 nobudget=""
 if [ -f "$budget_file" ]; then
-    while IFS= read -r line; do
+    while IFS= read -r line || [ -n "$line" ]; do
         case "$line" in ''|\#*) continue;; esac
         bf="$(printf '%s' "$line" | awk '{print $1}')"
         bw="$(printf '%s' "$line" | awk '{print $2}')"

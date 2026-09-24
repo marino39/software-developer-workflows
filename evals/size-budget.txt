@@ -14,14 +14,14 @@ commands/new-task.md               8715
 commands/review-pr.md              1575
 commands/triage-issue.md           1117
 commands/workflow-eval.md          1924
-commands/workflow-maintenance.md   412
+commands/workflow-maintenance.md   447
 agents/architect.md                491
 agents/coder.md                    723
 agents/debugger.md                 237
 agents/researcher.md               162
 agents/reviewer.md                 693
 agents/searcher.md                 174
-agents/test-runner.md              310
+agents/test-runner.md              308
 skills/ci-triage/SKILL.md          225
 skills/codex-exec/SKILL.md         2287
 skills/convention-scan/SKILL.md    199

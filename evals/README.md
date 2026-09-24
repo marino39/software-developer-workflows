@@ -85,8 +85,9 @@ results/         dated scorecards: YYYY-MM-DD-<label>-scorecard.md
    it prevents + a source), and **agent model/effort frontmatter** (values the CLI
    actually accepts, agreeing with the Effort-defaults table in `new-task.md`).
    Catches drift like a branch that lets an escalated `scoped` task auto-approve,
-   or an `effort:` tier that is silently ignored because the pinned model exposes
-   no effort control. It also enforces a **word ratchet** over the instruction
+   or an Effort-defaults table that disagrees with the frontmatter it documents.
+   It does NOT check which models honor effort (haiku does not; see the Effort
+   defaults section in `new-task.md`). It also enforces a **word ratchet** over the instruction
    files (`size-budget.txt`): these are paid on every turn of every run, and
    between 2026-07-20 and 2026-09-20 `commands/new-task.md` grew 63% while the
    orchestrator's first-turn floor grew 50%, unmeasured by anything. Growth is

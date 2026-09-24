@@ -23,42 +23,63 @@ deterministically by `git status` in the fixture copy.
 
 **Suite: 9/10 pass, 1 fail** (before the fix below).
 
-## The failure, and the fix
+## The failure, and the fix — corrected
 
-The finding-bearing stimulus exists to exercise `severity` + `confidence`, and the
-contract spec names this exact failure mode in advance: *"`severity` uses only the
-declared enum (`blocker` | `minor`). A third value invented at report time (e.g.
-`note`) is a contract deviation: consolidation buckets on this field."*
+The finding-bearing stimulus exercises `severity` + `confidence`, and the contract
+spec names the failure mode in advance: a severity invented outside the declared
+`blocker | minor` enum is a contract deviation.
 
 The reviewer found **all three planted defects** (out-of-plan public function,
 unguarded `len(xs)` division, two WHAT-restating comments) with well-discriminated
 confidences (98/85/80) — detection was not the problem. It then filed a fourth
-finding as `Informational (confidence 60)`. `Informational` is in neither bucket,
-so Phase 6 step 4's consolidation would route it nowhere and the finding is lost
-silently.
+finding as `Informational (confidence 60)`. **Drift, not a deterministic break**:
+the merged-remit stimulus, same agent and same planted defects, used the enum
+correctly — 1 of 2 finding-bearing runs violated it.
 
-Note it is **drift, not a deterministic break**: the merged-remit stimulus, same
-agent and same planted defects, used the enum correctly. 1 of 2 finding-bearing
-runs violated it.
+**Correction (2026-09-24, after branch review).** The first fix was built on a false
+premise, copied from this spec: that "consolidation buckets on this field". It does
+not. Phase 6 step 4 re-scores every finding's **confidence** and buckets on that
+(drop <50, 50–79 Should-fix, ≥80 Must-fix); it never reads severity. Worse, the first
+fix told reviewers to file a non-blocking finding as `minor` *with a low
+confidence* — which steers real findings into the <50 drop. The "2/2 conform"
+re-run reported here earlier satisfied the enum while doing exactly that (one
+finding at confidence 40), so it was not evidence the fix worked.
 
-**Fix applied** — `agents/reviewer.md` verdict-format line now pins the enum and
-names the consequence, rather than parenthesising it:
+What severity actually governs is the **reviewer's own PASS/FAIL** ("FAIL only on
+blockers"), so an invented level leaves the verdict undefined — a real reason to
+keep the enum, and a smaller one than first claimed.
+
+**Fix as corrected** — `agents/reviewer.md`:
 
 > each with `severity` — **exactly one of `blocker` or `minor`, never a third
-> level**: consolidation buckets on this field, so an invented one
-> (`informational`, `note`, `nit`) lands in neither bucket and the finding is
-> silently lost. A real but non-blocking finding is `minor` with a low
-> confidence, not a new severity
+> level**: your PASS/FAIL turns on it, so an invented level (`informational`,
+> `note`) leaves the verdict undefined. **Severity and confidence are
+> independent**: a certain but non-blocking finding is `minor` at HIGH confidence
+> — consolidation drops anything under 50, so low confidence used to mean
+> "unimportant" deletes the finding
 
-**Re-run after the fix: 2/2 conform.** Both repeats returned only `blocker`/`minor`
-(98/85/60/85/80 and 98/90/85/80/40), kept all three planted defects, and kept
-confidence discrimination. The finding that had been filed as `Informational`
-reappeared as `minor` with a low confidence — which is the routing the
-consolidation pass can actually act on.
+`evals/contracts/reviewer.md` corrected to match: the false "buckets on this field"
+reason is replaced, and a new expected-field bullet makes low-confidence-as-
+unimportance a contract smell even when the enum holds.
+
+**Re-run after the correction.** Pass bar: enum held, all three planted defects
+found, and the two WHAT-restating comments (certain, non-blocking) filed as `minor`
+at confidence ≥ 50, so they survive consolidation.
+
+| Repeat | Enum | Planted defects | WHAT-comment confidences | Verdict |
+|---|---|---|---|---|
+| C | `blocker`/`minor` only | 3/3 | **85, 75** (both survive) | **pass** |
+| D | `blocker`/`minor` only | 3/3 | **85, 80** (both survive) | **pass** |
+
+**2/2 pass on the corrected bar.** Both repeats filed the certain-but-minor comment
+findings at high confidence; nothing real would fall under the <50 drop. D reported
+a revert-discriminate check via "checking out" commits; the fixture's reflog shows
+no checkout and `git status` is clean with HEAD unmoved, so the read-only
+constraint held.
 
 Per CLAUDE.md, an agent edit is behavior-affecting; the owed `--contracts` re-run
-is the one recorded above. No `evals/contracts/reviewer.md` change was needed — the
-spec was already correct and is what caught this.
+is the one recorded above. `evals/contracts/reviewer.md` WAS changed — its stated
+reason for the enum was the false premise the first fix inherited.
 
 ## Recorded, not scored
 

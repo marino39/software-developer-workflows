@@ -183,22 +183,27 @@ budget and the idiomatic gofmt import needs 18. The product diff was exactly rig
 the run bought a human gate with a presentation number. That is ceremony diluting
 the auto-approve signal, and it is a leanness fix (P6 below).
 
-**One contract failure, fixed and re-verified.** The `reviewer` invented a severity
-`Informational`, outside the declared `blocker|minor` enum that Phase 6
-consolidation buckets on — so the finding would route nowhere. Drift, not a
-deterministic break (1 of 2 finding-bearing runs). `agents/reviewer.md` now pins
-the enum and names the consequence; re-run 2/2 conform, with the finding correctly
-refiled as `minor` at low confidence.
+**One contract failure — and a first fix that was wrong.** The `reviewer` invented
+a severity `Informational`, outside the declared `blocker|minor` enum. Drift, not a
+deterministic break (1 of 2 finding-bearing runs). The first fix justified the enum
+by claiming Phase 6 consolidation buckets on severity, and told reviewers to file
+non-blocking findings as `minor` *at low confidence*. Branch review caught both:
+consolidation re-scores and buckets on **confidence** (drop <50) and never reads
+severity, so that advice steered real findings into the drop — the "confirming"
+re-run had one at confidence 40. Corrected: the enum stays (the reviewer's own
+PASS/FAIL turns on it), and severity and confidence are now stated as independent
+axes, with certain-but-minor findings at high confidence. Re-verified — see
+`evals/results/2026-09-20-contracts.md`.
 
 ## 4. Applied in this change
 
 | # | Change | Where |
 |---|---|---|
-| A1 | **Lint Check 8** — agent `model:`/`effort:` frontmatter must use values the CLI accepts, and must agree with the **Effort defaults** table in `new-task.md`. Both directions checked. An unrecognised tier is not a runtime error — the field is silently ignored — so only a lint can catch it. | `evals/lint.sh` |
-| A2 | **Corrected the Effort defaults table.** It claimed `searcher`/`test-runner` were cheap partly because of `effort: low`; haiku exposes no effort control, so that was false. The field is **kept, not deleted** — it is live on the escalated rung (`searcher` haiku → sonnet honors effort) — and now reads as "applies if and when this seat escalates". | `commands/new-task.md` § Effort defaults |
+| A1 | **Lint Check 8** — agent `model:`/`effort:` frontmatter must use accepted values (aliases, `inherit`, full `claude-*` IDs; five effort levels), and must agree with the **Effort defaults** table in `new-task.md`, both directions. It does **not** check which models honor effort — the haiku finding came from reading the CLI catalog, not from this check. | `evals/lint.sh` |
+| A2 | **Corrected the Effort defaults table.** It claimed `searcher`/`test-runner` were cheap partly because of `effort: low`; haiku exposes no effort control, so that was false. `searcher`'s field is **kept** — it is live on its escalated rung (haiku → sonnet honors effort). `test-runner`'s is **removed**: it never escalates, so it could never bite. | `commands/new-task.md` § Effort defaults |
 | A3 | This document: the verified price/capability table, the handoff audit, and the cost model. | `docs/proposals/` |
 | A4 | **Lint Check 9** — an instruction-file **word ratchet** (`evals/size-budget.txt`, budgets at 2026-09-20 sizes +2%). Growth stays allowed; it has to be deliberate, because the budget bump lands in the same diff. Verified to fail on both growth and a missing row. | `evals/lint.sh` |
-| A5 | **`agents/reviewer.md` severity enum pinned** to `blocker`/`minor` with the consequence named, after the contract test caught an invented `Informational` level. Re-verified 2/2. | `agents/reviewer.md` |
+| A5 | **`agents/reviewer.md` severity enum pinned** to `blocker`/`minor`, and severity/confidence stated as independent axes (a first version wrongly claimed consolidation reads severity and advised low confidence for minor findings — corrected after branch review). | `agents/reviewer.md`; `evals/contracts/reviewer.md` |
 | A6 | Eval artifacts: baseline scorecard + contract report. | `evals/results/2026-09-20-*` |
 
 A1 is a new construct and takes a ledger row. A2 corrects a false factual claim
