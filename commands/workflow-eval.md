@@ -89,6 +89,14 @@ For each selected task, `--repeat` times:
      > (command + discriminating test + observed failure), the root-cause hypothesis
      > with file:line, the scope + handoff line, and `git status` (must be clean — the
      > fix must NOT be applied).
+   - **`/research` tasks** — network-dependent (skip offline: `skipped (network)`);
+     writes only its `--out` dir; GATE R auto-approves via the `## Command` line's `--yes`:
+     > You are running under the eval harness. Run the `/research` question from the
+     > fixture at `<path>` with `--out <path>/research-out`. GATE R auto-approves —
+     > log its summary verbatim; NEVER call AskUserQuestion; edit nothing outside
+     > `research-out/`. When finished, return: GATE R, `run.md`, `report.md`, the
+     > `claims.jsonl` status counts, which agents/tiers you spawned, and `git status`
+     > (only `research-out/` untracked).
    - **`/explain` tasks** — read-only, no gate; the question is the `## Command` line:
      > You are running under the eval harness. Operate read-only on the copied fixture
      > at `<path>`. Answer the `/explain` question following the command's classify →

@@ -1,6 +1,6 @@
 # software-developer-workflows
 
-Source of truth for the multi-agent Claude Code workflow: 7 subagents, 5 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the `/address-review` command that acts on the review comments humans leave on a PR you authored, the cheap read-only `/explain` command, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
+Source of truth for the multi-agent Claude Code workflow: 7 subagents, 6 skills, the full-lifecycle `/new-task` command with its learnings memory, the `/iterate` warm-start follow-up command, the `/triage-issue` front door that turns an issue into a scoped plan, the `/review-pr` command that aims the review engine at a PR you didn't author, the `/address-review` command that acts on the review comments humans leave on a PR you authored, the cheap read-only `/explain` command, the `/research` command that turns a multi-source external question into a cited report via a verified claim ledger, the schedulable `/workflow-maintenance` command, and the `/workflow-eval` measure-and-iterate harness.
 
 Iterating on a change `/new-task` just finished takes the warm lane: `/new-task` leaves a **run manifest** (design/plan/retro paths, base/head SHAs, worktree, open Should-fix findings), and `/iterate` starts from it — no cold Phase 0, no brainstorm, no plan-review, a **delta** review instead of a fresh fan-out, and the retrospective **deferred and batched** so a burst of tweaks produces one Phase 7, not one per tweak. A delta that grows high-stakes or ≥200 lines escalates (monotonic route) or bounces back to `/new-task`.
 
@@ -33,13 +33,18 @@ commands/            /new-task (full lifecycle; scoped tasks take a fast path)
                      each ask before coder spend, fix via the /iterate delta
                      lane, gate every reply behind a per-thread disposition
                      table)
+                     /research (multi-source external research: brief gate,
+                     parallel researchers -> claims.jsonl, blind verify,
+                     <=2-wave gap check, source plan per sub-question
+                     (research-sources playbooks), inline synthesis, codex critique;
+                     report.md canonical, --html = pandoc render)
                      /workflow-maintenance (capture sync, learnings curation,
                      trunk health — idempotent, safe to schedule)
                      /workflow-eval (lint + scored live run of /new-task against
                      frozen tasks, with ablation A/B — expensive, opt-in)
 skills/              procedural skills promoted from learnings:
                      verify-fix, verify-feature, convention-scan, ci-triage,
-                     codex-exec
+                     codex-exec, research-sources
 evals/               /workflow-eval inputs & outputs: rubric, one Go fixture,
                      frozen tasks, ablation variants, dated result scorecards
 new-task/LEARNINGS.md  general lessons SEED (ships empty; live copy is
