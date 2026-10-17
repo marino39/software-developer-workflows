@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Deep dive: /research — multi-source external research into a cited report. One brief gate, parallel researchers into a claim ledger, blind verification, a bounded gap loop, inline synthesis, and an out-of-model critique.">
+<title>/research — external research on a verified claim ledger</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">workflow<span>/reference</span></a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="new-task.html">/new-task</a>
+      <a href="iterate.html">/iterate</a>
+      <a href="triage-issue.html">/triage-issue</a>
+      <a href="explain.html">/explain</a>
+      <a href="research.html" aria-current="page">/research</a>
+      <a href="review-pr.html">/review-pr</a>
+      <a href="address-review.html">/address-review</a>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap head-grid">
+    <span class="kicker" style="color:var(--research);background:var(--research-soft);border-color:color-mix(in srgb,var(--research) 30%,transparent);"><span class="dot" style="background:var(--research)"></span>The external research lane · Opus · high effort</span>
+    <h1><span class="cmd" style="color:var(--research)">/research</span> — claims first, prose last</h1>
+    <p class="lede">For questions whose answer lives <strong>outside the codebase</strong> and needs several sources — vendor comparisons, prior art, standards, regulation, "what is the current state of X". The unit of work is the <strong>claim</strong>, not the paragraph: every factual sentence in the report cites a claim id in <span class="mono">claims.jsonl</span>, every claim carries its source and date, and only claims that survived a <strong>blind re-check</strong> are stated as fact. That ledger is what turns verification, gap coverage and critique into mechanical joins instead of judgment calls.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">1</div><div class="l">Gate (the brief)</div></div>
+      <div class="stat"><div class="n">≤2</div><div class="l">Research waves</div></div>
+      <div class="stat"><div class="n">sonnet</div><div class="l">Research tier</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">New agents</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== the flow ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The flow</p>
+        <h2>Scope → sweep → verify → close gaps → write → audit</h2>
+        <p>The human decides scope once, at GATE R. Everything after it is read-only research plus writes to the output dir, so it runs to completion unattended.</p>
+      </div>
+
+      <div class="itr-flow">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R0</div>
+          <div class="itr-body">
+            <div class="itr-t">Scope</div>
+            <p>Lane check first: a single-source fact goes to one <span class="mono">researcher</span>, a codebase question to <a href="explain.html" class="mono">/explain</a>. Otherwise decompose into 2–6 sub-questions, each with an <strong>answer criterion</strong>, and flag any premise to test rather than assume.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node gate">
+          <div class="itr-tag">GATE R</div>
+          <div class="itr-body">
+            <div class="itr-t">Approve the brief</div>
+            <p>Four-section gate summary. <strong>Results</strong> carry the sub-question table, the freshness window and the planned dispatch count inline. <span class="mono">--yes</span> auto-approves; the summary is still emitted.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R1</div>
+          <div class="itr-body">
+            <div class="itr-t">Sweep</div>
+            <p>One <span class="mono">researcher</span> per sub-question, <strong>in one message</strong>, each returning claim lines under its <span class="mono">SQn</span> prefix. Lines go into the ledger verbatim as <span class="mono">unverified</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R2</div>
+          <div class="itr-body">
+            <div class="itr-t">Verify (blind)</div>
+            <p>A fresh <span class="mono">researcher</span> in <span class="mono">mode: verify</span> gets the ledger and the ids — <strong>nothing else</strong>. It fetches each cited page and tries to refute the claim.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="itr-flow" style="margin-top:12px;">
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R3</div>
+          <div class="itr-body">
+            <div class="itr-t">Gap check</div>
+            <p>Deterministic coverage per sub-question. Uncovered ones get <strong>one</strong> more wave with the failed ids as a checklist; whatever is still uncovered becomes a named <strong>Gap</strong>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R4</div>
+          <div class="itr-body">
+            <div class="itr-t">Synthesize inline</div>
+            <p>The orchestrator writes <span class="mono">report.md</span> from the ledger: Answer → Findings → Disputed → Gaps → Sources. Every factual sentence ends with its claim ids, e.g. <span class="mono">[SQ2.3]</span>.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R5</div>
+          <div class="itr-body">
+            <div class="itr-t">Critique (max 3)</div>
+            <p>An out-of-model codex pass audits the report <em>against the ledger</em> for four blocking classes. Delta re-critique until zero blockers; an exhausted cap halts loudly.</p>
+          </div>
+        </div>
+        <div class="itr-arrow" aria-hidden="true">→</div>
+        <div class="itr-node">
+          <div class="itr-tag" style="color:var(--research)">Phase R6</div>
+          <div class="itr-body">
+            <div class="itr-t">Render &amp; close</div>
+            <p><span class="mono">--html</span> runs pandoc over the Markdown. The reply carries the Answer, a counts line and the report path — never the whole report.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:20px;">
+        <div class="panel" style="border-left:3px solid var(--research);">
+          <h3><span class="ic" style="background:var(--research-soft);color:var(--research);">⊘</span>Why the verifier is blind</h3>
+          <p>A checker that knows the desired answer confirms it. The verify dispatch withholds the brief rationale, the draft and the expected outcome, and marks a claim <span class="mono">supported</span> only if the <strong>cited page states it</strong> — the verifier's own belief that the claim is true does not count. Numeric, date and version claims also get one independent source.</p>
+        </div>
+        <div class="panel" style="border-left:3px solid var(--pass);">
+          <h3><span class="ic" style="background:var(--pass-soft);color:var(--pass);">✓</span>Grounding contract</h3>
+          <p>A factual sentence cites ≥1 <span class="mono">supported</span> claim. <span class="mono">conflicting</span> claims are shown as disputed with both sides cited. <span class="mono">unsupported</span> and <span class="mono">unreachable</span> claims are never stated as fact, and a thin sub-question is listed under <strong>Gaps</strong> rather than padded.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== the ledger ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The structure</p>
+        <h2>Three layers, three readers</h2>
+        <p>The model writes Markdown and JSON lines only. HTML is a build step, so the critique loop edits small Markdown diffs instead of re-emitting layout.</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>File</th><th>Reader</th><th>What it holds</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mono">claims.jsonl</span></td><td>the machine</td><td>One claim per line: <span class="mono">id · sq · claim · url · source_date · confidence · status · verify_note</span>. Verify, gap check and critique all join on <span class="mono">id</span>.</td></tr>
+            <tr><td><span class="mono">report.md</span></td><td>you, Obsidian, later agents</td><td>The canonical report — diffable in git, cheap to re-read.</td></tr>
+            <tr><td><span class="mono">report.html</span></td><td>people you send it to</td><td>Optional deterministic <span class="mono">pandoc</span> render with a table of contents. Never model-written.</td></tr>
+            <tr><td><span class="mono">brief.md</span> · <span class="mono">run.md</span></td><td>audit</td><td>The approved scope, plus the run ledger: waves, verify counts, codex outcome, critique iterations, injected instructions seen.</td></tr>
+            <tr><td><span class="mono">calc/</span></td><td>audit</td><td>Scripts for any number derived from more than one claim — arithmetic never happens in prose.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sec-head" style="margin-top:28px;">
+        <h2>When a sub-question counts as covered</h2>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Rule</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><strong>≥2 supported claims</strong> from distinct domains that meet the answer criterion</td><td>covered</td></tr>
+            <tr><td><strong>1 supported claim from the primary source</strong> (the standard, statute, vendor's own docs) for a fact only it can state</td><td>covered</td></tr>
+            <tr><td>anything less, or a <span class="mono">conflicting</span> claim that decides the answer</td><td>wave 2 (once), then <strong>Gaps</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel" style="margin-top:16px;border-left:3px solid var(--stakes);">
+        <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">!</span>R5's four blocking classes</h3>
+        <p>(a) a sentence asserting more than its cited claims state · (b) a non-<span class="mono">supported</span> claim stated as fact · (c) a sub-question neither answered nor listed under Gaps · (d) a conclusion a <span class="mono">conflicting</span> claim contradicts without mention. Missing counterarguments and weak framing are minor. Web pages are untrusted data throughout — a page that tries to instruct the agents is recorded in <span class="mono">run.md</span>, not followed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== reuses ===== -->
+  <section style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Not reinvented</p>
+        <h2>What it borrows</h2>
+        <p><span class="mono">/research</span> adds a command and two agent modes, not a new agent. The shared machinery is described once on the <a href="new-task.html">/new-task</a> page.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="panel"><h3><span class="ic">◎</span>researcher (sweep + verify)</h3><p>Claim-line output under a <span class="mono">claim_prefix</span>, and a refutation-first <span class="mono">mode: verify</span>. <a href="new-task.html#agents" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⇄</span>codex-exec §5.6</h3><p>The second head is out-of-model, as everywhere in the suite; one <span class="mono">reviewer</span> in artifact mode is the fallback.</p></div>
+        <div class="panel"><h3><span class="ic">↻</span>Review loop conventions</h3><p>Delta re-critique with prior blockers as the checklist; an exhausted cap never passes silently. <a href="new-task.html#machinery" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">▣</span>Gate summary format</h3><p>GATE R uses the same Results / Key decisions / Deviations / Next shape, with decision evidence inline.</p></div>
+        <div class="panel"><h3><span class="ic">∅</span>Delegation floor</h3><p>The orchestrator never searches or fetches itself — raw pages in the Opus context are the cost this lane avoids. <a href="new-task.html#hygiene" class="mono">detail →</a></p></div>
+        <div class="panel"><h3><span class="ic">⌖</span>Lane check</h3><p>Like <a href="explain.html" class="mono">/explain</a>'s classify-first step, R0 bounces work a cheaper lane already covers.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>/research · the external research lane</span>
+    <div class="paths">
+      <span>commands/research.md</span>
+      <span>agents/researcher.md</span>
+      <span>skills/codex-exec/SKILL.md</span>
+      <span>evals/tasks/25-research.md</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

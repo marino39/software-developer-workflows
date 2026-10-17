@@ -43,4 +43,4 @@ answers to.
 ## Owed
 
 Live scorecard on task 25; `--contracts --agent researcher` (two new stimuli); A/B
-`research-verify-off`; a guide page (`docs/guide/research.html`).
+`research-verify-off`. Guide page added: `docs/guide/research.html`.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator and many lanes: /new-task + /iterate to author, /triage-issue to turn an issue into a plan, /explain to understand code cheaply, /review-pr to review a teammate's PR, /address-review to act on inbound review comments, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
+<meta name="description" content="Overview of the multi-agent Claude Code workflow — one orchestrator and many lanes: /new-task + /iterate to author, /triage-issue to turn an issue into a plan, /explain to understand code cheaply, /research for cited multi-source external research, /review-pr to review a teammate's PR, /address-review to act on inbound review comments, plus /workflow-maintenance and /workflow-eval around the lifecycle.">
 <title>Workflow reference — overview</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -18,6 +18,7 @@
       <a href="iterate.html">/iterate</a>
       <a href="triage-issue.html">/triage-issue</a>
       <a href="explain.html">/explain</a>
+      <a href="research.html">/research</a>
       <a href="review-pr.html">/review-pr</a>
       <a href="address-review.html">/address-review</a>
     </div>
@@ -144,6 +145,30 @@
     </div>
   </section>
 
+  <!-- ===== the external research lane ===== -->
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Look it up properly</p>
+        <h2>The external research lane</h2>
+        <p>When the answer lives outside the codebase and one source is not enough, <span class="mono">/research</span> builds a verified claim ledger and writes a report on top of it — one brief gate, then unattended.</p>
+      </div>
+      <div class="entries">
+        <a class="entry" href="research.html" style="border-top-color:var(--research)">
+          <span class="cmd-lg" style="color:var(--research)">/research</span>
+          <span class="role-lg">Multi-source research, cited</span>
+          <p>Decomposes the question into sub-questions, sweeps with parallel <span class="mono">researcher</span>s into <span class="mono">claims.jsonl</span>, re-checks claims <strong>blind</strong>, closes gaps in at most one more wave, then writes <span class="mono">report.md</span> where every factual sentence cites a verified claim. Codex audits the report against the ledger; HTML is an opt-in pandoc render.</p>
+          <div class="chips">
+            <span class="tag">Phases R0–R6</span>
+            <span class="tag">1 gate</span>
+            <span class="tag">≤2 waves</span>
+          </div>
+          <span class="go" style="color:var(--research)">Dive into /research <span class="ar">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== the review lane ===== -->
   <section>
     <div class="wrap">
@@ -260,12 +285,13 @@
 
 <footer>
   <div class="wrap foot">
-    <span>/new-task + /iterate + /triage-issue + /explain + /review-pr + /address-review + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
+    <span>/new-task + /iterate + /triage-issue + /explain + /research + /review-pr + /address-review + /workflow-maintenance + /workflow-eval · multi-agent workflow reference</span>
     <div class="paths">
       <span>commands/new-task.md</span>
       <span>commands/iterate.md</span>
       <span>commands/triage-issue.md</span>
       <span>commands/explain.md</span>
+      <span>commands/research.md</span>
       <span>commands/review-pr.md</span>
       <span>commands/address-review.md</span>
       <span>commands/workflow-maintenance.md</span>
