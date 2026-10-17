@@ -1,6 +1,6 @@
 ---
 name: codex-exec
-description: Run codex non-interactively as the out-of-model second opinion — design lens, adversarial design review, code review, root-cause digest, or batched claim verification. Pinned model + effort per pass, stdin closed, generous timeout, read-only sandbox, output captured, exit codes classified (including quota). Use whenever the workflow shells out to codex (new-task Phases 1/2/6/6.5, review-pr, triage-issue, address-review).
+description: Run codex non-interactively as the out-of-model second opinion — design lens, adversarial design review, code review, root-cause digest, batched claim verification, or research-report critique. Pinned model + effort per pass, stdin closed, generous timeout, read-only sandbox, output captured, exit codes classified (including quota). Use whenever the workflow shells out to codex (new-task Phases 1/2/6/6.5, review-pr, triage-issue, address-review, research R5).
 ---
 
 # Codex exec (the out-of-model second opinion)
@@ -8,7 +8,7 @@ description: Run codex non-interactively as the out-of-model second opinion — 
 Codex is the workflow's **second head**. Where a pass needs two independent
 perspectives, the second one is codex rather than another Claude subagent: the
 diversity is better (different model, different training) and the tokens are not on
-the Claude bill — though not off *every* bill, which is what §0 is about. Five passes
+the Claude bill — though not off *every* bill, which is what §0 is about. Six passes
 use it:
 
 | Pass | Where | Recipe | Model (default → escalated) | If codex is unavailable |
@@ -18,6 +18,7 @@ use it:
 | **Code review (Channel B)** | new-task Phase 6.3; review-pr R1; iterate I2 | §5.3 | **full tier: `gpt-6-astra` @ `xhigh`**; reduced tier: `gpt-5.6-sol` → `gpt-6-astra` if cross-file | degrades free — the Claude channel still runs |
 | **Root-cause digest** | new-task Phase 6.5 / debugger rung; triage-issue T2 | §5.4 | `gpt-6-astra` @ `xhigh` | ladder continues to the fable `debugger` |
 | **Batched claim verification** | address-review A3 | §5.5 | `gpt-5.6-sol` → `gpt-6-astra` (high-stakes only) | fall back to the per-item Claude `reviewer` fan-out |
+| **Research critique** | research R5 | §5.6 | `gpt-5.6-sol` | fall back to ONE Claude `reviewer` in artifact mode |
 
 **Degrade policy differs by pass, and that difference is the point.** In review,
 codex is one of two channels, so a skip costs a perspective and nothing else. In
@@ -244,3 +245,22 @@ renumbers or reorders is treated as unusable rather than guessed at. Any `undete
 entry, and any claim whose truth turns on repo convention, plan intent or `CLAUDE.md`
 compliance, routes to a Claude `reviewer` instead: codex cannot judge those without the
 repo context the Claude agents read.
+
+### 5.6 Research critique (research R5)
+
+Codex audits a report it did not write against the claim ledger it was built from —
+both local files, so a read-only pass handed two paths has everything it needs. It
+judges support, not truth: re-checking the web is R2's job, already done blind.
+
+> `Audit the research report at <out>/report.md against its claim ledger
+> <out>/claims.jsonl (one JSON claim per line; "status" is the verification result).
+> Question and sub-questions: <out>/brief.md. Do NOT write files and do NOT browse.
+> Return numbered BLOCKING issues, each with the report line and claim ids involved:
+> (a) a sentence asserting more than its cited claims state; (b) a non-"supported"
+> claim stated as fact; (c) a sub-question neither answered nor listed under Gaps;
+> (d) a conclusion contradicted by a "conflicting" claim without mention. Or return
+> the exact text "no blocking issues". List other observations (missing
+> counterarguments, weak framing) separately as minor.`
+
+The four blocking classes are the command's exit criterion, so they are spelled out
+verbatim rather than paraphrased; the literal no-blockers string works as in §5.2.
