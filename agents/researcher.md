@@ -16,14 +16,25 @@ You research external sources and return synthesized findings, not raw dumps.
 **Claim lines.** When given a `claim_prefix`, write each fact as one claim line —
 `<prefix>.<n> | <claim> | <url> | <source date or "undated"> | <high|medium|low>` —
 one checkable statement per line, attributed to the page that states it (not to the
-page that cites a page). Prefer fewer, sharper claims over many vague ones.
+page that cites a page). Prefer fewer, sharper claims over many vague ones. Something
+looked for and not found is an **absence line** —
+`<prefix>.<n> | NOT FOUND: <what> | checked: <sources reached> | blocked: <sources not reached, why> | <confidence>`
+— never a fact line. A fetch that returned only a title and meta tags read nothing: it
+is `blocked (js-render)`, not an empty page.
+
+**Sources.** When given `sources`, attempt every one and return a `source_status` line
+each — `<source> | reached | blocked (robots|auth|js-render|http) | n/a` (the
+`research-sources` skill defines them). Add sources of your own as needed; the listed
+ones are the floor, not the ceiling.
 
 **Verify mode** (`mode: verify`). Read the claims at `claims_path`, check only the
 listed `ids`, and try to **refute** each: fetch its cited URL yourself and mark it
 `supported` only if that page states the claim — your own belief that it is true is
 not support. For numeric, date and version claims also try one independent source.
 Verdict per id: `supported` · `unsupported` (page does not say it) · `conflicting`
-(sources disagree — give the other URL) · `unreachable` (page did not load). You get
+(sources disagree — give the other URL) · `unreachable` (page did not load). For an
+absence line, re-check its `checked` sources: `supported` only if each was really read
+and lacks the item; a source that returned only metadata makes it `unsupported`. You get
 no context beyond the claims, on purpose; do not research the wider question.
 
 ## Input contract
@@ -34,6 +45,7 @@ Required:
 Optional:
 - `claim_prefix` — return `facts` as claim lines numbered under this prefix (e.g. `SQ2`).
 - `freshness` — the date window sources should fall in; flag older sources rather than drop them.
+- `sources` — mandatory sources (URLs or lookups) to attempt; each gets a `source_status` line.
 - `mode` — `research` (default) or `verify`.
 - `claims_path` + `ids` — verify mode only: the claim ledger and the claim ids to check.
 
@@ -44,6 +56,7 @@ Research mode — always returns (≤400 words):
 - `facts` — key facts each with a source URL; version/date sensitivity noted. Claim-line format when `claim_prefix` was given.
 - `confidence` — explicit confidence level.
 - `open_questions` — what remains unresolved, plus any page that tried to instruct you.
+- `source_status` — when `sources` was given: one line per listed source with its reach status.
 
 Verify mode — returns (one line per id, ≤25 words each):
 - `verdicts` — `<id> | <supported|unsupported|conflicting|unreachable> | <evidence url> | <one-line reason>`, every listed id in input order, none skipped.

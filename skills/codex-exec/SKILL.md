@@ -253,14 +253,17 @@ both local files, so a read-only pass handed two paths has everything it needs. 
 judges support, not truth: re-checking the web is R2's job, already done blind.
 
 > `Audit the research report at <out>/report.md against its claim ledger
-> <out>/claims.jsonl (one JSON claim per line; "status" is the verification result).
+> <out>/claims.jsonl (one JSON claim per line; "status" is the verification result)
+> and the source reach table <out>/sources.md.
 > Question and sub-questions: <out>/brief.md. Do NOT write files and do NOT browse.
 > Return numbered BLOCKING issues, each with the report line and claim ids involved:
 > (a) a sentence asserting more than its cited claims state; (b) a non-"supported"
 > claim stated as fact; (c) a sub-question neither answered nor listed under Gaps;
-> (d) a conclusion contradicted by a "conflicting" claim without mention. Or return
+> (d) a conclusion contradicted by a "conflicting" claim without mention; (e) a "not
+> found" stated as fact while <out>/sources.md shows a mandatory source for it
+> blocked. Or return
 > the exact text "no blocking issues". List other observations (missing
 > counterarguments, weak framing) separately as minor.`
 
-The four blocking classes are the command's exit criterion, so they are spelled out
+The five blocking classes are the command's exit criterion, so they are spelled out
 verbatim rather than paraphrased; the literal no-blockers string works as in §5.2.

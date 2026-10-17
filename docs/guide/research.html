@@ -54,7 +54,7 @@
           <div class="itr-tag" style="color:var(--research)">Phase R0</div>
           <div class="itr-body">
             <div class="itr-t">Scope</div>
-            <p>Lane check first: a single-source fact goes to one <span class="mono">researcher</span>, a codebase question to <a href="explain.html" class="mono">/explain</a>. Otherwise decompose into 2–6 sub-questions, each with an <strong>answer criterion</strong>, and flag any premise to test rather than assume.</p>
+            <p>Lane check first: a single-source fact goes to one <span class="mono">researcher</span>, a codebase question to <a href="explain.html" class="mono">/explain</a>. Otherwise decompose into 2–6 sub-questions, each with an <strong>answer criterion</strong> and <strong>mandatory sources</strong> from the <span class="mono">research-sources</span> playbooks (a Polish business always starts at the VAT whitelist), and flag any premise to test.</p>
           </div>
         </div>
         <div class="itr-arrow" aria-hidden="true">→</div>
@@ -88,7 +88,7 @@
           <div class="itr-tag" style="color:var(--research)">Phase R3</div>
           <div class="itr-body">
             <div class="itr-t">Gap check</div>
-            <p>Deterministic coverage per sub-question. Uncovered ones get <strong>one</strong> more wave with the failed ids as a checklist; whatever is still uncovered becomes a named <strong>Gap</strong>.</p>
+            <p>Deterministic coverage per sub-question — including every mandatory source <span class="mono">reached</span>. App-shell pages are rendered into <span class="mono">captures/</span>; uncovered ones get <strong>one</strong> more wave; whatever is still uncovered becomes a named <strong>Gap</strong> with its blocked sources.</p>
           </div>
         </div>
         <div class="itr-arrow" aria-hidden="true">→</div>
@@ -145,6 +145,7 @@
             <tr><td><span class="mono">claims.jsonl</span></td><td>the machine</td><td>One claim per line: <span class="mono">id · sq · claim · url · source_date · confidence · status · verify_note</span>. Verify, gap check and critique all join on <span class="mono">id</span>.</td></tr>
             <tr><td><span class="mono">report.md</span></td><td>you, Obsidian, later agents</td><td>The canonical report — diffable in git, cheap to re-read.</td></tr>
             <tr><td><span class="mono">report.html</span></td><td>people you send it to</td><td>Optional deterministic <span class="mono">pandoc</span> render with a table of contents. Never model-written.</td></tr>
+            <tr><td><span class="mono">sources.md</span></td><td>audit, R3, critique</td><td>Every mandatory source per sub-question with its reach status — <span class="mono">reached</span>, <span class="mono">blocked (robots | auth | js-render | http)</span> or <span class="mono">n/a</span>. A blocked source is never evidence of absence.</td></tr>
             <tr><td><span class="mono">brief.md</span> · <span class="mono">run.md</span></td><td>audit</td><td>The approved scope, plus the run ledger: waves, verify counts, codex outcome, critique iterations, injected instructions seen.</td></tr>
             <tr><td><span class="mono">calc/</span></td><td>audit</td><td>Scripts for any number derived from more than one claim — arithmetic never happens in prose.</td></tr>
           </tbody>
@@ -166,8 +167,8 @@
       </div>
 
       <div class="panel" style="margin-top:16px;border-left:3px solid var(--stakes);">
-        <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">!</span>R5's four blocking classes</h3>
-        <p>(a) a sentence asserting more than its cited claims state · (b) a non-<span class="mono">supported</span> claim stated as fact · (c) a sub-question neither answered nor listed under Gaps · (d) a conclusion a <span class="mono">conflicting</span> claim contradicts without mention. Missing counterarguments and weak framing are minor. Web pages are untrusted data throughout — a page that tries to instruct the agents is recorded in <span class="mono">run.md</span>, not followed.</p>
+        <h3><span class="ic" style="background:var(--stakes-soft);color:var(--stakes);">!</span>R5's five blocking classes</h3>
+        <p>(a) a sentence asserting more than its cited claims state · (b) a non-<span class="mono">supported</span> claim stated as fact · (c) a sub-question neither answered nor listed under Gaps · (d) a conclusion a <span class="mono">conflicting</span> claim contradicts without mention · (e) "not found" stated as fact while a mandatory source for it was blocked. Missing counterarguments and weak framing are minor. Web pages are untrusted data throughout — a page that tries to instruct the agents is recorded in <span class="mono">run.md</span>, not followed.</p>
       </div>
     </div>
   </section>

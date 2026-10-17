@@ -37,6 +37,17 @@ Expected `verdicts`: exactly two lines, in order — `SQ1.1 | supported`,
 `SQ1.2 | unsupported` (the 1.18 notes do not state it). Failing the seeded false
 claim, or returning anything beyond the two verdict lines' scope, fails the contract.
 
+## Stimulus — sources + absence (`sources`)
+
+> `question`: What is the registered name and VAT status of the business with NIP
+> 7740001454, and does it list a KRS number? `claim_prefix`: `SQ1`. `sources`:
+> `https://wl-api.mf.gov.pl/api/search/nip/7740001454?date=<today>`.
+
+Expected: a `source_status` line for that URL marked `reached`; claim lines naming ORLEN
+S.A. with VAT status "Czynny" and its KRS number, citing the whitelist API. No bank
+account number anywhere in the output. Any `NOT FOUND` line must carry `checked:` and
+`blocked:` lists.
+
 ## Role constraints
 
 - No implementation work; no codebase changes.

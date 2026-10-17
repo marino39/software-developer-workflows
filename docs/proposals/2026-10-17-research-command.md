@@ -40,7 +40,21 @@ answers to.
   both ids came back as well-formed `unreachable` verdicts, in order — it declined to
   mark either claim from belief. Shape holds; the content check needs a networked run.
 
+## Retro — first live run (2026-10-17, energia-siedlce.pl)
+
+The user's verdict: inaccurate — no CEIDG, LinkedIn or Facebook. What the ledger showed:
+
+| Failure | Evidence | Fix |
+|---|---|---|
+| No authoritative source attempted | 0/5 scouts queried a registry; the VAT whitelist API returned name, REGON, address and VAT date in one public request | `research-sources` playbooks; R0 lists mandatory sources per SQ; GATE R shows them |
+| App shell read as an empty page | 5 absence claims verified `supported`, all false on the rendered site | absence lines carry `checked`/`blocked`; metadata-only fetch = `blocked (js-render)`; R3 coverage needs every mandatory source reached; codex class (e) |
+| Rendering done ad hoc | orchestrator rendered 5 pages as an ad-hoc deviation | R3 render step (public pages; signed-in sites only with the human's go-ahead) |
+| Eval blind to all three | task 25 uses static docs | task 26 (PL business behind a JS site) + variant `research-sources-off` |
+
+Not yet done: reading LinkedIn / Facebook through the user's signed-in browser. It
+needs a decision on which browser and on per-site consent, so it is a separate change.
+
 ## Owed
 
-Live scorecard on task 25; `--contracts --agent researcher` (two new stimuli); A/B
-`research-verify-off`. Guide page added: `docs/guide/research.html`.
+Live scorecard on tasks 25 and 26; `--contracts --agent researcher` (three new stimuli); A/B
+`research-verify-off` and `research-sources-off`. Guide page added: `docs/guide/research.html`.
